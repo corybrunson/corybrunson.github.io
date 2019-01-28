@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>murmuring in the background</title>
-    <link>/</link>
-    <description>Recent content on murmuring in the background</description>
+    <title>Posts on murmuring in the background</title>
+    <link>/post/</link>
+    <description>Recent content in Posts on murmuring in the background</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Mon, 28 Jan 2019 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -19,16 +19,6 @@
       <guid>/2019/01/28/uniform-sample-embedded-klein-bottle/</guid>
       <description>an apparent dearth of toy TDA samplers Experimenting and practicing with topological data analytic (TDA) tools requires a healthy diversity of suitable data sets. Several real-world classics can be found in various packages, for example the glucose and insulin test data collected and analyzed by Reaven and Miller and later used by Singh, Carlsson, and Mémoli to illustrate the Mapper construction, which is included in the heplots package:
 data(Diabetes, package = &amp;quot;heplots&amp;quot;) head(Diabetes) ## relwt glufast glutest instest sspg group ## 1 0.</description>
-    </item>
-    
-    <item>
-      <title>About</title>
-      <link>/about/</link>
-      <pubDate>Sun, 27 Jan 2019 00:00:00 +0000</pubDate>
-      
-      <guid>/about/</guid>
-      <description>who i am (here) I’m Cory Brunsonhe/him/his, and this is a lightweight space for me to practice expressing my outlook on matters at least peripherally professional. I completed a PhD in mathematics in 2013, and i’m now a postdoctoral fellow and trainee doing network analysis, data science, and health informatics. I’m an enthusiast for the extended tidyverse library, and i’m exploring new techniques and applications of topological data analysis.
-Very soon i’ll have a hugo-academic professional website (it’s forcing me to finally upgrade from Mavericks).</description>
     </item>
     
   </channel>

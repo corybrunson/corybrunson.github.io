@@ -4,8 +4,8 @@
 
   
   <meta charset="utf-8">
-  <title>About - murmuring in the background</title>
-  <meta name="description" content="About">
+  <title>Hi R Markdown - murmuring in the background</title>
+  <meta name="description" content="Hi R Markdown">
   <meta name="author" content="Cory Brunson">
 
   
@@ -25,7 +25,7 @@
 
   
   
-  <link rel="stylesheet" href="/highlight/styles/github.css">
+  <link rel="stylesheet" href="/highlight/styles/monokai.css">
   
   <script src="/highlight/highlight.pack.js"></script>
   <script>hljs.initHighlightingOnLoad();</script>
@@ -48,6 +48,10 @@
                     <a href="/categories/methodology" class="pure-menu-link">Methodology</a>
                 </li>
                 
+                <li class="pure-menu-item">
+                    <a href="/categories/r" class="pure-menu-link">R</a>
+                </li>
+                
 				
                 <li class="pure-menu-item">
                     <a href="/about/" class="pure-menu-link">About</a>
@@ -63,6 +67,10 @@
                 
                 <li class="pure-menu-item">
                     <a href="/categories/methodology" class="pure-menu-link">Methodology</a>
+                </li>
+                
+                <li class="pure-menu-item">
+                    <a href="/categories/r" class="pure-menu-link">R</a>
                 </li>
                 
 				
@@ -82,41 +90,63 @@
 
             <div class="post-title">
                 <p class="footnote">
-                    <time class="">2019-01-27</time>
+                    <time class="">2015-07-23</time>
 		            
                     
+                    |
+                    
+                    
+                    tags:<a href="/tags/r-markdown">R Markdown</a> <a href="/tags/plot">plot</a> <a href="/tags/regression">regression</a> 
                     
 
+                    
+                    categories:<a href="/categories/r">R</a> 
                     
 
                     
                 </p>
-                <h1>About</h1>
+                <h1>DRAFT: Hi R Markdown</h1>
             </div>
 
             <div class="post-content">
-                <div id="who-i-am-here" class="section level2">
-<h2>who i am (here)</h2>
-<p>I’m Cory Brunson<sup>he/him/his</sup>, and this is a lightweight space for me to practice expressing my outlook on matters at least peripherally professional. I completed a PhD in mathematics in 2013, and i’m now a postdoctoral fellow and trainee doing network analysis, data science, and health informatics. I’m an enthusiast for the extended <a href="https://www.tidyverse.org/"><strong>tidyverse</strong></a> library, and i’m exploring new techniques and applications of <a href="https://arxiv.org/abs/1710.04019">topological data analysis</a>.</p>
-<p>Very soon i’ll have a <a href="https://github.com/gcushen/hugo-academic"><code>hugo-academic</code></a> professional website (it’s forcing me to finally upgrade from Mavericks). In the meantime, you can find me at the <a href="https://health.uconn.edu/quantitative-medicine/">Center for Quantitative Medicine</a> or at the links in the footer.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
+                <div id="r-markdown" class="section level1">
+<h1>R Markdown</h1>
+<p>This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <a href="http://rmarkdown.rstudio.com" class="uri">http://rmarkdown.rstudio.com</a>.</p>
+<p>You can embed an R code chunk like this:</p>
+<pre class="r"><code>summary(cars)
+##      speed           dist       
+##  Min.   : 4.0   Min.   :  2.00  
+##  1st Qu.:12.0   1st Qu.: 26.00  
+##  Median :15.0   Median : 36.00  
+##  Mean   :15.4   Mean   : 42.98  
+##  3rd Qu.:19.0   3rd Qu.: 56.00  
+##  Max.   :25.0   Max.   :120.00
+fit &lt;- lm(dist ~ speed, data = cars)
+fit
+## 
+## Call:
+## lm(formula = dist ~ speed, data = cars)
+## 
+## Coefficients:
+## (Intercept)        speed  
+##     -17.579        3.932</code></pre>
 </div>
-<div id="what-and-how-i-blog" class="section level2">
-<h2>what and how i blog</h2>
-<p>My schedule and content may evolve, but my goal at the outset is to post fortnightly or so on, or in the vicinity of, four categories: professional development, research progress, methodological technique, and personal curiosity. I want to use this space to express ideas that are messy and incomplete; i’ll strive both to read others as charitably as reasonable and to write with the expectation that others will do the same.</p>
-<p>I haven’t incorporated comments, but feel free to send me feedback via email or social media!</p>
+<div id="including-plots" class="section level1">
+<h1>Including Plots</h1>
+<p>You can also embed plots. See Figure <a href="#fig:pie">1</a> for example:</p>
+<pre class="r"><code>par(mar = c(0, 1, 0, 1))
+pie(
+  c(280, 60, 20),
+  c(&#39;Sky&#39;, &#39;Sunny side of pyramid&#39;, &#39;Shady side of pyramid&#39;),
+  col = c(&#39;#0292D8&#39;, &#39;#F7EA39&#39;, &#39;#C4B632&#39;),
+  init.angle = -50, border = NA
+)</code></pre>
+<div class="figure"><span id="fig:pie"></span>
+<img src="/2015-07-23-r-rmarkdown_files/figure-html/pie-1.png" alt="A fancy pie chart." width="672" />
+<p class="caption">
+Figure 1: A fancy pie chart.
+</p>
 </div>
-<div id="just-for-fun" class="section level2">
-<h2>just for fun</h2>
-<ul>
-<li>My Erdős number is <a href="https://www.math.vt.edu/people/brown/doc/fibo_number.pdf">3</a>.</li>
-<li>My Bacon number is <a href="http://www.imdb.com/title/tt1696494/">3</a>.</li>
-</ul>
-</div>
-<div class="footnotes">
-<hr />
-<ol>
-<li id="fn1"><p>Thanks to Zack Guo for the <a href="https://github.com/gizak/nofancy"><code>nofancy</code> Hugo theme</a>.<a href="#fnref1">↩</a></p></li>
-</ol>
 </div>
 
             </div>
@@ -210,10 +240,6 @@
       $(".desktop").removeAttr("style");
     }
   });
-</script>
-
-
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
 </script>
 
 </body>
