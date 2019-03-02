@@ -6,15 +6,51 @@
     <description>Recent content in Tags on murmuring in the background</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 28 Jan 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 01 Mar 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
+      <title>Embeddability</title>
+      <link>/tags/embeddability/</link>
+      <pubDate>Fri, 01 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/embeddability/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Graph Theory</title>
+      <link>/tags/graph-theory/</link>
+      <pubDate>Fri, 01 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/graph-theory/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Klein Bottle</title>
+      <link>/tags/klein-bottle/</link>
+      <pubDate>Fri, 01 Feb 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/klein-bottle/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Petersen Family</title>
+      <link>/tags/petersen-family/</link>
+      <pubDate>Fri, 01 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/petersen-family/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Software Packages</title>
       <link>/tags/software-packages/</link>
-      <pubDate>Mon, 28 Jan 2019 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 01 Feb 2019 00:00:00 +0000</pubDate>
       
       <guid>/tags/software-packages/</guid>
       <description></description>
@@ -23,7 +59,7 @@
     <item>
       <title>Statistical Topology</title>
       <link>/tags/statistical-topology/</link>
-      <pubDate>Mon, 28 Jan 2019 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 01 Feb 2019 00:00:00 +0000</pubDate>
       
       <guid>/tags/statistical-topology/</guid>
       <description></description>
