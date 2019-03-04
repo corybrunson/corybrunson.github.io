@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Software Packages on murmuring in the background</title>
-    <link>http://corybrunson.github.io/tags/software-packages/</link>
+    <link>/tags/software-packages/</link>
     <description>Recent content in Software Packages on murmuring in the background</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 01 Feb 2019 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="http://corybrunson.github.io/tags/software-packages/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/tags/software-packages/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Sampling uniformly from an embedded Klein bottle</title>
-      <link>http://corybrunson.github.io/2019/02/01/uniform-sample-embedded-klein-bottle/</link>
+      <link>/2019/02/01/uniform-sample-embedded-klein-bottle/</link>
       <pubDate>Fri, 01 Feb 2019 00:00:00 +0000</pubDate>
       
-      <guid>http://corybrunson.github.io/2019/02/01/uniform-sample-embedded-klein-bottle/</guid>
+      <guid>/2019/02/01/uniform-sample-embedded-klein-bottle/</guid>
       <description>an apparent dearth of toy TDA samplers Experimenting and practicing with topological data analytic (TDA) tools requires a healthy diversity of suitable data sets. Several real-world classics can be found in various packages, for example the glucose and insulin test data collected and analyzed by Reaven and Miller and later used by Singh, Carlsson, and Mémoli to illustrate the Mapper construction, which is included in the heplots package:
 data(Diabetes, package = &amp;quot;heplots&amp;quot;) head(Diabetes) ## relwt glufast glutest instest sspg group ## 1 0.</description>
     </item>

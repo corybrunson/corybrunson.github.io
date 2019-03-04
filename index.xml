@@ -2,40 +2,40 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>murmuring in the background</title>
-    <link>http://corybrunson.github.io/</link>
+    <link>/</link>
     <description>Recent content on murmuring in the background</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Mon, 04 Mar 2019 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="http://corybrunson.github.io/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>About</title>
-      <link>http://corybrunson.github.io/about/</link>
+      <link>/about/</link>
       <pubDate>Mon, 04 Mar 2019 00:00:00 +0000</pubDate>
       
-      <guid>http://corybrunson.github.io/about/</guid>
+      <guid>/about/</guid>
       <description>who i am (here) I’m Cory Brunsonhe/him/his, and this is a lightweight space for me to practice expressing my outlook on matters at least peripherally professional. I completed a PhD in mathematics in 2013, and i’m now a postdoctoral fellow training myself in network analysis, data science, and health informatics. I’m an enthusiast for the extended tidyverse library, and i’m exploring new techniques and applications of topological data analysis.
 My under-developed professional website uses the highly-developed hugo-academic theme.</description>
     </item>
     
     <item>
       <title>embed with the Petersens</title>
-      <link>http://corybrunson.github.io/2019/03/01/embed-with-the-petersens/</link>
+      <link>/2019/03/01/embed-with-the-petersens/</link>
       <pubDate>Fri, 01 Mar 2019 00:00:00 +0000</pubDate>
       
-      <guid>http://corybrunson.github.io/2019/03/01/embed-with-the-petersens/</guid>
+      <guid>/2019/03/01/embed-with-the-petersens/</guid>
       <description>inreach I make a habit of responding when people reach out for mathematical support in their work, at least when i think i can contribute something. An interesting network effect of this habit is that i actually get more second-hand (i.e. forwarded) feelers from colleagues than first-hand requests. As a result, i’ve gotten exposure to a lot of disciplines and questions that i’d’ve otherwise been unaware of entirely, for example the problem of feature identification in the immune profiles of cancer patients and the statistical bookkeeping required to model the nested factors determining medical imaging phenotypes.</description>
     </item>
     
     <item>
       <title>Sampling uniformly from an embedded Klein bottle</title>
-      <link>http://corybrunson.github.io/2019/02/01/uniform-sample-embedded-klein-bottle/</link>
+      <link>/2019/02/01/uniform-sample-embedded-klein-bottle/</link>
       <pubDate>Fri, 01 Feb 2019 00:00:00 +0000</pubDate>
       
-      <guid>http://corybrunson.github.io/2019/02/01/uniform-sample-embedded-klein-bottle/</guid>
+      <guid>/2019/02/01/uniform-sample-embedded-klein-bottle/</guid>
       <description>an apparent dearth of toy TDA samplers Experimenting and practicing with topological data analytic (TDA) tools requires a healthy diversity of suitable data sets. Several real-world classics can be found in various packages, for example the glucose and insulin test data collected and analyzed by Reaven and Miller and later used by Singh, Carlsson, and Mémoli to illustrate the Mapper construction, which is included in the heplots package:
 data(Diabetes, package = &amp;quot;heplots&amp;quot;) head(Diabetes) ## relwt glufast glutest instest sspg group ## 1 0.</description>
     </item>
