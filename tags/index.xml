@@ -8,7 +8,7 @@
     <language>en-us</language>
     <lastBuildDate>Fri, 01 Mar 2019 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -18,6 +18,7 @@
       
       <guid>/tags/embeddability/</guid>
       <description></description>
+      <content:encoded></content:encoded>
     </item>
     
     <item>
@@ -27,6 +28,7 @@
       
       <guid>/tags/graph-theory/</guid>
       <description></description>
+      <content:encoded></content:encoded>
     </item>
     
     <item>
@@ -36,6 +38,7 @@
       
       <guid>/tags/klein-bottle/</guid>
       <description></description>
+      <content:encoded></content:encoded>
     </item>
     
     <item>
@@ -45,6 +48,7 @@
       
       <guid>/tags/petersen-family/</guid>
       <description></description>
+      <content:encoded></content:encoded>
     </item>
     
     <item>
@@ -54,6 +58,7 @@
       
       <guid>/tags/software-packages/</guid>
       <description></description>
+      <content:encoded></content:encoded>
     </item>
     
     <item>
@@ -63,6 +68,7 @@
       
       <guid>/tags/statistical-topology/</guid>
       <description></description>
+      <content:encoded></content:encoded>
     </item>
     
   </channel>

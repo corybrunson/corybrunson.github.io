@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     
-	<atom:link href="/categories/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="/categories/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -17,6 +17,7 @@
       
       <guid>/categories/curiosity/</guid>
       <description></description>
+      <content:encoded></content:encoded>
     </item>
     
     <item>
@@ -26,6 +27,7 @@
       
       <guid>/categories/methodology/</guid>
       <description></description>
+      <content:encoded></content:encoded>
     </item>
     
   </channel>
