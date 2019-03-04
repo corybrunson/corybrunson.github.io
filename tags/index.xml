@@ -2,66 +2,66 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on murmuring in the background</title>
-    <link>/tags/</link>
+    <link>http://corybrunson.github.io/tags/</link>
     <description>Recent content in Tags on murmuring in the background</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 01 Mar 2019 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://corybrunson.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Embeddability</title>
-      <link>/tags/embeddability/</link>
+      <link>http://corybrunson.github.io/tags/embeddability/</link>
       <pubDate>Fri, 01 Mar 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/embeddability/</guid>
+      <guid>http://corybrunson.github.io/tags/embeddability/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Graph Theory</title>
-      <link>/tags/graph-theory/</link>
+      <link>http://corybrunson.github.io/tags/graph-theory/</link>
       <pubDate>Fri, 01 Mar 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/graph-theory/</guid>
+      <guid>http://corybrunson.github.io/tags/graph-theory/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Klein Bottle</title>
-      <link>/tags/klein-bottle/</link>
+      <link>http://corybrunson.github.io/tags/klein-bottle/</link>
       <pubDate>Fri, 01 Feb 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/klein-bottle/</guid>
+      <guid>http://corybrunson.github.io/tags/klein-bottle/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Petersen Family</title>
-      <link>/tags/petersen-family/</link>
+      <link>http://corybrunson.github.io/tags/petersen-family/</link>
       <pubDate>Fri, 01 Mar 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/petersen-family/</guid>
+      <guid>http://corybrunson.github.io/tags/petersen-family/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Software Packages</title>
-      <link>/tags/software-packages/</link>
+      <link>http://corybrunson.github.io/tags/software-packages/</link>
       <pubDate>Fri, 01 Feb 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/software-packages/</guid>
+      <guid>http://corybrunson.github.io/tags/software-packages/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Statistical Topology</title>
-      <link>/tags/statistical-topology/</link>
+      <link>http://corybrunson.github.io/tags/statistical-topology/</link>
       <pubDate>Fri, 01 Feb 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/statistical-topology/</guid>
+      <guid>http://corybrunson.github.io/tags/statistical-topology/</guid>
       <description></description>
     </item>
     
