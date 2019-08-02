@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Linear Discriminant Analysis on murmuring in the background</title>
+    <link>http://corybrunson.github.io/tags/linear-discriminant-analysis/</link>
+    <description>Recent content in Linear Discriminant Analysis on murmuring in the background</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 02 Aug 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="http://corybrunson.github.io/tags/linear-discriminant-analysis/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>I AM THE DISCRIMINANT</title>
+      <link>http://corybrunson.github.io/2019/08/02/lda/</link>
+      <pubDate>Fri, 02 Aug 2019 00:00:00 +0000</pubDate>
+      
+      <guid>http://corybrunson.github.io/2019/08/02/lda/</guid>
+      <description>For over a year (intermittently, not cumulatively) i’ve been developing an R package, ordr, for incorporating ordination techniques into a tidyverse workflow. (Credit where it’s due: Emily Paul, a summer intern from Avon High School, helped extend the package functionality and has since used it in other projects and provided critical feedback on its design.) This week, i finally deployed a pkgdown website and tweeted a meek solicitation for feedback.</description>
+    </item>
+    
+  </channel>
+</rss>
