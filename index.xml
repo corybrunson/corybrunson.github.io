@@ -6,18 +6,733 @@
     <description>Recent content on murmuring in the background</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 02 Aug 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>2019 Aug 16 (Fri), 00:00:00 +0000</lastBuildDate>
     
         <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
+      <title>multidimensional scaling of variables, and rank correlations</title>
+      <link>/2019/08/16/rank-correlations/</link>
+      <pubDate>2019 Aug 16 (Fri), 00:00:00 +0000</pubDate>
+      
+      <guid>/2019/08/16/rank-correlations/</guid>
+      <description>
+
+
+<p>A fundamental idea in biplot methodology is the <em>conference of inertia</em>, a phrase i picked up from <a href="https://stats.stackexchange.com/a/141755/68743">an SO answer by ttnphns</a> and quickly <a href="https://github.com/corybrunson/ordr/blob/master/R/ord-conference.r">incorporated into ordr</a>. The basic idea arises from the central properties of a biplot, illustrated here for principal components analysis: A case–variable data matrix <span class="math inline">\(X\in\mathbb{R}^{n\times m}\)</span> of ratio variables<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> is singular-value decomposed as <span class="math inline">\(X=UDV^\top\)</span>, for example the <code>mtcars</code> data set:</p>
+<pre class="r"><code>x &lt;- scale(mtcars, center = TRUE, scale = TRUE)
+s &lt;- svd(x)
+r &lt;- length(s$d)</code></pre>
+<p>Under this convention, <span class="math inline">\(U\in\mathbb{R}^{n\times r}\)</span> and <span class="math inline">\(V\in\mathbb{R}^{m\times r}\)</span> arise from eigendecompositions of <span class="math inline">\(XX^\top\)</span> and of <span class="math inline">\(X^\top X\)</span>, respectively, and <span class="math inline">\(D\in\mathbb{R}^{r\times r}\)</span> is the diagonal matrix of the square roots of their (common) eigenvalues. The matrix factors may be biplotted in three conventional ways:</p>
+<ul>
+<li>with <em>principal</em> case coordinates <span class="math inline">\(UD\)</span> and <em>standardized</em> variable coordinates <span class="math inline">\(V\)</span>;</li>
+<li>with standardized case coordinates <span class="math inline">\(U\)</span> and principal variable coordinates <span class="math inline">\(VD\)</span>;</li>
+<li>with <em>symmetric</em> case and variable coordinates <span class="math inline">\(UD^{1/2}\)</span> and <span class="math inline">\(VD^{1/2}\)</span>.</li>
+</ul>
+<p>Because both sets of eigenvectors <span class="math inline">\(U=\left[\,u_1\,\cdots\,u_r\,\right]\)</span> and <span class="math inline">\(V=\left[\,v_1\,\cdots\,v_r\,\right]\)</span> are orthonormal, <span class="math inline">\(U^\top U=I_r=V^\top V\)</span> and the total inertia (variance) in each matrix is <span class="math inline">\(\sum_{j=1}^{r}{{v_j}^2}=r=\sum_{j=1}^{r}{{v_j}^2}\)</span>. Meanwhile, <span class="math inline">\(D\)</span> contains all of the inertia of <span class="math inline">\(X\)</span>:</p>
+<pre class="r"><code># inertia of the (scaled) data
+sum(x^2)</code></pre>
+<pre><code>## [1] 341</code></pre>
+<pre class="r"><code># inertia of the case and variable factors
+sum(s$u^2)</code></pre>
+<pre><code>## [1] 11</code></pre>
+<pre class="r"><code>sum(s$v^2)</code></pre>
+<pre><code>## [1] 11</code></pre>
+<pre class="r"><code># inertia of the diagonal factor
+sum(s$d^2)</code></pre>
+<pre><code>## [1] 341</code></pre>
+<p>This inertia can then be <em>conferred</em> unto the standardized case or variable coordinates, transforming one or the other into principal coordinates (the first two options above) or both halfway there (the symmetric option). Each of these options confers the inertia in such a way that the sums of the exponents of <span class="math inline">\(D\)</span> in the transformed sets of case (<span class="math inline">\(F=UD^p\)</span>) and variable (<span class="math inline">\(G=VD^q\)</span>) coordinates is <span class="math inline">\(p+q=1\)</span>, which ensures the <em>inner product property</em> <span class="math inline">\(FG^\top=X\)</span> between them. This recovers any entry <span class="math inline">\(x_{ij}\)</span> of <span class="math inline">\(X\)</span> as the inner product <span class="math inline">\(f_i\cdot g_i\)</span> of its case and variable coordinates <span class="math inline">\(f_i=[\,f_{i,1}\,\cdots\,f_{i,r}\,]\)</span> and <span class="math inline">\(g_i=[\,g_{i,1}\,\cdots\,g_{i,r}\,]\)</span>.</p>
+<p>By conferring the inertia entirely to the cases or to the variables, we preserve (or best approximate) the geometric configurations of the cases or of the variables. In PCA, the geometry of the cases is usually construed as the distances between them. Here their pairwise distances <span class="math inline">\(\sqrt{(f_{j,1}-f_{i,1})^2+(f_{j,2}-f_{i,2})^2}\)</span> in the first two PCA dimensions are plotted against their “true” distances <span class="math inline">\(\left(\sum_{k=1}^{m}{(x_{j,k}-x_{i,k})^2}\right)^{1/2}\)</span> in the variable space:</p>
+<pre class="r"><code># distances between cases
+x.dist &lt;- dist(x)
+# distances between cases (principal coordinates)
+s.dist &lt;- dist(s$u[, 1:2] %*% diag(s$d[1:2]))
+# scatterplot
+plot(
+  x = as.vector(x.dist), y = as.vector(s.dist),
+  asp = 1, pch = 19, cex = .5,
+  xlab = &quot;Case distances along variable coordinates&quot;,
+  ylab = &quot;Case distances in two principal coordinates&quot;
+)</code></pre>
+<p><img src="/post/2019-08-16-rank-correlations_files/figure-html/case%20geometry-1.png" width="528" /></p>
+<p>Meanwhile, the geometry of the variables is usually understood through their covariances or correlations. Writing <span class="math inline">\(X=[\,y_1\,\cdots\,y_m\,]\)</span> as an array of column variables, the covariance between <span class="math inline">\(y_i\)</span> and <span class="math inline">\(y_j\)</span> is proportional to their inner product <span class="math display">\[\textstyle \operatorname{cov}(y_i,y_j)=\frac{1}{n}y_i\cdot y_j=\frac{1}{n}\lVert y_i\rVert\lVert y_j\rVert\cos\theta_{ij}\text,\]</span> so that the cosine of the angle <span class="math inline">\(\theta_{ij}\)</span> between them equals their correlation:
+<span class="math display">\[\cos\theta_{ij}=\frac{\operatorname{cov}(y_i,y_j)}{\sqrt{\operatorname{cov}(y_i,y_i)\operatorname{cov}(y_j,y_j)}/n}=\frac{\operatorname{cov}(y_i,y_j)}{\sigma_i\sigma_j}=r_{ij}\]</span>
+Here the cosines <span class="math inline">\(\frac{g_i}{\lVert g_i\rVert}\cdot\frac{g_j}{\lVert g_j\rVert}\)</span> between the variable vectors in the first two PCA dimensions are plotted against their correlations <span class="math inline">\(r_{ij}\)</span> across the original cases:</p>
+<pre class="r"><code># correlations between variables
+x.cor &lt;- cor(x)
+# magnitudes of variable vectors
+s.len &lt;- apply(s$v[, 1:2] %*% diag(s$d[1:2]), 1, norm, &quot;2&quot;)
+# cosines between variables (principal coordinates)
+s.cor &lt;- (s$v[, 1:2] / s.len) %*% diag(s$d[1:2]^2) %*% t(s$v[, 1:2] / s.len)
+# scatterplot
+plot(
+  x = as.vector(x.cor[lower.tri(x.cor)]),
+  y = as.vector(s.cor[lower.tri(s.cor)]),
+  asp = 1, pch = 19, cex = .5,
+  xlab = &quot;Variable correlations among cases&quot;,
+  ylab = &quot;Cosines between variable vectors in two principal coordinates&quot;
+)</code></pre>
+<p><img src="/post/2019-08-16-rank-correlations_files/figure-html/variable%20geometry-1.png" width="528" /></p>
+<div id="multidimensional-scaling-of-variables" class="section level2">
+<h2>multidimensional scaling of variables</h2>
+<p>The faithful approximation of inter-case distances by principal coordinates is the idea behind <a href="https://en.wikipedia.org/wiki/Multidimensional_scaling">(classical)</a> <em>multidimensional scaling</em> (MDS), which can be applied to a data set of distances <span class="math inline">\(\delta_{ij},\ 1\leq i,j\leq n\)</span> in the absence of coordinates. This technique is based on the eigendecomposition of a doubly-centered matrix of squared distances, which produces matrix <span class="math inline">\(U\Lambda^{1/2}\)</span> whose first <span class="math inline">\(r\)</span> coordinates—for any <span class="math inline">\(r\leq n\)</span>—recover a best approximation of the inter-case distances in terms of the sum of squared errors, i.e. the variance of <span class="math inline">\((U\Lambda^{1/2})(U\Lambda^{1/2})^\top-\Delta=U\Lambda U^\top-\Delta\)</span>, where <span class="math inline">\(\Delta=(\delta_{ij})\in\mathbb{R}^{n\times n}\)</span>. In practice, the goal is usually to position points representing the <span class="math inline">\(n\)</span> cases in a 2-dimensional scatterplot so that their distances <span class="math inline">\(\sqrt{(x_j-x_i)^2+(y_j-y_i)^2}\)</span> approximate their original distances <span class="math inline">\(\delta_{ij}\)</span>, as in this example using road distances between U.S. cities to approximate their geographic arrangement:</p>
+<pre class="r"><code>d &lt;- as.matrix(UScitiesD)
+cent &lt;- diag(1, nrow(d)) - matrix(1/nrow(d), nrow(d), nrow(d))
+d.cent &lt;- -.5 * cent %*% (d^2) %*% cent
+d.mds &lt;- svd(d.cent)
+d.coord &lt;- d.mds$u[, 1:2] %*% diag(sqrt(d.mds$d[1:2]))
+plot(d.coord, pch = NA, asp = 1, xlab = &quot;&quot;, ylab = &quot;&quot;)
+text(d.coord, labels = rownames(d))</code></pre>
+<p><img src="/post/2019-08-16-rank-correlations_files/figure-html/multidimensional%20scaling-1.png" width="816" /></p>
+<p>The faithful approximation of inter-variable covariances by the inner products of their principal coordinate vectors suggests a complementary technique that i haven’t found explicitly discussed in my own background reading. Suppose we have data that consist not of distances between cases but of covariances <span class="math inline">\(\operatorname{cov}(y_i,y_j),\ 1\leq i,j\leq m\)</span> between variables. Again the data are coordinate-free, so PCA cannot be applied. Were the data to have derived from a <em>centered</em> case–variable matrix <span class="math inline">\(X\)</span>, then the covariance matrix <span class="math inline">\(C=(\operatorname{cov}(y_i,y_j))\)</span> would have been obtained as <span class="math inline">\(C=\frac{1}{n}X^\top X\)</span>, which is (up to scalar) the matrix whose eigenvectors would be given by <span class="math inline">\(V\)</span> in the SVD <span class="math inline">\(X=UDV^\top\)</span>. Therefore, we can fabricate coordinates for the <span class="math inline">\(m\)</span> variables that approximate what we know of their geometry—in this case, thinking of the variables as unknown vectors, whose magnitudes and pairwise angles are encoded in <span class="math inline">\(C\)</span>—via an eigendecomposition <span class="math inline">\(C=V\Lambda V^\top\)</span>: Take <span class="math inline">\(Y=V\Lambda^{1/2}\in\mathbb{R}^{m\times r}\)</span>, so that <span class="math inline">\(Y^\top Y\approx C\)</span>.</p>
+<p>I’ll validate this line of reasoning by taking the <code>mtcars</code> data set for a spin:</p>
+<pre class="r"><code># covariances and standard deviations
+c &lt;- cov(mtcars)
+s &lt;- diag(sqrt(diag(c)))
+# centered data
+x &lt;- as.matrix(scale(mtcars, center = TRUE, scale = FALSE))
+# eigendecomposition of covariance matrix
+c.eigen &lt;- eigen(c)
+# artificial coordinates
+c.coord &lt;- c.eigen$vectors %*% diag(sqrt(c.eigen$values))
+# validate covariance recovery (up to sign)
+all.equal(
+  as.vector(c.coord %*% t(c.coord)),
+  as.vector(c),
+  tolerance = 1e-12
+)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<p>Thus, whereas <em>MDS of cases</em> is used to represent distances, <em>MDS of variables</em> can be used to represent covariances.
+A use case for this technique is a situation in which covariance data exist without variable values. This may of course be the case because original data has become unavailable.</p>
+<p>A more interesting setting that gives rise to this situation is the analysis of multiple rankings of the same set of objects in terms of their <em>concordance</em>. Rankings’ concordance is often measured using rank correlations such as Kendall’s <span class="math inline">\(\tau\)</span>, which may be <em>general correlation coefficients</em> in <a href="https://en.wikipedia.org/wiki/Rank_correlation#General_correlation_coefficient">the sense proposed by Kendall</a> but are not associated with an underlying (Euclidean) geometry. Nevertheless, we can use MDS to represent these rankings as unit vectors in Euclidean space whose pairwise cosines approximate their rank correlations!</p>
+</div>
+<div id="example-rankings-of-universities" class="section level2">
+<h2>example: rankings of universities</h2>
+<p>A real-world example is provided by the <a href="https://www.topuniversities.com/qs-world-university-rankings/methodology">Quacquarelli Symonds Top University Rankings</a>, which include rankings of hundreds of world universities on six “metrics”: academic reputation, employer reputation, faculty–student ratio, citations per faculty, international faculty ratio, and international student ratio. QS weight these rankings differently in their overall assessment, but our analysis will compare the rankings to each other, so these weights are irrelevant. I restricted the data from the year 2020 to universities in the United States for which integer rankings (i.e. not “400+” placeholders) were available in all four years:<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a></p>
+<pre class="r"><code>qswurus20 &lt;- readRDS(here::here(&quot;sandbox/qswurus20.rds&quot;))
+head(qswurus20)</code></pre>
+<pre><code>##   year                                  institution size focus res age
+## 1 2020  MASSACHUSETTS INSTITUTE OF TECHNOLOGY (MIT)    M    CO  VH   5
+## 2 2020                          STANFORD UNIVERSITY    L    FC  VH   5
+## 3 2020                           HARVARD UNIVERSITY    L    FC  VH   5
+## 4 2020 CALIFORNIA INSTITUTE OF TECHNOLOGY (CALTECH)    S    CO  VH   5
+## 5 2020                        UNIVERSITY OF CHICAGO    L    FC  VH   5
+## 6 2020                         PRINCETON UNIVERSITY    M    CO  VH   5
+##   status rk_academic rk_employer rk_ratio rk_citations rk_intl_faculty
+## 1      B           5           4       15            7              43
+## 2      B           4           5       12           13              62
+## 3      B           1           1       40            8             186
+## 4      B          23          74        4            4              72
+## 5      B          13          37       54           60             249
+## 6      B          10          19      192            3             272
+##   rk_intl_students
+## 1               87
+## 2              196
+## 3              221
+## 4              121
+## 5              143
+## 6              197</code></pre>
+<p>Since the integer rankings were subsetted from the full international data set, they are not contiguous (i.e. some integers between rankings never appear). To resolve this, i’ll recalibrate the rankings by matching each vector of ranks to the vector of its sorted unique values:</p>
+<pre class="r"><code>library(dplyr)
+qswurus20 %&gt;%
+  select(institution, starts_with(&quot;rk_&quot;)) %&gt;%
+  mutate_at(
+    vars(starts_with(&quot;rk_&quot;)),
+    ~ match(., sort(unique(as.numeric(.))))
+  ) %&gt;%
+  print() -&gt; qswurus20</code></pre>
+<pre><code>## # A tibble: 38 x 7
+##    institution rk_academic rk_employer rk_ratio rk_citations
+##    &lt;chr&gt;             &lt;int&gt;       &lt;int&gt;    &lt;int&gt;        &lt;int&gt;
+##  1 MASSACHUSE…           3           2        6            3
+##  2 STANFORD U…           2           3        4            5
+##  3 HARVARD UN…           1           1       11            4
+##  4 CALIFORNIA…          12          14        1            2
+##  5 UNIVERSITY…           9          11       13           12
+##  6 PRINCETON …           7           7       18            1
+##  7 CORNELL UN…          11          13       22            7
+##  8 UNIVERSITY…          14          12        8           17
+##  9 YALE UNIVE…           6           4        2           24
+## 10 COLUMBIA U…           8           8        7           25
+## # … with 28 more rows, and 2 more variables: rk_intl_faculty &lt;int&gt;,
+## #   rk_intl_students &lt;int&gt;</code></pre>
+<p>This subset of universities is now contiguously ranked along the six dimensions described above. The Kendall correlation <span class="math inline">\(\tau_{ij}\)</span> between two rankings measures their concordance. To calculate it, every pair of universities contributes either <span class="math inline">\(+1\)</span> or <span class="math inline">\(-1\)</span> according as the rankings <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> place that pair in the same order, and the sum is scaled down by the number of pairs <span class="math inline">\({n\choose 2}\)</span> so that the result lies between <span class="math inline">\(-1\)</span> and <span class="math inline">\(1\)</span>. We interpret <span class="math inline">\(\tau_{ij}=1\)</span> as perfect concordance (the rankings are equivalent), <span class="math inline">\(\tau_{ij}=-1\)</span> as perfect discordance (the rankings are reversed), and <span class="math inline">\(\tau_{ij}=0\)</span> as independence (the rankings are unrelated).</p>
+<p>The QS rankings are not variations on a theme, like different measures of guideline adherence or positive affect, but they do all seem potentially sensitive to a university’s resources, including funding and prestige. I intuit that the two reputational metrics should be positively correlated, and that the two international ratios should be as well. I also wonder if the faculty–student ratio might be anti-correlated with the number of citations per faculty, separating more research-focused institutions from more teaching-focused ones.</p>
+<div id="correlation-heatmap" class="section level3">
+<h3>correlation heatmap</h3>
+<p>A common way to visualize correlation matrices is the heatmap, so i’ll use that technique first (see below). While the rankings by academic and employer reputations are highly concordant, those by international faculty and student ratios are less so; and, the faculty–student ratio and faculty citation rankings have the weakest concordance of all, but are nevertheless positively correlated.</p>
+<pre class="r"><code>c &lt;- cor(select(qswurus20, starts_with(&quot;rk_&quot;)), method = &quot;kendall&quot;)
+corrplot::corrplot(c)</code></pre>
+<p><img src="/post/2019-08-16-rank-correlations_files/figure-html/Kendall%20rank%20correlations-1.png" width="672" /></p>
+<p>This visualization is useful, but it’s very busy: To compare any pair of rankings, i have to find the cell in the grid corresponding to that pair and refer back to the color scale to assess its meaning. I can’t rely on the nearby cells for context, because they may be stronger or weaker than average and skew my interpretation. For example, the visibly weak associations between the faculty–student ratio and other rankings (the third row or column) happen to be arranged so that the slightly stronger among them, with the two reputational variables, are sandwiched between the <em>even stronger</em> associations between the two reputational rankings and between them and the faculty citations ranking; whereas its weaker associations are sandwiched between more typical, but still comparatively stronger, associations. A different ordering of the variables might “obscure” this pattern and “reveal” others.</p>
+<p>The plot is also strictly pairwise: Every correlation between two rankings occupies its own cell—two, in fact, making almost half of the plot duplicative. This means that a subset analysis of, say, three rankings requires focusing on three cells at the corners of a right triangle while ignoring all the surrounding cells. This is not an easy visual task. It would be straightforward to create a new plot for any subset, but then the larger context of the remaining rankings would be lost.</p>
+</div>
+<div id="correlation-biplot" class="section level3">
+<h3>correlation biplot</h3>
+<p>MDS of variables offers a natural alternative visualization: the biplot. As with MDS of cases, the point isn’t to overlay the case scores and variable loadings from a singular value decomposition, but to use the scores or loadings alone to endow the cases or variables with a Euclidean geometry they didn’t yet have. To that end, i’ll plot the variables as vectors with tails at the origin and heads at their fabricated coordinates <span class="math inline">\(Y=V\Lambda^{1/2}\)</span>:</p>
+<pre class="r"><code>c.eigen &lt;- eigen(c)
+c.coord &lt;- c.eigen$vectors %*% diag(sqrt(c.eigen$values))
+plot(c.coord, pch = NA, asp = 1, xlab = &quot;&quot;, ylab = &quot;&quot;)
+arrows(0, 0, c.coord[, 1], c.coord[, 2])
+text(c.coord, labels = rownames(c))</code></pre>
+<p><img src="/post/2019-08-16-rank-correlations_files/figure-html/multidimensional%20scaling%20of%20variables-1.png" width="672" /></p>
+<p>A more elegant ggplot2-style graphic can be rendered with <a href="https://github.com/corybrunson/ordr">ordr</a>, with a unit circle included for reference:</p>
+<pre class="r"><code>library(ordr)
+eigen_ord(c) %&gt;%
+  as_tbl_ord() %&gt;%
+  augment() %&gt;%
+  mutate_u(metric = stringr::str_remove(.name, &quot;rk_&quot;)) %&gt;%
+  confer_inertia(1) %&gt;%
+  negate_to_nonneg_orthant(&quot;u&quot;) -&gt;
+  c_eigen
+c_eigen %&gt;%
+  ggbiplot() +
+  theme_minimal() +
+  geom_unit_circle() +
+  geom_u_vector() +
+  geom_u_text_radiate(aes(label = metric)) +
+  scale_x_continuous(expand = expand_scale(add = .4)) +
+  scale_y_continuous(expand = expand_scale(add = .2)) +
+  ggtitle(&quot;MDS of Kendall correlations between university rankings&quot;)</code></pre>
+<p><img src="/post/2019-08-16-rank-correlations_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p>With respect to the pairwise correlations, the biplot is significantly less precise: Though the vectors all have unit length in <span class="math inline">\(\mathbb{R}^r\)</span> (<span class="math inline">\(r\leq m=6\)</span>), their projections onto the first two principal coordinates are much shorter, indicating that much of the geometric configuration requires additional dimensions to represent. Indeed, these coordinates capture only <span class="math inline">\(48.2\%+14.3\%=62.5\%\)</span> of the inertia in the full representation. This means that the angles between the vectors must be interpreted with caution: For example, it looks like the academic and employer reputation rankings are extremely correlated, but the apparent alignment of the vectors could be an artifact of the projection, when in fact they “rise” and “fall” in opposite directions along the remaining dimensions. The correlation heatmap leaves no such ambiguity.</p>
+<p>However, the biplot far surpasses the heatmap at parsimony: Each variable is represented by a single vector, and the angle cosines between the variable vectors roughly approximate their correlations. For instance, the rankings based on international student and faculty ratios have correlation around <span class="math inline">\(\cos(\frac{\pi}{4})=\frac{1}{\sqrt{2}}\)</span>, corresponding to either explaining half the “variance” in the other—not technically meaningful in the ranking context but a useful conceptual anchor. Meanwhile, the faculty–student ratio ranking is nearly independent of the faculty citation ranking, contrary to my intuition that these rankings would reflect a <em>reverse</em> association between research- and teaching-oriented institutions. The convenience of recognizing correlations as cosines may be worth the significant risk of error, especially since that error (the residual <span class="math inline">\(37.5\%\)</span> of inertia) can be exactly quantified.</p>
+<p>Moreover, the principal coordinates of the variable vectors indicate their loadings onto the first and second principal moments of inertia—the two dimensions that capture the most variation in the data. For example, the first principal coordinate is most aligned with the two reputational rankings, suggesting that a general prestige ranking is the strongest overall component of the several specific rankings. In contrast, the faculty–student ratio and faculty citation rankings load most strongly onto the second principal coordinate, suggesting that the divide between research- and teaching-focused institutions may yet be important to understanding how universities compare along these different metrics. These observations, provisional though they are, would be difficult to discern from the heatmap. More importantly, unlike the secondary patterns visible in the heatmap, these are in no sense artifacts of the layout but arise directly from the (correlational) data.</p>
+<p>This last point means that observations made from a biplot can be validated from the MDS coordinates. In particular, we can examine the variables’ loadings onto the third principal coordinate, and we can check whether the reputational rankings are aligned or misaligned along it.</p>
+<pre class="r"><code>c_eigen %&gt;%
+  tidy(.matrix = &quot;u&quot;) %&gt;%
+  select(-.name, -.matrix)</code></pre>
+<pre><code>## # A tibble: 6 x 7
+##     EV1     EV2     EV3     EV4     EV5      EV6 metric       
+##   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;        
+## 1 0.834 -0.0907 -0.412   0.0430  0.0206 -0.351   academic     
+## 2 0.795 -0.0964 -0.477  -0.0416  0.181   0.311   employer     
+## 3 0.517  0.771   0.0480  0.331  -0.158   0.0372  ratio        
+## 4 0.731 -0.352   0.239  -0.0278 -0.528   0.0685  citations    
+## 5 0.631 -0.233   0.521   0.392   0.352  -0.00783 intl_faculty 
+## 6 0.603  0.262   0.324  -0.665   0.140  -0.0312  intl_students</code></pre>
+<pre class="r"><code>c_eigen %&gt;%
+  tidy(.matrix = &quot;coord&quot;)</code></pre>
+<pre><code>## # A tibble: 6 x 4
+##   .name .values .inertia .prop_var
+##   &lt;fct&gt;   &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
+## 1 EV1     2.89     2.89     0.482 
+## 2 EV2     0.858    0.858    0.143 
+## 3 EV3     0.833    0.833    0.139 
+## 4 EV4     0.709    0.709    0.118 
+## 5 EV5     0.480    0.480    0.0799
+## 6 EV6     0.227    0.227    0.0379</code></pre>
+<p>Based on the third principal coordinates, the reputational rankings are aligned, as we knew already from the correlation matrix and heatmap. What’s a bit more interesting is that this component seems to separate these two rankings from those having to do with faculty citation rates and the international compositions of the faculty and student body. Based on the decomposition of inertia, this third principal coordinate is nearly as important as the second! It therefore makes sense to plot the two together:</p>
+<pre class="r"><code>c_eigen %&gt;%
+  ggbiplot(aes(x = 2, y = 3)) +
+  theme_minimal() +
+  geom_unit_circle() +
+  geom_u_vector() +
+  geom_u_text_radiate(aes(label = metric)) +
+  scale_x_continuous(expand = expand_scale(add = .4)) +
+  scale_y_continuous(expand = expand_scale(add = .4)) +
+  ggtitle(&quot;MDS of Kendall correlations between university rankings&quot;,
+          &quot;Second and third principal coordinates&quot;)</code></pre>
+<p><img src="/post/2019-08-16-rank-correlations_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>The primary antitheses of the reputational rankings, after removing the first principal coordinate, are the two rankings based on international composition—and this axis is largely independent of the axis apparently distinguishing research- from teaching-oriented institutions. From my own limited knowledge, i’d hazard a guess that this reflects two tiers of international representation among students and faculty, one expressed by the most prestigious institutions that recruit highly qualified applicants from all over the world, and the other expressed by institutions that are not especially prestigious but are located in communities or regions with high percentages of international residents.</p>
+<p>This is of course no more than idle speculation on my part! But a visualization scheme that encourages hypothesis generation is worth having on hand.</p>
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>That is to say, if the variables don’t have meaningful zero values and/or commensurate scales, then they should be centered to zero mean and/or scaled to unit variance.<a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn2"><p>This leaves us with only 38 universities, so my inferences must be taken with extreme caution!<a href="#fnref2" class="footnote-back">↩</a></p></li>
+</ol>
+</div>
+</description>
+      <content:encoded>
+
+
+<p>A fundamental idea in biplot methodology is the <em>conference of inertia</em>, a phrase i picked up from <a href="https://stats.stackexchange.com/a/141755/68743">an SO answer by ttnphns</a> and quickly <a href="https://github.com/corybrunson/ordr/blob/master/R/ord-conference.r">incorporated into ordr</a>. The basic idea arises from the central properties of a biplot, illustrated here for principal components analysis: A case–variable data matrix <span class="math inline">\(X\in\mathbb{R}^{n\times m}\)</span> of ratio variables<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> is singular-value decomposed as <span class="math inline">\(X=UDV^\top\)</span>, for example the <code>mtcars</code> data set:</p>
+<pre class="r"><code>x &lt;- scale(mtcars, center = TRUE, scale = TRUE)
+s &lt;- svd(x)
+r &lt;- length(s$d)</code></pre>
+<p>Under this convention, <span class="math inline">\(U\in\mathbb{R}^{n\times r}\)</span> and <span class="math inline">\(V\in\mathbb{R}^{m\times r}\)</span> arise from eigendecompositions of <span class="math inline">\(XX^\top\)</span> and of <span class="math inline">\(X^\top X\)</span>, respectively, and <span class="math inline">\(D\in\mathbb{R}^{r\times r}\)</span> is the diagonal matrix of the square roots of their (common) eigenvalues. The matrix factors may be biplotted in three conventional ways:</p>
+<ul>
+<li>with <em>principal</em> case coordinates <span class="math inline">\(UD\)</span> and <em>standardized</em> variable coordinates <span class="math inline">\(V\)</span>;</li>
+<li>with standardized case coordinates <span class="math inline">\(U\)</span> and principal variable coordinates <span class="math inline">\(VD\)</span>;</li>
+<li>with <em>symmetric</em> case and variable coordinates <span class="math inline">\(UD^{1/2}\)</span> and <span class="math inline">\(VD^{1/2}\)</span>.</li>
+</ul>
+<p>Because both sets of eigenvectors <span class="math inline">\(U=\left[\,u_1\,\cdots\,u_r\,\right]\)</span> and <span class="math inline">\(V=\left[\,v_1\,\cdots\,v_r\,\right]\)</span> are orthonormal, <span class="math inline">\(U^\top U=I_r=V^\top V\)</span> and the total inertia (variance) in each matrix is <span class="math inline">\(\sum_{j=1}^{r}{{v_j}^2}=r=\sum_{j=1}^{r}{{v_j}^2}\)</span>. Meanwhile, <span class="math inline">\(D\)</span> contains all of the inertia of <span class="math inline">\(X\)</span>:</p>
+<pre class="r"><code># inertia of the (scaled) data
+sum(x^2)</code></pre>
+<pre><code>## [1] 341</code></pre>
+<pre class="r"><code># inertia of the case and variable factors
+sum(s$u^2)</code></pre>
+<pre><code>## [1] 11</code></pre>
+<pre class="r"><code>sum(s$v^2)</code></pre>
+<pre><code>## [1] 11</code></pre>
+<pre class="r"><code># inertia of the diagonal factor
+sum(s$d^2)</code></pre>
+<pre><code>## [1] 341</code></pre>
+<p>This inertia can then be <em>conferred</em> unto the standardized case or variable coordinates, transforming one or the other into principal coordinates (the first two options above) or both halfway there (the symmetric option). Each of these options confers the inertia in such a way that the sums of the exponents of <span class="math inline">\(D\)</span> in the transformed sets of case (<span class="math inline">\(F=UD^p\)</span>) and variable (<span class="math inline">\(G=VD^q\)</span>) coordinates is <span class="math inline">\(p+q=1\)</span>, which ensures the <em>inner product property</em> <span class="math inline">\(FG^\top=X\)</span> between them. This recovers any entry <span class="math inline">\(x_{ij}\)</span> of <span class="math inline">\(X\)</span> as the inner product <span class="math inline">\(f_i\cdot g_i\)</span> of its case and variable coordinates <span class="math inline">\(f_i=[\,f_{i,1}\,\cdots\,f_{i,r}\,]\)</span> and <span class="math inline">\(g_i=[\,g_{i,1}\,\cdots\,g_{i,r}\,]\)</span>.</p>
+<p>By conferring the inertia entirely to the cases or to the variables, we preserve (or best approximate) the geometric configurations of the cases or of the variables. In PCA, the geometry of the cases is usually construed as the distances between them. Here their pairwise distances <span class="math inline">\(\sqrt{(f_{j,1}-f_{i,1})^2+(f_{j,2}-f_{i,2})^2}\)</span> in the first two PCA dimensions are plotted against their “true” distances <span class="math inline">\(\left(\sum_{k=1}^{m}{(x_{j,k}-x_{i,k})^2}\right)^{1/2}\)</span> in the variable space:</p>
+<pre class="r"><code># distances between cases
+x.dist &lt;- dist(x)
+# distances between cases (principal coordinates)
+s.dist &lt;- dist(s$u[, 1:2] %*% diag(s$d[1:2]))
+# scatterplot
+plot(
+  x = as.vector(x.dist), y = as.vector(s.dist),
+  asp = 1, pch = 19, cex = .5,
+  xlab = &quot;Case distances along variable coordinates&quot;,
+  ylab = &quot;Case distances in two principal coordinates&quot;
+)</code></pre>
+<p><img src="/post/2019-08-16-rank-correlations_files/figure-html/case%20geometry-1.png" width="528" /></p>
+<p>Meanwhile, the geometry of the variables is usually understood through their covariances or correlations. Writing <span class="math inline">\(X=[\,y_1\,\cdots\,y_m\,]\)</span> as an array of column variables, the covariance between <span class="math inline">\(y_i\)</span> and <span class="math inline">\(y_j\)</span> is proportional to their inner product <span class="math display">\[\textstyle \operatorname{cov}(y_i,y_j)=\frac{1}{n}y_i\cdot y_j=\frac{1}{n}\lVert y_i\rVert\lVert y_j\rVert\cos\theta_{ij}\text,\]</span> so that the cosine of the angle <span class="math inline">\(\theta_{ij}\)</span> between them equals their correlation:
+<span class="math display">\[\cos\theta_{ij}=\frac{\operatorname{cov}(y_i,y_j)}{\sqrt{\operatorname{cov}(y_i,y_i)\operatorname{cov}(y_j,y_j)}/n}=\frac{\operatorname{cov}(y_i,y_j)}{\sigma_i\sigma_j}=r_{ij}\]</span>
+Here the cosines <span class="math inline">\(\frac{g_i}{\lVert g_i\rVert}\cdot\frac{g_j}{\lVert g_j\rVert}\)</span> between the variable vectors in the first two PCA dimensions are plotted against their correlations <span class="math inline">\(r_{ij}\)</span> across the original cases:</p>
+<pre class="r"><code># correlations between variables
+x.cor &lt;- cor(x)
+# magnitudes of variable vectors
+s.len &lt;- apply(s$v[, 1:2] %*% diag(s$d[1:2]), 1, norm, &quot;2&quot;)
+# cosines between variables (principal coordinates)
+s.cor &lt;- (s$v[, 1:2] / s.len) %*% diag(s$d[1:2]^2) %*% t(s$v[, 1:2] / s.len)
+# scatterplot
+plot(
+  x = as.vector(x.cor[lower.tri(x.cor)]),
+  y = as.vector(s.cor[lower.tri(s.cor)]),
+  asp = 1, pch = 19, cex = .5,
+  xlab = &quot;Variable correlations among cases&quot;,
+  ylab = &quot;Cosines between variable vectors in two principal coordinates&quot;
+)</code></pre>
+<p><img src="/post/2019-08-16-rank-correlations_files/figure-html/variable%20geometry-1.png" width="528" /></p>
+<div id="multidimensional-scaling-of-variables" class="section level2">
+<h2>multidimensional scaling of variables</h2>
+<p>The faithful approximation of inter-case distances by principal coordinates is the idea behind <a href="https://en.wikipedia.org/wiki/Multidimensional_scaling">(classical)</a> <em>multidimensional scaling</em> (MDS), which can be applied to a data set of distances <span class="math inline">\(\delta_{ij},\ 1\leq i,j\leq n\)</span> in the absence of coordinates. This technique is based on the eigendecomposition of a doubly-centered matrix of squared distances, which produces matrix <span class="math inline">\(U\Lambda^{1/2}\)</span> whose first <span class="math inline">\(r\)</span> coordinates—for any <span class="math inline">\(r\leq n\)</span>—recover a best approximation of the inter-case distances in terms of the sum of squared errors, i.e. the variance of <span class="math inline">\((U\Lambda^{1/2})(U\Lambda^{1/2})^\top-\Delta=U\Lambda U^\top-\Delta\)</span>, where <span class="math inline">\(\Delta=(\delta_{ij})\in\mathbb{R}^{n\times n}\)</span>. In practice, the goal is usually to position points representing the <span class="math inline">\(n\)</span> cases in a 2-dimensional scatterplot so that their distances <span class="math inline">\(\sqrt{(x_j-x_i)^2+(y_j-y_i)^2}\)</span> approximate their original distances <span class="math inline">\(\delta_{ij}\)</span>, as in this example using road distances between U.S. cities to approximate their geographic arrangement:</p>
+<pre class="r"><code>d &lt;- as.matrix(UScitiesD)
+cent &lt;- diag(1, nrow(d)) - matrix(1/nrow(d), nrow(d), nrow(d))
+d.cent &lt;- -.5 * cent %*% (d^2) %*% cent
+d.mds &lt;- svd(d.cent)
+d.coord &lt;- d.mds$u[, 1:2] %*% diag(sqrt(d.mds$d[1:2]))
+plot(d.coord, pch = NA, asp = 1, xlab = &quot;&quot;, ylab = &quot;&quot;)
+text(d.coord, labels = rownames(d))</code></pre>
+<p><img src="/post/2019-08-16-rank-correlations_files/figure-html/multidimensional%20scaling-1.png" width="816" /></p>
+<p>The faithful approximation of inter-variable covariances by the inner products of their principal coordinate vectors suggests a complementary technique that i haven’t found explicitly discussed in my own background reading. Suppose we have data that consist not of distances between cases but of covariances <span class="math inline">\(\operatorname{cov}(y_i,y_j),\ 1\leq i,j\leq m\)</span> between variables. Again the data are coordinate-free, so PCA cannot be applied. Were the data to have derived from a <em>centered</em> case–variable matrix <span class="math inline">\(X\)</span>, then the covariance matrix <span class="math inline">\(C=(\operatorname{cov}(y_i,y_j))\)</span> would have been obtained as <span class="math inline">\(C=\frac{1}{n}X^\top X\)</span>, which is (up to scalar) the matrix whose eigenvectors would be given by <span class="math inline">\(V\)</span> in the SVD <span class="math inline">\(X=UDV^\top\)</span>. Therefore, we can fabricate coordinates for the <span class="math inline">\(m\)</span> variables that approximate what we know of their geometry—in this case, thinking of the variables as unknown vectors, whose magnitudes and pairwise angles are encoded in <span class="math inline">\(C\)</span>—via an eigendecomposition <span class="math inline">\(C=V\Lambda V^\top\)</span>: Take <span class="math inline">\(Y=V\Lambda^{1/2}\in\mathbb{R}^{m\times r}\)</span>, so that <span class="math inline">\(Y^\top Y\approx C\)</span>.</p>
+<p>I’ll validate this line of reasoning by taking the <code>mtcars</code> data set for a spin:</p>
+<pre class="r"><code># covariances and standard deviations
+c &lt;- cov(mtcars)
+s &lt;- diag(sqrt(diag(c)))
+# centered data
+x &lt;- as.matrix(scale(mtcars, center = TRUE, scale = FALSE))
+# eigendecomposition of covariance matrix
+c.eigen &lt;- eigen(c)
+# artificial coordinates
+c.coord &lt;- c.eigen$vectors %*% diag(sqrt(c.eigen$values))
+# validate covariance recovery (up to sign)
+all.equal(
+  as.vector(c.coord %*% t(c.coord)),
+  as.vector(c),
+  tolerance = 1e-12
+)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<p>Thus, whereas <em>MDS of cases</em> is used to represent distances, <em>MDS of variables</em> can be used to represent covariances.
+A use case for this technique is a situation in which covariance data exist without variable values. This may of course be the case because original data has become unavailable.</p>
+<p>A more interesting setting that gives rise to this situation is the analysis of multiple rankings of the same set of objects in terms of their <em>concordance</em>. Rankings’ concordance is often measured using rank correlations such as Kendall’s <span class="math inline">\(\tau\)</span>, which may be <em>general correlation coefficients</em> in <a href="https://en.wikipedia.org/wiki/Rank_correlation#General_correlation_coefficient">the sense proposed by Kendall</a> but are not associated with an underlying (Euclidean) geometry. Nevertheless, we can use MDS to represent these rankings as unit vectors in Euclidean space whose pairwise cosines approximate their rank correlations!</p>
+</div>
+<div id="example-rankings-of-universities" class="section level2">
+<h2>example: rankings of universities</h2>
+<p>A real-world example is provided by the <a href="https://www.topuniversities.com/qs-world-university-rankings/methodology">Quacquarelli Symonds Top University Rankings</a>, which include rankings of hundreds of world universities on six “metrics”: academic reputation, employer reputation, faculty–student ratio, citations per faculty, international faculty ratio, and international student ratio. QS weight these rankings differently in their overall assessment, but our analysis will compare the rankings to each other, so these weights are irrelevant. I restricted the data from the year 2020 to universities in the United States for which integer rankings (i.e. not “400+” placeholders) were available in all four years:<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a></p>
+<pre class="r"><code>qswurus20 &lt;- readRDS(here::here(&quot;sandbox/qswurus20.rds&quot;))
+head(qswurus20)</code></pre>
+<pre><code>##   year                                  institution size focus res age
+## 1 2020  MASSACHUSETTS INSTITUTE OF TECHNOLOGY (MIT)    M    CO  VH   5
+## 2 2020                          STANFORD UNIVERSITY    L    FC  VH   5
+## 3 2020                           HARVARD UNIVERSITY    L    FC  VH   5
+## 4 2020 CALIFORNIA INSTITUTE OF TECHNOLOGY (CALTECH)    S    CO  VH   5
+## 5 2020                        UNIVERSITY OF CHICAGO    L    FC  VH   5
+## 6 2020                         PRINCETON UNIVERSITY    M    CO  VH   5
+##   status rk_academic rk_employer rk_ratio rk_citations rk_intl_faculty
+## 1      B           5           4       15            7              43
+## 2      B           4           5       12           13              62
+## 3      B           1           1       40            8             186
+## 4      B          23          74        4            4              72
+## 5      B          13          37       54           60             249
+## 6      B          10          19      192            3             272
+##   rk_intl_students
+## 1               87
+## 2              196
+## 3              221
+## 4              121
+## 5              143
+## 6              197</code></pre>
+<p>Since the integer rankings were subsetted from the full international data set, they are not contiguous (i.e. some integers between rankings never appear). To resolve this, i’ll recalibrate the rankings by matching each vector of ranks to the vector of its sorted unique values:</p>
+<pre class="r"><code>library(dplyr)
+qswurus20 %&gt;%
+  select(institution, starts_with(&quot;rk_&quot;)) %&gt;%
+  mutate_at(
+    vars(starts_with(&quot;rk_&quot;)),
+    ~ match(., sort(unique(as.numeric(.))))
+  ) %&gt;%
+  print() -&gt; qswurus20</code></pre>
+<pre><code>## # A tibble: 38 x 7
+##    institution rk_academic rk_employer rk_ratio rk_citations
+##    &lt;chr&gt;             &lt;int&gt;       &lt;int&gt;    &lt;int&gt;        &lt;int&gt;
+##  1 MASSACHUSE…           3           2        6            3
+##  2 STANFORD U…           2           3        4            5
+##  3 HARVARD UN…           1           1       11            4
+##  4 CALIFORNIA…          12          14        1            2
+##  5 UNIVERSITY…           9          11       13           12
+##  6 PRINCETON …           7           7       18            1
+##  7 CORNELL UN…          11          13       22            7
+##  8 UNIVERSITY…          14          12        8           17
+##  9 YALE UNIVE…           6           4        2           24
+## 10 COLUMBIA U…           8           8        7           25
+## # … with 28 more rows, and 2 more variables: rk_intl_faculty &lt;int&gt;,
+## #   rk_intl_students &lt;int&gt;</code></pre>
+<p>This subset of universities is now contiguously ranked along the six dimensions described above. The Kendall correlation <span class="math inline">\(\tau_{ij}\)</span> between two rankings measures their concordance. To calculate it, every pair of universities contributes either <span class="math inline">\(+1\)</span> or <span class="math inline">\(-1\)</span> according as the rankings <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> place that pair in the same order, and the sum is scaled down by the number of pairs <span class="math inline">\({n\choose 2}\)</span> so that the result lies between <span class="math inline">\(-1\)</span> and <span class="math inline">\(1\)</span>. We interpret <span class="math inline">\(\tau_{ij}=1\)</span> as perfect concordance (the rankings are equivalent), <span class="math inline">\(\tau_{ij}=-1\)</span> as perfect discordance (the rankings are reversed), and <span class="math inline">\(\tau_{ij}=0\)</span> as independence (the rankings are unrelated).</p>
+<p>The QS rankings are not variations on a theme, like different measures of guideline adherence or positive affect, but they do all seem potentially sensitive to a university’s resources, including funding and prestige. I intuit that the two reputational metrics should be positively correlated, and that the two international ratios should be as well. I also wonder if the faculty–student ratio might be anti-correlated with the number of citations per faculty, separating more research-focused institutions from more teaching-focused ones.</p>
+<div id="correlation-heatmap" class="section level3">
+<h3>correlation heatmap</h3>
+<p>A common way to visualize correlation matrices is the heatmap, so i’ll use that technique first (see below). While the rankings by academic and employer reputations are highly concordant, those by international faculty and student ratios are less so; and, the faculty–student ratio and faculty citation rankings have the weakest concordance of all, but are nevertheless positively correlated.</p>
+<pre class="r"><code>c &lt;- cor(select(qswurus20, starts_with(&quot;rk_&quot;)), method = &quot;kendall&quot;)
+corrplot::corrplot(c)</code></pre>
+<p><img src="/post/2019-08-16-rank-correlations_files/figure-html/Kendall%20rank%20correlations-1.png" width="672" /></p>
+<p>This visualization is useful, but it’s very busy: To compare any pair of rankings, i have to find the cell in the grid corresponding to that pair and refer back to the color scale to assess its meaning. I can’t rely on the nearby cells for context, because they may be stronger or weaker than average and skew my interpretation. For example, the visibly weak associations between the faculty–student ratio and other rankings (the third row or column) happen to be arranged so that the slightly stronger among them, with the two reputational variables, are sandwiched between the <em>even stronger</em> associations between the two reputational rankings and between them and the faculty citations ranking; whereas its weaker associations are sandwiched between more typical, but still comparatively stronger, associations. A different ordering of the variables might “obscure” this pattern and “reveal” others.</p>
+<p>The plot is also strictly pairwise: Every correlation between two rankings occupies its own cell—two, in fact, making almost half of the plot duplicative. This means that a subset analysis of, say, three rankings requires focusing on three cells at the corners of a right triangle while ignoring all the surrounding cells. This is not an easy visual task. It would be straightforward to create a new plot for any subset, but then the larger context of the remaining rankings would be lost.</p>
+</div>
+<div id="correlation-biplot" class="section level3">
+<h3>correlation biplot</h3>
+<p>MDS of variables offers a natural alternative visualization: the biplot. As with MDS of cases, the point isn’t to overlay the case scores and variable loadings from a singular value decomposition, but to use the scores or loadings alone to endow the cases or variables with a Euclidean geometry they didn’t yet have. To that end, i’ll plot the variables as vectors with tails at the origin and heads at their fabricated coordinates <span class="math inline">\(Y=V\Lambda^{1/2}\)</span>:</p>
+<pre class="r"><code>c.eigen &lt;- eigen(c)
+c.coord &lt;- c.eigen$vectors %*% diag(sqrt(c.eigen$values))
+plot(c.coord, pch = NA, asp = 1, xlab = &quot;&quot;, ylab = &quot;&quot;)
+arrows(0, 0, c.coord[, 1], c.coord[, 2])
+text(c.coord, labels = rownames(c))</code></pre>
+<p><img src="/post/2019-08-16-rank-correlations_files/figure-html/multidimensional%20scaling%20of%20variables-1.png" width="672" /></p>
+<p>A more elegant ggplot2-style graphic can be rendered with <a href="https://github.com/corybrunson/ordr">ordr</a>, with a unit circle included for reference:</p>
+<pre class="r"><code>library(ordr)
+eigen_ord(c) %&gt;%
+  as_tbl_ord() %&gt;%
+  augment() %&gt;%
+  mutate_u(metric = stringr::str_remove(.name, &quot;rk_&quot;)) %&gt;%
+  confer_inertia(1) %&gt;%
+  negate_to_nonneg_orthant(&quot;u&quot;) -&gt;
+  c_eigen
+c_eigen %&gt;%
+  ggbiplot() +
+  theme_minimal() +
+  geom_unit_circle() +
+  geom_u_vector() +
+  geom_u_text_radiate(aes(label = metric)) +
+  scale_x_continuous(expand = expand_scale(add = .4)) +
+  scale_y_continuous(expand = expand_scale(add = .2)) +
+  ggtitle(&quot;MDS of Kendall correlations between university rankings&quot;)</code></pre>
+<p><img src="/post/2019-08-16-rank-correlations_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p>With respect to the pairwise correlations, the biplot is significantly less precise: Though the vectors all have unit length in <span class="math inline">\(\mathbb{R}^r\)</span> (<span class="math inline">\(r\leq m=6\)</span>), their projections onto the first two principal coordinates are much shorter, indicating that much of the geometric configuration requires additional dimensions to represent. Indeed, these coordinates capture only <span class="math inline">\(48.2\%+14.3\%=62.5\%\)</span> of the inertia in the full representation. This means that the angles between the vectors must be interpreted with caution: For example, it looks like the academic and employer reputation rankings are extremely correlated, but the apparent alignment of the vectors could be an artifact of the projection, when in fact they “rise” and “fall” in opposite directions along the remaining dimensions. The correlation heatmap leaves no such ambiguity.</p>
+<p>However, the biplot far surpasses the heatmap at parsimony: Each variable is represented by a single vector, and the angle cosines between the variable vectors roughly approximate their correlations. For instance, the rankings based on international student and faculty ratios have correlation around <span class="math inline">\(\cos(\frac{\pi}{4})=\frac{1}{\sqrt{2}}\)</span>, corresponding to either explaining half the “variance” in the other—not technically meaningful in the ranking context but a useful conceptual anchor. Meanwhile, the faculty–student ratio ranking is nearly independent of the faculty citation ranking, contrary to my intuition that these rankings would reflect a <em>reverse</em> association between research- and teaching-oriented institutions. The convenience of recognizing correlations as cosines may be worth the significant risk of error, especially since that error (the residual <span class="math inline">\(37.5\%\)</span> of inertia) can be exactly quantified.</p>
+<p>Moreover, the principal coordinates of the variable vectors indicate their loadings onto the first and second principal moments of inertia—the two dimensions that capture the most variation in the data. For example, the first principal coordinate is most aligned with the two reputational rankings, suggesting that a general prestige ranking is the strongest overall component of the several specific rankings. In contrast, the faculty–student ratio and faculty citation rankings load most strongly onto the second principal coordinate, suggesting that the divide between research- and teaching-focused institutions may yet be important to understanding how universities compare along these different metrics. These observations, provisional though they are, would be difficult to discern from the heatmap. More importantly, unlike the secondary patterns visible in the heatmap, these are in no sense artifacts of the layout but arise directly from the (correlational) data.</p>
+<p>This last point means that observations made from a biplot can be validated from the MDS coordinates. In particular, we can examine the variables’ loadings onto the third principal coordinate, and we can check whether the reputational rankings are aligned or misaligned along it.</p>
+<pre class="r"><code>c_eigen %&gt;%
+  tidy(.matrix = &quot;u&quot;) %&gt;%
+  select(-.name, -.matrix)</code></pre>
+<pre><code>## # A tibble: 6 x 7
+##     EV1     EV2     EV3     EV4     EV5      EV6 metric       
+##   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;        
+## 1 0.834 -0.0907 -0.412   0.0430  0.0206 -0.351   academic     
+## 2 0.795 -0.0964 -0.477  -0.0416  0.181   0.311   employer     
+## 3 0.517  0.771   0.0480  0.331  -0.158   0.0372  ratio        
+## 4 0.731 -0.352   0.239  -0.0278 -0.528   0.0685  citations    
+## 5 0.631 -0.233   0.521   0.392   0.352  -0.00783 intl_faculty 
+## 6 0.603  0.262   0.324  -0.665   0.140  -0.0312  intl_students</code></pre>
+<pre class="r"><code>c_eigen %&gt;%
+  tidy(.matrix = &quot;coord&quot;)</code></pre>
+<pre><code>## # A tibble: 6 x 4
+##   .name .values .inertia .prop_var
+##   &lt;fct&gt;   &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
+## 1 EV1     2.89     2.89     0.482 
+## 2 EV2     0.858    0.858    0.143 
+## 3 EV3     0.833    0.833    0.139 
+## 4 EV4     0.709    0.709    0.118 
+## 5 EV5     0.480    0.480    0.0799
+## 6 EV6     0.227    0.227    0.0379</code></pre>
+<p>Based on the third principal coordinates, the reputational rankings are aligned, as we knew already from the correlation matrix and heatmap. What’s a bit more interesting is that this component seems to separate these two rankings from those having to do with faculty citation rates and the international compositions of the faculty and student body. Based on the decomposition of inertia, this third principal coordinate is nearly as important as the second! It therefore makes sense to plot the two together:</p>
+<pre class="r"><code>c_eigen %&gt;%
+  ggbiplot(aes(x = 2, y = 3)) +
+  theme_minimal() +
+  geom_unit_circle() +
+  geom_u_vector() +
+  geom_u_text_radiate(aes(label = metric)) +
+  scale_x_continuous(expand = expand_scale(add = .4)) +
+  scale_y_continuous(expand = expand_scale(add = .4)) +
+  ggtitle(&quot;MDS of Kendall correlations between university rankings&quot;,
+          &quot;Second and third principal coordinates&quot;)</code></pre>
+<p><img src="/post/2019-08-16-rank-correlations_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>The primary antitheses of the reputational rankings, after removing the first principal coordinate, are the two rankings based on international composition—and this axis is largely independent of the axis apparently distinguishing research- from teaching-oriented institutions. From my own limited knowledge, i’d hazard a guess that this reflects two tiers of international representation among students and faculty, one expressed by the most prestigious institutions that recruit highly qualified applicants from all over the world, and the other expressed by institutions that are not especially prestigious but are located in communities or regions with high percentages of international residents.</p>
+<p>This is of course no more than idle speculation on my part! But a visualization scheme that encourages hypothesis generation is worth having on hand.</p>
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>That is to say, if the variables don’t have meaningful zero values and/or commensurate scales, then they should be centered to zero mean and/or scaled to unit variance.<a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn2"><p>This leaves us with only 38 universities, so my inferences must be taken with extreme caution!<a href="#fnref2" class="footnote-back">↩</a></p></li>
+</ol>
+</div>
+</content:encoded>
+    </item>
+    
+    <item>
       <title>I AM THE DISCRIMINANT</title>
       <link>/2019/08/02/lda/</link>
-      <pubDate>Fri, 02 Aug 2019 00:00:00 +0000</pubDate>
+      <pubDate>2019 Aug 02 (Fri), 00:00:00 +0000</pubDate>
       
       <guid>/2019/08/02/lda/</guid>
-      <description>For over a year (intermittently, not cumulatively) i’ve been developing an R package, ordr, for incorporating ordination techniques into a tidyverse workflow. (Credit where it’s due: Emily Paul, a summer intern from Avon High School, helped extend the package functionality and has since used it in other projects and provided critical feedback on its design.) This week, i finally deployed a pkgdown website and tweeted a meek solicitation for feedback.</description>
+      <description>
+
+
+<p>For over a year (intermittently, not cumulatively) i’ve been developing an R package, <a href="https://github.com/corybrunson/ordr">ordr</a>, for incorporating ordination techniques into a tidyverse workflow. (Credit where it’s due: Emily Paul, a summer intern from Avon High School, helped extend the package functionality and has since used it in other projects and provided critical feedback on its design.) This week, i finally deployed <a href="https://corybrunson.github.io/ordr/">a pkgdown website</a> and tweeted a meek solicitation for feedback.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> Interestingly, the one component that held me back, that i put off time and time again before finally grinding out a solution over the past few weeks, was the component that originally complemented PCA in <a href="https://github.com/vqv/ggbiplot">Vince Vu’s original and inspirational ggbiplot package</a>: Accessor methods for the MASS package implementation of linear discriminant analysis.</p>
+<p>A big part of the reason for this procrastination was that <a href="https://github.com/cran/MASS/blob/master/R/lda.R">the source code of <code>MASS::lda()</code></a> looks nothing like the tidy definition of LDA found in textbooks. (I have on my shelf my mom’s copies of <a href="https://books.google.com/books/about/Multivariate_Analysis.html?id=HHNnBDaNsuUC">Tatsuoka’s <em>Multivariate Analysis</em></a> and of <a href="https://books.google.com/books/about/Psychometric_theory.html?id=WE59AAAAMAAJ">Nunnally’s <em>Psychometric Theory</em></a>, but there are several similar introductions online, for example <a href="https://sebastianraschka.com/Articles/2014_python_lda.html">Raschka’s</a>.) In the standard presentation, LDA boils down to an eigendecomposition of the quotient <span class="math inline">\({C_W}^{-1}C_B\)</span> of the between- by the within-group covariance matrices. (This is equivalent, up to a scale factor, to the eigendecomposition of the same quotient of the corresponding scatter matrices <span class="math inline">\(S_\bullet=nC_\bullet\)</span>.<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>)
+But rather than build up to a single eigendecomposition, <code>MASS::lda()</code> relies on sequential compositions of a scaling matrix with eigenvector and other matrices that are difficult to follow by reading the (minimally documented) code.</p>
+<p>Meanwhile, several discussions of LDA on StackOverflow provide useful insights into the output of <code>MASS::lda()</code>, but the more prolific respondents tend not to use R, and the numerical examples derive from implementations in other languages.
+The MASS book, <em>Modern Applied Statistics with S</em> by Venables and Ripley (<a href="https://tinyurl.com/yyhpyu2d">PDF</a>), details their mathematical formula in section 12.1 but does not discuss their implementation.
+So, while it’s still fresh in my mind, i want to offer what i hope will be an evergreen dissection of <code>MASS::lda()</code>. In a future post i’ll survey different ways an LDA might be summarized in a biplot and how i tweaked Venables and Ripley’s function to make these options available in ordr.</p>
+<div id="tldr" class="section level3">
+<h3>tl;dr</h3>
+<p><code>MASS::lda()</code> gradually and conditionally composes a variable transformation (a matrix that acts on the columns of the data matrix) to simplify the covariance quotient, then uses singular value decomposition to obtain its eigendecomposition. Rather than returning both the variable transformation and the quotient eigendecomposition, it returns their product, a matrix of discriminant coefficients that transforms the data and/or group centroids to their discriminant coordinates (scores). Consequently, the variable loadings cannot be recovered from the output.</p>
+</div>
+<div id="class-methods" class="section level3">
+<h3>class methods</h3>
+<p>For those (like me until recently) unfamiliar with <a href="http://adv-r.had.co.nz/S3.html">the S3 object system</a>, <a href="https://github.com/cran/MASS/blob/master/R/lda.R">the <code>MASS::lda()</code> source code</a> may look strange. Essentially, and henceforth assuming the MASS package has been attached so that <code>MASS::</code> is unnecessary, the generic function <code>lda()</code> performs <em>method dispatch</em> by checking the class(es) of its primary input <code>x</code>, then sending <code>x</code> (and any other inputs) to one of several class-specific methods <code>lda.&lt;class&gt;()</code>, or else to <code>lda.default()</code>. These methods are not exported, so they aren’t visible to the user.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> In the case of <code>lda()</code> every class-specific method transforms its input to a standard form (a data table <code>x</code> and a vector of group assignments <code>grouping</code>, plus any of several other parameters) and passes these to <code>lda.default()</code>. This default method is the workhorse of the implementation, so it’s the only chunk of source code i’ll get into here.</p>
+</div>
+<div id="example-inputs-and-parameter-settings" class="section level3">
+<h3>example inputs and parameter settings</h3>
+<p>The code will be executed in sequence, punctuated by printouts and plots of key objects defined along the way. This requires assigning illustrative values to the function arguments. I’ll take as my example the famous diabetes data originally analyzed by <a href="https://link.springer.com/article/10.1007/BF00423145">Reaven and Miller (1979)</a>, available from <a href="https://github.com/friendly/heplots">the heplots package</a>, which consists of a BMI-type measure and the results of four glucose and insulin tests for 145 patients, along with their diagnostic grouping as non-diabetic (“normal”), subclinically (“chemical”) diabetic, and overtly diabetic.<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a> For our purposes, the only other required parameter is <code>tol</code>, the tolerance at which small values encountered along the matrix algebra are interpreted as zero.</p>
+<pre class="r"><code>x &lt;- heplots::Diabetes[, 1:5]
+grouping &lt;- heplots::Diabetes[, 6]
+tol &lt;- 1e-04</code></pre>
+<pre class="r"><code>set.seed(2)
+s &lt;- sort(sample(nrow(x), 6))
+print(x[s, ])</code></pre>
+<pre><code>##     relwt glufast glutest instest sspg
+## 24   0.97      90     327     192  124
+## 27   1.20      98     365     145  158
+## 82   1.11      93     393     490  259
+## 102  1.13      92     476     433  226
+## 133  0.85     330    1520      13  303
+## 134  0.81     123     557     130  152</code></pre>
+<pre class="r"><code>print(grouping[s])</code></pre>
+<pre><code>## [1] Normal            Normal            Normal            Chemical_Diabetic
+## [5] Overt_Diabetic    Overt_Diabetic   
+## Levels: Normal Chemical_Diabetic Overt_Diabetic</code></pre>
+</div>
+<div id="data-parameters-and-summary-information" class="section level3">
+<h3>data parameters and summary information</h3>
+<p>The first several lines of <code>lda.default()</code> capture summary information about the data table <code>x</code> (and ensure that it is a matrix) and the group assignments <code>grouping</code>: <code>n</code> is the number of cases in <code>x</code>, <code>p</code> is the number of variables, <code>g</code> is <code>grouping</code> coerced to a factor-valued vector, <code>lev</code> is the vector of factor levels (groups), <code>counts</code> is a vector of the number of cases assigned to each group, <code>proportions</code> is a vector of their proportions of <code>n</code>, and <code>ng</code> is the number of groups.</p>
+<p>It will help to keep track of some mathematical notation for these concepts in parallel: Call the data matrix <span class="math inline">\(X\in\mathbb{R}^{n\times p}\)</span>, the column vector of group assignments <span class="math inline">\(g\in[q]^{n}\)</span>, and a diagonal matrix <span class="math inline">\(N\in\mathbb{N}^{q\times q}\)</span> of group counts <span class="math inline">\(n_1,\ldots,n_q\)</span>. Note that <code>lev</code> and <code>ng</code> correspond to <span class="math inline">\([q]\)</span> and <span class="math inline">\(q\)</span>, respectively. Additionally let <span class="math inline">\(G=(\delta_{g_i,k})\in\{0,1\}^{n\times q}\)</span> denote the 0,1-matrix with <span class="math inline">\(i,k\)</span>-th entry <span class="math inline">\(1\)</span> when case <span class="math inline">\(i\)</span> is assigned to group <span class="math inline">\(k\)</span>. (I’ll use the indices <span class="math inline">\(1\leq i\leq n\)</span> for the cases, <span class="math inline">\(1\leq j\leq p\)</span> for the variables, and <span class="math inline">\(1\leq k\leq q\)</span> for the groups.)</p>
+<pre class="r"><code>if(is.null(dim(x))) stop(&quot;&#39;x&#39; is not a matrix&quot;)
+x &lt;- as.matrix(x)
+if(any(!is.finite(x)))
+  stop(&quot;infinite, NA or NaN values in &#39;x&#39;&quot;)
+n &lt;- nrow(x)
+p &lt;- ncol(x)
+if(n != length(grouping))
+  stop(&quot;nrow(x) and length(grouping) are different&quot;)
+g &lt;- as.factor(grouping)
+lev &lt;- lev1 &lt;- levels(g)
+counts &lt;- as.vector(table(g))
+# excised handling of `prior`
+if(any(counts == 0L)) {
+  empty &lt;- lev[counts == 0L]
+  warning(sprintf(ngettext(length(empty),
+                           &quot;group %s is empty&quot;,
+                           &quot;groups %s are empty&quot;),
+                  paste(empty, collapse = &quot; &quot;)), domain = NA)
+  lev1 &lt;- lev[counts &gt; 0L]
+  g &lt;- factor(g, levels = lev1)
+  counts &lt;- as.vector(table(g))
+}
+proportions &lt;- counts/n
+ng &lt;- length(proportions)
+names(counts) &lt;- lev1 # `names(prior)` excised</code></pre>
+<p>The steps are straightforward, with the exception of the handling of prior probabilities (<code>prior</code>), which is beyond our scope and which i’ve excised from the code. (When not provided, <code>prior</code> takes the default value <code>proportions</code>, which are explicitly defined within <code>lda.default()</code> and will be substituted for <code>prior</code> below.) If <code>grouping</code> is a factor that is missing elements of any of its levels, then these elements are removed from the analysis with a warning. I’ll also skip the lines relevant only to cross-validation (<code>CV = TRUE</code>), which include a compatibility check here and a large conditional chunk later on.</p>
+<pre class="r"><code># group counts and proportions of the total:
+print(cbind(counts, proportions))</code></pre>
+<pre><code>##                   counts proportions
+## Normal                76   0.5241379
+## Chemical_Diabetic     36   0.2482759
+## Overt_Diabetic        33   0.2275862</code></pre>
+</div>
+<div id="variable-standardization-and-the-correlation-matrix" class="section level3">
+<h3>variable standardization and the correlation matrix</h3>
+<p>Next, we calculate the group centroids <span class="math inline">\(\overline{X}=N^{-1}G^\top X\in\mathbb{R}^{q\times p}\)</span> and the within-group covariance matrix <span class="math inline">\(C_W=\frac{1}{n}{X_0}^\top{X_0}\)</span>, where <span class="math inline">\({X_0}=X-G\overline{X}\)</span> consists of the differences between the cases (rows of <span class="math inline">\(X\)</span>) and their corresponding group centroids. <code>lda.default()</code> stores <span class="math inline">\(\overline{X}\)</span> as <code>group.means</code> and the square roots of the diagonal entries of <span class="math inline">\(C_W\)</span>—that is, the standard deviations—as <code>f1</code>.
+The conditional statement requires that at least some variances be nonzero, up to the tolerance threshold <code>tol</code>. Finally, <code>scaling</code> is initialized as a diagonal matrix <span class="math inline">\(S_0\)</span> of inverted variable standard deviations <span class="math inline">\(\frac{1}{\sigma_j}\)</span>.</p>
+<pre class="r"><code>## drop attributes to avoid e.g. matrix() methods
+group.means &lt;- tapply(c(x), list(rep(g, p), col(x)), mean)
+f1 &lt;- sqrt(diag(var(x - group.means[g,  ])))
+if(any(f1 &lt; tol)) {
+  const &lt;- format((1L:p)[f1 &lt; tol])
+  stop(sprintf(ngettext(length(const),
+                        &quot;variable %s appears to be constant within groups&quot;,
+                        &quot;variables %s appear to be constant within groups&quot;),
+               paste(const, collapse = &quot; &quot;)),
+       domain = NA)
+}
+# scale columns to unit variance before checking for collinearity
+scaling &lt;- diag(1/f1, , p)</code></pre>
+<p>I’ll refer to <span class="math inline">\({X_0}\)</span> as the “within-group centered data”. The group centroids are returned as the named member <code>means</code> of the ‘lda’-class object returned by <code>lda.default()</code>. The standard deviations of and correlations among (some of) the five variables are evident in their pairwise scatterplots, which here and forward fix the aspect ratio at 1:</p>
+<pre class="r"><code># group centroids
+print(group.means)</code></pre>
+<pre><code>##                           1         2         3        4        5
+## Normal            0.9372368  91.18421  349.9737 172.6447 114.0000
+## Chemical_Diabetic 1.0558333  99.30556  493.9444 288.0000 208.9722
+## Overt_Diabetic    0.9839394 217.66667 1043.7576 106.0000 318.8788</code></pre>
+<pre class="r"><code># within-group centered data
+pairs(x - group.means[g, ], asp = 1, pch = 19, cex = .5)</code></pre>
+<p><img src="/post/2019-08-02-lda_files/figure-html/unnamed-chunk-6-1.png" width="768" /></p>
+<pre class="r"><code># within-group standard deviations
+print(f1)</code></pre>
+<pre><code>##       relwt     glufast     glutest     instest        sspg 
+##   0.1195937  36.8753901 150.7536138 102.2913665  65.8125752</code></pre>
+<pre class="r"><code># inverses of within-group standard deviations
+scaling0 &lt;- scaling
+print(scaling0)</code></pre>
+<pre><code>##          [,1]       [,2]       [,3]        [,4]       [,5]
+## [1,] 8.361643 0.00000000 0.00000000 0.000000000 0.00000000
+## [2,] 0.000000 0.02711836 0.00000000 0.000000000 0.00000000
+## [3,] 0.000000 0.00000000 0.00663334 0.000000000 0.00000000
+## [4,] 0.000000 0.00000000 0.00000000 0.009775996 0.00000000
+## [5,] 0.000000 0.00000000 0.00000000 0.000000000 0.01519466</code></pre>
+<p>The object <code>scaling</code> will be redefined twice as the function proceeds, each time by multiplication on the right, concluding with the member named <code>scaling</code> of the ‘lda’ object. We’ll denote these redefinitions <span class="math inline">\(S_1\)</span> and <span class="math inline">\(S_2\)</span> and store the three definitions as <code>scaling0</code>, <code>scaling1</code>, and <code>scaling2</code> for unambiguous illustrations. These matrices act on the columns of <span class="math inline">\({X_0}\)</span>, which induces a two-sided action on <span class="math inline">\(C_W\)</span>: <span class="math inline">\(\frac{1}{n}({X_0}S)^\top({X_0}S)=S^\top C_WS\)</span>. The effect of <span class="math inline">\(S_0\)</span> is to standardize the variables, so that the covariance matrix of the transformed data <span class="math inline">\({X_0}S_0\)</span> is the within-group correlation matrix <span class="math inline">\(R_W\)</span> of <span class="math inline">\({X_0}\)</span>. The effect is also evident from a comparison of the pairwise scatterplots:</p>
+<pre class="r"><code># within-group correlation matrix
+print(cor(x - group.means[g, ]))</code></pre>
+<pre><code>##               relwt     glufast    glutest    instest      sspg
+## relwt    1.00000000 -0.09623213 -0.1607280  0.1070926 0.3926726
+## glufast -0.09623213  1.00000000  0.9264021 -0.2513436 0.3692349
+## glutest -0.16072796  0.92640213  1.0000000 -0.2494804 0.3633879
+## instest  0.10709258 -0.25134359 -0.2494804  1.0000000 0.2145095
+## sspg     0.39267262  0.36923495  0.3633879  0.2145095 1.0000000</code></pre>
+<pre class="r"><code># within-group covariance matrix after standardization
+print(cov((x - group.means[g, ]) %*% scaling))</code></pre>
+<pre><code>##             [,1]        [,2]       [,3]       [,4]      [,5]
+## [1,]  1.00000000 -0.09623213 -0.1607280  0.1070926 0.3926726
+## [2,] -0.09623213  1.00000000  0.9264021 -0.2513436 0.3692349
+## [3,] -0.16072796  0.92640213  1.0000000 -0.2494804 0.3633879
+## [4,]  0.10709258 -0.25134359 -0.2494804  1.0000000 0.2145095
+## [5,]  0.39267262  0.36923495  0.3633879  0.2145095 1.0000000</code></pre>
+<pre class="r"><code># within-group centered data after standardization
+pairs((x - group.means[g, ]) %*% scaling, asp = 1, pch = 19, cex = .5)</code></pre>
+<p><img src="/post/2019-08-02-lda_files/figure-html/unnamed-chunk-7-1.png" width="768" /></p>
+</div>
+<div id="variable-sphering-and-the-mahalanobis-distance" class="section level3">
+<h3>variable sphering and the Mahalanobis distance</h3>
+<p>The next step in the procedure is the signature transformation of LDA. Whereas <span class="math inline">\(S_0\)</span> removes the scales of the variables, leaving them each with unit variance but preserving their correlations, the role of <span class="math inline">\(S_1\)</span> is to additionally remove these correlations. Viewing the set of cases within each group as a cloud of <span class="math inline">\(n_k\)</span> points in <span class="math inline">\(\mathbb{R}^p\)</span>, <span class="math inline">\(S_0\)</span> stretches or compresses each cloud <em>along its coordinate axes</em>, while <span class="math inline">\(S_1\)</span> will stretch or compress it <em>along its principal components</em>. The resulting aggregate point cloud will have within-group covariance <span class="math inline">\(I_n\)</span> (the identity matrix), indicating unit variance and no correlation among its variables; according to these summary statistics, then, it is rotationally symmetric. Accordingly, the column action of <span class="math inline">\(S_1\)</span> is called a <em>sphering transformation</em>, while the distances among the transformed points are called their <em>Mahalanobis distances</em> after <a href="https://en.wikipedia.org/wiki/Prasanta_Chandra_Mahalanobis">their originator</a>. See <a href="https://stats.stackexchange.com/a/62147/68743">this SO answer by whuber</a> for a helpful illustration of the transformation. Its importance is illustrated in Chapter 11 of <a href="https://www.fbbva.es/microsite/multivariate-statistics/biplots.html">Greenacre’s <em>Biplots in Practice</em></a> (p. 114).</p>
+<p><span class="math inline">\(S_1\)</span> is calculated differently for different choices of <code>method</code> (see the documentation <code>?MASS::lda</code>). For simplicity, the code chunk below follows the <code>"mle"</code> method.
+As hinted in the previous paragraph, the process of obtaining a sphering transformation is closely related to principal components analysis. One can be calculated via eigendecomposition of the standardized within-group covariance matrix or, equivalently, via singular value decomposition of the standardized within-group centered data <span class="math inline">\(\hat{X}=X_0 S_0\)</span>.<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a> <code>lda.default()</code> performs SVD on <span class="math inline">\(\hat{X}\)</span>, scaled by <span class="math inline">\(\frac{1}{\sqrt{n}}\)</span> so that the scatter matrix is <span class="math inline">\(R_W\)</span>:</p>
+<pre class="r"><code>fac &lt;- 1/n # excise conditional case `method == &quot;moment&quot;`
+X &lt;- sqrt(fac) * (x - group.means[g,  ]) %*% scaling
+X.s &lt;- svd(X, nu = 0L)
+rank &lt;- sum(X.s$d &gt; tol)
+if(rank == 0L) stop(&quot;rank = 0: variables are numerically constant&quot;)
+if(rank &lt; p) warning(&quot;variables are collinear&quot;)
+scaling &lt;- scaling %*% X.s$v[, 1L:rank] %*% diag(1/X.s$d[1L:rank],,rank)</code></pre>
+<p>Taking the SVD to be <span class="math inline">\(\frac{1}{\sqrt{n}}\hat{X}=\hat{U}\hat{D}\hat{V}\)</span>, the sphering matrix is <span class="math inline">\(S_1=S_0\hat{V}{\hat{D}}^{-1}\)</span>.
+The alternative calculation is <span class="math inline">\(S_1=S_0\hat{V}{\hat{\Lambda}}^{-1/2}\)</span>, where <span class="math inline">\(\hat{C}={\hat{V}}^\top\hat{\Lambda}\hat{V}\)</span> is the eigendecomposition of the covariance matrix of <span class="math inline">\(\hat{X}\)</span> so that <span class="math inline">\(\hat{V}\)</span> is the same and <span class="math inline">\(\hat{\Lambda}={\hat{D}}^{1/2}\)</span>. (<span class="math inline">\({\hat{C}}^{-1/2}=\hat{V}{\hat{\Lambda}}^{-1/2}{\hat{V}}^\top\)</span> is called the symmetric square root of <span class="math inline">\(\hat{C}\)</span>.)
+Note that the signs of the columns are arbitrary, as in PCA. The difference in absolute values is due to <code>stats::cov()</code> treating <span class="math inline">\(\hat{X}\)</span> as a sample rather than a population, dividing the scatter matrix <span class="math inline">\(\hat{X}^\top \hat{X}\)</span> by <span class="math inline">\(\frac{1}{n-1}\)</span> rather than by <span class="math inline">\(\frac{1}{n}\)</span>.</p>
+<pre class="r"><code># standardized within-group centered data
+Xhat &lt;- (x - group.means[g,  ]) %*% scaling0
+# eigendecomposition of covariance
+E &lt;- eigen(cov(Xhat))
+# sphering matrix (alternative calculation)
+scaling0 %*% E$vectors %*% diag(1/sqrt(E$values))</code></pre>
+<pre><code>##              [,1]          [,2]          [,3]         [,4]         [,5]
+## [1,] -0.259027622  4.3010514864  5.4856218279 -6.620668927 -2.079154922
+## [2,]  0.011804714 -0.0010406454 -0.0019199260 -0.013949375  0.070663381
+## [3,]  0.002888749 -0.0004202234 -0.0008316344 -0.002406702 -0.017886747
+## [4,] -0.001393182  0.0037523667 -0.0081405500 -0.005925590 -0.000197695
+## [5,]  0.003470018  0.0076467225 -0.0008602899  0.018031665  0.001957544</code></pre>
+<pre class="r"><code># sphering matrix
+scaling1 &lt;- scaling
+print(scaling1)</code></pre>
+<pre><code>##              [,1]         [,2]          [,3]         [,4]          [,5]
+## [1,]  0.259925467  4.315959855 -5.5046361720 -6.643617588  2.0863617201
+## [2,] -0.011845632 -0.001044253  0.0019265809 -0.013997727 -0.0709083156
+## [3,] -0.002898762 -0.000421680  0.0008345171 -0.002415044  0.0179487460
+## [4,]  0.001398012  0.003765373  0.0081687669 -0.005946129  0.0001983803
+## [5,] -0.003482045  0.007673228  0.0008632718  0.018094166 -0.0019643291</code></pre>
+<p>The sphered within-group centered data now have identity within-group covariance matrix, up to a reasonable tolerance. The sphered coordinates are true to their name, as along each pair of variable coordinates the point cloud exhibits no elliptical tendencies.
+While <code>rank</code> is 5 (<span class="math inline">\(=p\)</span>) at this stage, indicating that variation is detected in each of the variables, the final computational step will determine the rank of the LDA itself in terms of the transformed group centroids.</p>
+<pre class="r"><code># within-group covariance matrix after sphering
+print(cov((x - group.means[g, ]) %*% scaling))</code></pre>
+<pre><code>##               [,1]         [,2]          [,3]          [,4]          [,5]
+## [1,]  1.006944e+00 3.762724e-16 -5.781689e-16  5.015188e-16  1.113855e-15
+## [2,]  3.762724e-16 1.006944e+00  1.892763e-15  4.976970e-16  5.560143e-16
+## [3,] -5.781689e-16 1.892763e-15  1.006944e+00 -9.853124e-16 -1.180559e-15
+## [4,]  5.015188e-16 4.976970e-16 -9.853124e-16  1.006944e+00  1.095132e-15
+## [5,]  1.113855e-15 5.560143e-16 -1.180559e-15  1.095132e-15  1.006944e+00</code></pre>
+<pre class="r"><code># within-group centered data after sphering
+pairs((x - group.means[g, ]) %*% scaling, asp = 1, pch = 19, cex = .5)</code></pre>
+<p><img src="/post/2019-08-02-lda_files/figure-html/unnamed-chunk-10-1.png" width="768" /></p>
+<pre class="r"><code># number of variables that contribute to the sphered data
+print(rank)</code></pre>
+<pre><code>## [1] 5</code></pre>
+</div>
+<div id="sphering-transformed-group-centroids-and-discriminant-coefficients" class="section level3">
+<h3>sphering-transformed group centroids and discriminant coefficients</h3>
+<p>The original problem of LDA was to eigendecompose <span class="math inline">\({C_W}^{-1}C_B\)</span>, where <span class="math inline">\(C_B=\frac{1}{q}Y^\top Y\)</span> is the between-groups covariance matrix derived from the centered group centroids <span class="math inline">\(Y=G\overline{X}-\mathbb{1}_{n\times 1}\overline{x}\in\mathbb{R}^{n\times p}\)</span> using the data centroid <span class="math inline">\(\overline{x}=\frac{1}{n}\mathbb{1}_{1\times n}X\in\mathbb{R}^{1\times p}\)</span> (and duplicated according to the group counts).
+<code>lda.default()</code> relies on an equivalent calculation <span class="math inline">\(C_B=\frac{1}{q}\overline{Y}^\top\overline{Y}\)</span>, using <span class="math inline">\(\overline{Y}=N(\overline{X}-\mathbb{1}_{q\times 1}\overline{x})\)</span>, which explicitly weights the centered group centroids by the group counts and produces the same scatter matrix as <span class="math inline">\(Y\)</span>.
+Under the transformed coordinates <span class="math inline">\({X_0}S_1\)</span>, the matrix quotient to be eigendecomposed becomes <span class="math display">\[\textstyle({S_1}^\top C_WS_1)^{-1}({S_1}^\top C_BS_1)=I_p{S_1}^\top C_BS_1=\frac{1}{q}(YS_1)^\top(YS_1)=\frac{1}{q}(\overline{Y}S_1)^\top(\overline{Y}S_1),\]</span>
+the between-groups covariance calculated from the sphering-transformed centered group centroids.<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a>
+This is the first calculation using <span class="math inline">\(C_B\)</span>, which is how <code>lda.default()</code> can wait until here to calculate the data centroid <code>xbar</code>.</p>
+<pre class="r"><code>xbar &lt;- colSums(proportions %*% group.means) # sub `proportions` for `prior`
+fac &lt;- 1/(ng - 1) # excise conditional case `method == &quot;mle&quot;`
+X &lt;- sqrt((n * proportions)*fac) * # sub `proportions` for `prior`
+  scale(group.means, center = xbar, scale = FALSE) %*% scaling
+X.s &lt;- svd(X, nu = 0L)
+rank &lt;- sum(X.s$d &gt; tol * X.s$d[1L])
+if(rank == 0L) stop(&quot;group means are numerically identical&quot;)
+scaling &lt;- scaling %*% X.s$v[, 1L:rank]
+# excise conditional case `is.null(dimnames(x))`
+dimnames(scaling) &lt;- list(colnames(x), paste(&quot;LD&quot;, 1L:rank, sep = &quot;&quot;))
+dimnames(group.means)[[2L]] &lt;- colnames(x)</code></pre>
+<p>The rank now indicates the number of dimensions in the SVD of the sphering-transformed group centroids, which can be no more than <span class="math inline">\(q-1\)</span>.
+The final reassignment of <code>scaling</code> gives <span class="math inline">\(S_2\)</span>, the raw discriminant coefficients that express the discriminant coordinates of the centroids (and of the original data) as linear combinations of the centered variable coordinates. In practice, these discriminant coordinates are returned by the <code>predict()</code> method for ‘lda’ objects, <code>MASS:::predict.lda()</code>, and this is demonstrated to conclude the post:</p>
+<pre class="r"><code># number of dimensions in the sphering-transformed group centroid SVD
+print(rank)</code></pre>
+<pre><code>## [1] 2</code></pre>
+<pre class="r"><code># discriminant coefficients
+scaling2 &lt;- scaling
+print(scaling2)</code></pre>
+<pre><code>##                   LD1          LD2
+## relwt    1.3767523932 -3.823906854
+## glufast -0.0340023755  0.037018266
+## glutest  0.0127085491 -0.007166541
+## instest -0.0001032987 -0.006238295
+## sspg     0.0042877747  0.001145987</code></pre>
+<pre class="r"><code># discriminant coordinates of centered group centroids
+print((group.means - matrix(1, ng, 1) %*% t(xbar)) %*% scaling2)</code></pre>
+<pre><code>##                          LD1        LD2
+## Normal            -1.7683547  0.4043199
+## Chemical_Diabetic  0.3437412 -1.3910995
+## Overt_Diabetic     3.6975842  0.5864022</code></pre>
+<pre class="r"><code># as recovered using `predict.lda()`
+fit &lt;- MASS::lda(group ~ ., heplots::Diabetes)
+print(predict(fit, as.data.frame(fit$means))$x)</code></pre>
+<pre><code>##                          LD1        LD2
+## Normal            -1.7499658  0.4001154
+## Chemical_Diabetic  0.3401666 -1.3766336
+## Overt_Diabetic     3.6591334  0.5803043</code></pre>
+<p>(The slight discrepancy between the manually calculated coordinates and those returned by <code>predict()</code> is left as an exercise for the reader.)</p>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>If you use ordination and ggplot2, not necessarily together (yet), i’d be grateful for your feedback, too!<a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn2"><p>My exposition here assumes the covariances were calculated from a population rather than a sample perspective, but this introduces discrepancies in a few places.<a href="#fnref2" class="footnote-back">↩</a></p></li>
+<li id="fn3"><p>To see the source code for an object included in but not exported by a package, use three colons instead of two, e.g. <code>MASS:::lda.default</code>.<a href="#fnref3" class="footnote-back">↩</a></p></li>
+<li id="fn4"><p>I’ve been searching for a history of the 1970s change from categorizing diabetes as “clinical” versus “overt” to the present-day categories of “type 1” and “type 2”. Recommended reading is very welcome.<a href="#fnref4" class="footnote-back">↩</a></p></li>
+<li id="fn5"><p>These are equivalent because the matrix factors <span class="math inline">\(U\)</span> and <span class="math inline">\(V\)</span> of an SVD of any matrix <span class="math inline">\(Z\)</span> are the eigenvector matrices of <span class="math inline">\(ZZ^\top\)</span> and of <span class="math inline">\(Z^\top Z\)</span>, respectively.<a href="#fnref5" class="footnote-back">↩</a></p></li>
+<li id="fn6"><p>These are not “sphered” centered group centroids because the sphering transformation is specific to the within-group centered data.<a href="#fnref6" class="footnote-back">↩</a></p></li>
+</ol>
+</div>
+</description>
       <content:encoded>
 
 
@@ -271,10 +986,37 @@ print(predict(fit, as.data.frame(fit$means))$x)</code></pre>
     <item>
       <title>About</title>
       <link>/about/</link>
-      <pubDate>Mon, 04 Mar 2019 00:00:00 +0000</pubDate>
+      <pubDate>2019 Mar 04 (Mon), 00:00:00 +0000</pubDate>
       
       <guid>/about/</guid>
-      <description>who i am (here) I’m Cory Brunsonhe/him/his, and this is a lightweight space for me to practice expressing my outlook on matters at least peripherally professional. I completed a PhD in mathematics in 2013, and i’m now a postdoctoral fellow training myself in network analysis, data science, and health informatics. I’m an enthusiast for the extended tidyverse library, and i’m exploring new techniques and applications of topological data analysis.</description>
+      <description>
+
+
+<div id="who-i-am-here" class="section level2">
+<h2>who i am (here)</h2>
+<p>I’m Cory Brunson<sup>he/him/his</sup>, and this is a lightweight space for me to practice expressing my outlook on matters at least peripherally professional. I completed a PhD in mathematics in 2013, and i’m now a postdoctoral fellow training myself in network analysis, data science, and health informatics. I’m an enthusiast for the extended <a href="https://www.tidyverse.org/">tidyverse</a> library, and i’m exploring new techniques and applications of <a href="https://arxiv.org/abs/1710.04019">topological data analysis</a>.</p>
+<p>My under-developed <a href="https://jasoncorybrunson.netlify.com/">professional website</a> uses the highly-developed <a href="https://github.com/gcushen/hugo-academic"><code>hugo-academic</code></a> theme.
+You can also find me at the <a href="https://health.uconn.edu/quantitative-medicine/">Center for Quantitative Medicine</a> or at the links in the footer.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></p>
+</div>
+<div id="what-and-how-i-blog" class="section level2">
+<h2>what and how i blog</h2>
+<p>My schedule and content may evolve, but my goal at the outset is to post fortnightly or so on, or in the vicinity of, four categories: professional development, research progress, methodological technique, and personal curiosity. I want to use this space to express ideas that are messy and incomplete; i’ll strive both to read others as charitably as reasonable and to write with the expectation that others will do the same.</p>
+<p>I haven’t incorporated comments, but feel free to send me feedback via email or social media!</p>
+</div>
+<div id="just-for-fun" class="section level2">
+<h2>just for fun</h2>
+<ul>
+<li>My Erdős number is <a href="https://www.math.vt.edu/people/brown/doc/fibo_number.pdf">3</a>.</li>
+<li>My Bacon number is <a href="http://www.imdb.com/title/tt1696494/">3</a>.</li>
+</ul>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Thanks to Zack Guo for the <a href="https://github.com/gizak/nofancy"><code>nofancy</code> Hugo theme</a>.<a href="#fnref1" class="footnote-back">↩</a></p></li>
+</ol>
+</div>
+</description>
       <content:encoded>
 
 
@@ -308,10 +1050,365 @@ You can also find me at the <a href="https://health.uconn.edu/quantitative-medic
     <item>
       <title>embed with the Petersens</title>
       <link>/2019/03/01/embeddability/</link>
-      <pubDate>Fri, 01 Mar 2019 00:00:00 +0000</pubDate>
+      <pubDate>2019 Mar 01 (Fri), 00:00:00 +0000</pubDate>
       
       <guid>/2019/03/01/embeddability/</guid>
-      <description>inreach I make a habit of responding when people reach out for mathematical support in their work, at least when i think i can contribute something. An interesting network effect of this habit is that i actually get more second-hand (i.e. forwarded) feelers from colleagues than first-hand requests. As a result, i’ve gotten exposure to a lot of disciplines and questions that i’d’ve otherwise been unaware of entirely, for example the problem of feature identification in the immune profiles of cancer patients and the statistical bookkeeping required to model the nested factors determining medical imaging phenotypes.</description>
+      <description>
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/plotly-binding/plotly.js"></script>
+<script src="/rmarkdown-libs/typedarray/typedarray.min.js"></script>
+<script src="/rmarkdown-libs/jquery/jquery.min.js"></script>
+<link href="/rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
+<link href="/rmarkdown-libs/plotly-htmlwidgets-css/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/plotly-main/plotly-latest.min.js"></script>
+
+
+<div id="inreach" class="section level3">
+<h3>inreach</h3>
+<p>I make a habit of responding when people reach out for mathematical support in their work, at least when i think i can contribute something. An interesting network effect of this habit is that i actually get more second-hand (i.e. forwarded) feelers from colleagues than first-hand requests. As a result, i’ve gotten exposure to a lot of disciplines and questions that i’d’ve otherwise been unaware of entirely, for example the problem of feature identification in the immune profiles of cancer patients and the statistical bookkeeping required to model the nested factors determining medical imaging phenotypes.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> Often these discussions fizzle out, but oftener they lead to potentially productive collaborations — i stress <em>potentially</em>, because to date i don’t have any publications to show for them.</p>
+<p>(Let me flag this story with the caveat that early-career researchers in particular take serious risks by taking on service or outreach duties, let alone concurrent research or teaching projects, outside our career-building programs, and that i’ve been extremely lucky to have a principal investigator who encourages me to follow my interests insofar as they don’t interfere with my primary output.)</p>
+<p>This is how i recently connected with a cell biologist who was looking for someone to assist them in a network analysis of some new imagery. I’ll provide context once the work is out, but a key motivating question is actually one of the defining topics of the field: <em>embeddability</em>.</p>
+</div>
+<div id="embeddability" class="section level2">
+<h2>embeddability</h2>
+<p>I don’t have a handy account of how graph theory emerged as a discipline through the unification of relational problems in several disciplines, or of how network analysis emerged from a similar synthesis in the last few decades. (I’d welcome suggestions.) And i’ve only taken one formal course on graph theory myself, which focused (as most of my coursework did) almost entirely on proofs. So i’ve spent some time over the past few weeks reading up on this topic. I know that several provable criteria and polynomial-time algorithms have been published to help identify graphs as planar or non-planar; but, since my own interests have always been more consolidative,<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> what really caught my attention was the planarity criterion of Colin de Verdière — not because the criterion is elegantly expressed, but because it frames (an enthusiast might say, <em>realizes</em>) planarity as one level in a hierarchy of embeddability properties.</p>
+<div id="de-verdieres-mu" class="section level3">
+<h3>de Verdière’s <span class="math inline">\(\mu\)</span></h3>
+<p>De Verdière’s contribution is almost always cited to two papers, <a href="https://www.sciencedirect.com/science/article/pii/009589569090093F">an original in French</a> that i can’t very efficiently read, and <a href="https://scholar.google.com/scholar?cluster=12299736116764432931">a translation</a> i haven’t been able to access. So i’ll refer anyone interested (who doesn’t read French) to <a href="https://pdfs.semanticscholar.org/5284/73d4b7625982a8f479addb5cca3fb70a3654.pdf">a review paper by van der Holst, Lovász, and Schrijver</a> devoted entirely to his technique and the literature it generated. For an undirected graph <span class="math inline">\(G\)</span> with <span class="math inline">\(n\)</span> nodes, it boils down to the statistic <span class="math inline">\(0\leq\mu(G)\leq n\)</span>, roughly defined as <em>the largest possible nullity of a normalized weighted adjacency matrix of <span class="math inline">\(G\)</span> whose kernel does not contain any weighted adjacency matrices of its complement</em>. That’s a terrible summary — see the review paper for a good one — but it gets at what i’m gathering is the central tension of the idea: that that collapsing the adjacencies of <span class="math inline">\(G\)</span> onto a small number of dimensions makes it difficult to avoid collapsing at least some weightings of the adjacencies of <span class="math inline">\(G^C\)</span> (the complement of <span class="math inline">\(G\)</span>), all the more so when those of <span class="math inline">\(G\)</span> are very “aligned” or “entangled” with those of <span class="math inline">\(G^C\)</span> in ways that tend to produce, e.g. crossings in the plane or links in 3-space.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a></p>
+<p>I’m still wrapping my mind around this statistic. But the consolidative upshot is much more straightforward: The values of <span class="math inline">\(\mu\)</span> provide a nested family of embeddability properties:</p>
+<ol style="list-style-type: decimal">
+<li><span class="math inline">\(\mu(G)\leq 0\)</span> when <span class="math inline">\(G\)</span> consists of one node (i.e. is embeddable in a point).</li>
+<li><span class="math inline">\(\mu(G)\leq 1\)</span> when <span class="math inline">\(G\)</span> consists of one or more disjoint paths (i.e. is embeddable in a line).</li>
+<li><span class="math inline">\(\mu(G)\leq 2\)</span> when <span class="math inline">\(G\)</span> is <em>outerplanar</em> (i.e. is embeddable in a disk with its nodes on the boundary).</li>
+<li><span class="math inline">\(\mu(G)\leq 3\)</span> when <span class="math inline">\(G\)</span> is planar (i.e. is embeddable in a plane).</li>
+<li><span class="math inline">\(\mu(G)\leq 4\)</span> when <span class="math inline">\(G\)</span> is linklessly, or flatly, embeddable (i.e. is embeddable in 3-space in such a way that any two cycles are embedded in separate spheres).</li>
+</ol>
+<p>A good first exercise is to convince yourself that the complete graphs discriminate these properties, i.e. <span class="math inline">\(\mu(K_n)=n-1\)</span>, which provides an anchor for understanding the linear algebra underlying the statistic.</p>
+<p>Anyway, de Verdière’s statistic transforms the binary question of whether a graph is planar into a question of at what level of the embeddability hierarchy a graph lies. Unfortunately, the research to date does not provide a computational means of answering it. Since our graphs were evidently not unions of paths, we began by testing for planarity.</p>
+</div>
+<div id="planarity" class="section level3">
+<h3>planarity</h3>
+<p>The Boyer–Myrvold planarity test is implemented in <a href="http://bioconductor.org/packages/release/bioc/html/RBGL.html">the Bioconductor package <strong>RBGL</strong> by Carey, Long, and Gentleman</a>, but the current version required some hacking to work with our <strong>igraph</strong> objects. Here’s the code i used:</p>
+<pre class="r"><code># ensure that a graph is undirected and unweighted, and warn if changes are made
+planarity_prep &lt;- function(graph, silent = TRUE) {
+  was_directed &lt;- igraph::is_directed(graph)
+  was_weighted &lt;- igraph::is_weighted(graph)
+  if (! silent &amp; (was_directed | was_weighted)) {
+    warning(
+      &quot;Converting `graph` to an &quot;,
+      if (was_directed) &quot;undirected&quot;,
+      if (was_directed &amp; was_weighted) &quot;, &quot;,
+      if (was_weighted) &quot;unweighted&quot;,
+      &quot; graph.&quot;
+    )
+  }
+  if (was_directed) graph &lt;- igraph::as.undirected(graph)
+  if (was_weighted) graph &lt;- igraph::delete_edge_attr(graph, &quot;weight&quot;)
+  graph
+}
+# planarity test for &#39;igraph&#39; objects
+# based on `RBGL::boyerMyrvoldPlanarityTest()`
+is_planar &lt;- function(graph, silent = TRUE) {
+  # ensure that graph is undirected and unweighted
+  graph &lt;- planarity_prep(graph, silent = silent)
+  # prepare edge matrix
+  nv &lt;- igraph::vcount(graph)
+  em &lt;- t(igraph::as_edgelist(graph, names = FALSE))
+  ne &lt;- ncol(em)
+  # perform planarity test
+  require(&quot;RBGL&quot;)
+  ans &lt;- .Call(
+    &quot;boyerMyrvoldPlanarityTest&quot;,
+    as.integer(nv), as.integer(ne), as.integer(em - 1),
+    PACKAGE = &quot;RBGL&quot;
+  )
+  # return logical result
+  as.logical(ans)
+}</code></pre>
+<p>To validate the implementation, we test the complete graphs <span class="math inline">\(K_4\)</span> (which is planar) and <span class="math inline">\(K_5\)</span> (which is not), as well as <a href="https://en.wikipedia.org/wiki/Goldner%E2%80%93Harary_graph">the Goldner–Harary graph</a>, which is <em>maximally</em> planar in the sense that any additional links would violate planarity.</p>
+<pre class="r"><code># complete graph on 4 nodes
+print(is_planar(igraph::make_full_graph(n = 4)))</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code># complete graph on 5 nodes
+print(is_planar(igraph::make_full_graph(n = 5)))</code></pre>
+<pre><code>## [1] FALSE</code></pre>
+<pre class="r"><code># Goldner-Harary graph
+goldner_harary &lt;- igraph::make_graph(
+  c(
+    1,2, 1,3,
+    1,4, 1,5, 1,6, 1,7, 1,8,
+    1,11,
+    2,5, 2,6, 3,6, 3,7,
+    4,5, 5,6, 6,7, 7,8,
+    5,9, 6,9, 6,10, 7,10,
+    4,11, 5,11, 6,11, 7,11, 8,11,
+    9,11, 10,11
+  ),
+  directed = FALSE
+)
+print(is_planar(goldner_harary))</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+</div>
+<div id="forbidden-minors" class="section level3">
+<h3>forbidden minors</h3>
+<p>Some of our empirical graphs turned out to be non-planar, which bumped the question up to that of linklessness — testing whether a graph <span class="math inline">\(G\)</span> has a flat embedding, i.e. whether <span class="math inline">\(\mu(G)\leq 4\)</span>. Criteria exist to test for this property, but i couldn’t find any direct implementations. So i sought out some indirect approaches to the question.</p>
+<p>It didn’t take long to find <a href="https://www.sciencedirect.com/science/article/pii/S0012365X05002980">this thorough review by Ramírez Alfonsín of linklessness and linkedness in embedded graphs</a>. One promising (that is to say, plausibly tractable) result (Theorem 2.4) is that a graph has a linkless embedding if and only if it contains none of the Petersen family of graphs as a minor. <a href="https://en.wikipedia.org/wiki/Graph_minor">Graph minors</a> are pretty straightforward, though they might be difficult to systematically test. And anyway the Petersen family is pretty fun on its own.</p>
+</div>
+</div>
+<div id="the-petersen-family" class="section level2">
+<h2>the Petersen family</h2>
+<p>The original <em>Petersen graph</em> looks like this:</p>
+<pre class="r"><code>library(igraph)
+library(tidygraph)
+# Petersen graph
+make_graph(&quot;Petersen&quot;) %&gt;%
+  as_tbl_graph() %&gt;%
+  print() -&gt; petersen</code></pre>
+<pre><code>## # A tbl_graph: 10 nodes and 15 edges
+## #
+## # An undirected simple graph with 1 component
+## #
+## # Node Data: 10 x 0 (active)
+## #
+## # Edge Data: 15 x 2
+##    from    to
+##   &lt;int&gt; &lt;int&gt;
+## 1     1     2
+## 2     1     5
+## 3     1     6
+## # … with 12 more rows</code></pre>
+<p>And it might be rendered like this:</p>
+<pre class="r"><code>library(ggraph)
+qgraph &lt;- function(graph) {
+  graph %&lt;&gt;% as_tbl_graph() %&gt;%
+    activate(nodes) %&gt;%
+    mutate(id = 1:nrow(.N()))
+  qg &lt;- ggraph(graph, layout = &quot;nicely&quot;) +
+    theme_graph() +
+    geom_edge_link() +
+    geom_node_label(aes(label = id))
+  plot(qg)
+  invisible(qg)
+}
+qgraph(petersen)</code></pre>
+<p><img src="/post/2019-03-01-embeddability_files/figure-html/plot%20petersen%20graph-1.png" width="288" /></p>
+<p>The <em>Petersen family</em> consists of seven graphs, up to isomorphism, that can be obtained from the original using so-called <span class="math inline">\(Y\)</span>–<span class="math inline">\(\Delta\)</span> and <span class="math inline">\(\Delta\)</span>–<span class="math inline">\(Y\)</span> operations.</p>
+<div id="ydelta-and-deltay" class="section level3">
+<h3><span class="math inline">\(Y\)</span>–<span class="math inline">\(\Delta\)</span> and <span class="math inline">\(\Delta\)</span>–<span class="math inline">\(Y\)</span></h3>
+<p>Their names refer to the subgraphs that are exchanged in each operation, namely a 3-star (<span class="math inline">\(Y\)</span>) and a 3-cycle (<span class="math inline">\(\Delta\)</span>). The operations aren’t implemented in <strong>igraph</strong>, so here’s a clunky implementation usinng the R frontend:</p>
+<pre class="r"><code># Y-Delta operations
+wye_delta &lt;- function(graph, v) {
+  if (! all(degree(graph, v) == 3)) stop(&quot;Node(s) must have degree 3.&quot;)
+  if (ecount(induced_subgraph(graph, v)) &gt; 0) stop(&quot;Nodes cannot be adjacent.&quot;)
+  nbhds &lt;- mapply(setdiff, neighborhood(graph, 1, v), v)
+  graph &lt;- add_edges(graph, apply(nbhds, 2, combn, m = 2))
+  graph &lt;- delete_vertices(graph, v)
+  graph
+}
+# Delta-Y operations
+delta_wye &lt;- function(graph, vt) {
+  if (length(vt) %% 3 != 0) stop(&quot;Nodes must be triples.&quot;)
+  if (is.matrix(vt) &amp;&amp; nrow(vt) != 3) stop(&quot;Encode triples in matrix columns.&quot;)
+  if (! is.matrix(vt)) vt &lt;- matrix(vt, nrow = 3)
+  tv &lt;- vcount(graph) + 1:ncol(vt)
+  graph &lt;- add_vertices(graph, ncol(vt))
+  graph &lt;- add_edges(graph, rbind(as.vector(vt), rep(tv, each = 3)))
+  graph &lt;- delete_edges(graph, get.edge.ids(graph, apply(vt, 2, combn, m = 2)))
+  graph
+}</code></pre>
+<p><code>wye_delta()</code> takes the vector of nodes <code>v</code> to be the centers of the 3-stars that will be converted to 3-cycles. These are required to have degree 3 and to be non-adjacent, so that there is no ambiguity when removing them. <code>delta_wye()</code> takes a vector or 3-row matrix of nodes <code>vt</code> that encode the 3-cycles. As with other <strong>igraph</strong> functions, these parameters will use numeric or character vectors as node IDs.</p>
+</div>
+<div id="petersen-relations" class="section level3">
+<h3>Petersen relations</h3>
+<p>To see how the Petersen family graphs are related by these operations, check out <a href="https://arxiv.org/abs/1008.0377">this preprint by O’Donnol</a>.
+Viewing the Petersen family as a partially ordered set with respect to <span class="math inline">\(Y\)</span>–<span class="math inline">\(\Delta\)</span> and <span class="math inline">\(\Delta\)</span>–<span class="math inline">\(Y\)</span> operations, there are four extremal elements: the original Petersen graph and a graph named <span class="math inline">\(K_{4,4}\smallsetminus e\)</span>,<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a> which cannot be <span class="math inline">\(\Delta\)</span>–<span class="math inline">\(Y\)</span>’d (they have no 3-cycles), and the complete graph <span class="math inline">\(K_6\)</span> and the complete tripartite graph <span class="math inline">\(K_{3,3,1}\)</span>, which cannot be <span class="math inline">\(Y\)</span>–<span class="math inline">\(\Delta\)</span>’d (without introducing multiple links).</p>
+<p>Following O’Donnol, and through some trial and error, i generated the Petersen family using the exchange operations, starting from <span class="math inline">\(K_6\)</span> to get <span class="math inline">\(G_7\)</span>:</p>
+<pre class="r"><code>library(magrittr)
+# complete graph on 6 nodes
+make_full_graph(6) %T&gt;% qgraph() -&gt; k6</code></pre>
+<p><img src="/post/2019-03-01-embeddability_files/figure-html/petersen%20family-1.png" width="288" /></p>
+<pre class="r"><code># G_7 via Delta-Y operation on K_6 at an arbitrary 3-cycle
+delta_wye(k6, c(1,2,3)) %T&gt;% qgraph() -&gt; g7</code></pre>
+<p><img src="/post/2019-03-01-embeddability_files/figure-html/petersen%20family-2.png" width="288" /></p>
+<p>To illustrate how the simple relations among the family hinge on isomorphism classes, in the next step i perform all possible <span class="math inline">\(\Delta\)</span>–<span class="math inline">\(Y\)</span> operations on <span class="math inline">\(G_7\)</span> and test the results for isomorphicity:</p>
+<pre class="r"><code># all possible Delta-Y children
+g7_children &lt;- list(
+  delta_wye(g7, c(1,4,5)),
+  delta_wye(g7, c(2,4,5)),
+  delta_wye(g7, c(3,4,5)),
+  delta_wye(g7, c(3,4,6)),
+  delta_wye(g7, c(3,5,6)),
+  delta_wye(g7, c(4,5,6))
+)
+par(mfrow = c(2, 3))
+for (i in seq_along(g7_children)) qgraph(g7_children[[i]])</code></pre>
+<p><img src="/post/2019-03-01-embeddability_files/figure-html/petersen%20family%202-1.png" width="288" /><img src="/post/2019-03-01-embeddability_files/figure-html/petersen%20family%202-2.png" width="288" /><img src="/post/2019-03-01-embeddability_files/figure-html/petersen%20family%202-3.png" width="288" /><img src="/post/2019-03-01-embeddability_files/figure-html/petersen%20family%202-4.png" width="288" /><img src="/post/2019-03-01-embeddability_files/figure-html/petersen%20family%202-5.png" width="288" /><img src="/post/2019-03-01-embeddability_files/figure-html/petersen%20family%202-6.png" width="288" /></p>
+<pre class="r"><code>par(mfrow = c(1, 1))
+# check which are isomorphic
+isomat &lt;- matrix(NA_integer_, nrow = 6, ncol = 6)
+for (i in 1:5) for (j in (i+1):6) {
+  isomat[i,j] &lt;- isomat[j,i] &lt;-
+    as.integer(isomorphic(g7_children[[i]], g7_children[[j]]))
+}
+print(isomat)</code></pre>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5] [,6]
+## [1,]   NA    1    1    1    1    0
+## [2,]    1   NA    1    1    1    0
+## [3,]    1    1   NA    1    1    0
+## [4,]    1    1    1   NA    1    0
+## [5,]    1    1    1    1   NA    0
+## [6,]    0    0    0    0    0   NA</code></pre>
+<pre class="r"><code># G_8 and K_44-e via Delta-Y operations on G_7
+delta_wye(g7, c(3,4,5)) -&gt; g8
+delta_wye(g7, c(4,5,6)) -&gt; k44_e</code></pre>
+<p>Of the six possible <span class="math inline">\(\Delta\)</span>–<span class="math inline">\(Y\)</span> operations on <span class="math inline">\(G_7\)</span>, five produce <span class="math inline">\(G_8\)</span> while one produces <span class="math inline">\(K_{4,4}\smallsetminus e\)</span>, indicating that the latter is in some sense less accessible than the former. Does that make <span class="math inline">\(K_{4,4}\smallsetminus e\)</span>, as its name would suggest, somehow less natural? Is the answer totally obvious to someone who’s absorbed the implications of embeddability as a theory, even if they haven’t directly observed the Petersen family before? (Does that even make sense?) Whether i come back to these questions is anyone’s guess.</p>
+<p>Anyway, the exchange operations can now take <span class="math inline">\(G_8\)</span> up and down the rest of the poset, with a check at the end that we’ve arrived at the original Petersen graph. In these latter steps i’ve only presented one way to obtain each Petersen family member, but in each case there may be several.</p>
+<pre class="r"><code># K_331 via Y-Delta operation on G_8
+wye_delta(g8, 3) -&gt; k331
+# G_9 via Delta-Y operation on G_8
+delta_wye(g8, c(1,5,6)) -&gt; g9
+# G_10 via Delta-Y operation on G_9
+delta_wye(g9, c(2,4,6)) -&gt; g10
+par(mfrow = c(1, 3))
+qgraph(k331); qgraph(g9); qgraph(g10)</code></pre>
+<p><img src="/post/2019-03-01-embeddability_files/figure-html/petersen%20family%203-1.png" width="288" /><img src="/post/2019-03-01-embeddability_files/figure-html/petersen%20family%203-2.png" width="288" /><img src="/post/2019-03-01-embeddability_files/figure-html/petersen%20family%203-3.png" width="288" /></p>
+<pre class="r"><code>par(mfrow = c(1, 1))
+# verify that G_10 is isomorphic to the Petersen graph
+stopifnot(isomorphic(g10, petersen))</code></pre>
+</div>
+</div>
+<div id="embeddings" class="section level2">
+<h2>embeddings</h2>
+<p>Recall that the point of the Petersen family (for our purposes) is to encapsulate the constraints on linkless embeddability. To highlight this, i’d like to at least hint at how these constraints work by locating linked cycles in some very basic embeddings. I’ll start with the Petersen graph, using a Fruchterman–Reingold embedding as implemented in <strong>igraph</strong>:</p>
+<pre class="r"><code>library(dplyr)
+library(tidyr)
+library(plotly)
+set.seed(0)
+petersen %&gt;%
+  layout_with_fr(dim = 3) %&gt;%
+  as_tibble() %&gt;%
+  setNames(c(&quot;x&quot;, &quot;y&quot;, &quot;z&quot;)) %&gt;%
+  mutate(node = 1:nrow(.)) %&gt;%
+  print() -&gt; nodes</code></pre>
+<pre><code>## Warning: `as_tibble.matrix()` requires a matrix with column names or a `.name_repair` argument. Using compatibility `.name_repair`.
+## This warning is displayed once per session.</code></pre>
+<pre><code>## # A tibble: 10 x 4
+##        x     y     z  node
+##    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt;
+##  1 10.1   17.0  17.4     1
+##  2 10.9   18.4  18.1     2
+##  3 12.0   18.2  17.6     3
+##  4 11.6   18.1  16.1     4
+##  5 10.0   17.8  16.2     5
+##  6 11.1   16.2  17.4     6
+##  7 10.8   18.6  16.9     7
+##  8 11.1   17.3  18.2     8
+##  9 11.5   17.1  16.3     9
+## 10  9.84  18.2  17.5    10</code></pre>
+<div id="coordinating-zs" class="section level3">
+<h3>coordinating z’s</h3>
+<p>Above, we produce a tibble of node coordinates. Below, we produce a tibble of link coordinates. This next chunk current complains and produces only a 2-dimensional visualization because <a href="https://github.com/ropensci/plotly/issues/1009"><code>plotly::add_segments()</code> does not yet understand z-coordinates</a>; i leave it here to return to as <strong>plotly</strong> continues to grow.</p>
+<pre class="r"><code>petersen %&gt;%
+  activate(links) %&gt;%
+  as_tibble() %&gt;%
+  left_join(nodes, by = c(&quot;from&quot; = &quot;node&quot;)) %&gt;%
+  left_join(nodes, by = c(&quot;to&quot; = &quot;node&quot;), suffix = c(&quot;_from&quot;, &quot;_to&quot;)) %&gt;%
+  print() -&gt; links</code></pre>
+<pre><code>## # A tibble: 15 x 8
+##     from    to x_from y_from z_from  x_to  y_to  z_to
+##    &lt;int&gt; &lt;int&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1     1     2   10.1   17.0   17.4 10.9   18.4  18.1
+##  2     1     5   10.1   17.0   17.4 10.0   17.8  16.2
+##  3     1     6   10.1   17.0   17.4 11.1   16.2  17.4
+##  4     2     3   10.9   18.4   18.1 12.0   18.2  17.6
+##  5     2     7   10.9   18.4   18.1 10.8   18.6  16.9
+##  6     3     4   12.0   18.2   17.6 11.6   18.1  16.1
+##  7     3     8   12.0   18.2   17.6 11.1   17.3  18.2
+##  8     4     5   11.6   18.1   16.1 10.0   17.8  16.2
+##  9     4     9   11.6   18.1   16.1 11.5   17.1  16.3
+## 10     5    10   10.0   17.8   16.2  9.84  18.2  17.5
+## 11     6     8   11.1   16.2   17.4 11.1   17.3  18.2
+## 12     6     9   11.1   16.2   17.4 11.5   17.1  16.3
+## 13     7     9   10.8   18.6   16.9 11.5   17.1  16.3
+## 14     7    10   10.8   18.6   16.9  9.84  18.2  17.5
+## 15     8    10   11.1   17.3   18.2  9.84  18.2  17.5</code></pre>
+<pre class="r"><code>plot_ly(nodes, x = ~x, y = ~y, z = ~z) %&gt;%
+  add_segments(
+    data = links,
+    x = ~x_from, xend = ~x_to,
+    y = ~y_from, yend = ~y_to,
+    z = ~z_from, zend = ~z_to,
+    color = I(&quot;black&quot;)
+  )</code></pre>
+<pre><code>## Warning: &#39;scatter&#39; objects don&#39;t have these attributes: &#39;z&#39;, &#39;zend&#39;
+## Valid attributes include:
+## &#39;type&#39;, &#39;visible&#39;, &#39;showlegend&#39;, &#39;legendgroup&#39;, &#39;opacity&#39;, &#39;name&#39;, &#39;uid&#39;, &#39;ids&#39;, &#39;customdata&#39;, &#39;selectedpoints&#39;, &#39;hoverinfo&#39;, &#39;hoverlabel&#39;, &#39;stream&#39;, &#39;transforms&#39;, &#39;x&#39;, &#39;x0&#39;, &#39;dx&#39;, &#39;y&#39;, &#39;y0&#39;, &#39;dy&#39;, &#39;text&#39;, &#39;hovertext&#39;, &#39;mode&#39;, &#39;hoveron&#39;, &#39;line&#39;, &#39;connectgaps&#39;, &#39;cliponaxis&#39;, &#39;fill&#39;, &#39;fillcolor&#39;, &#39;marker&#39;, &#39;selected&#39;, &#39;unselected&#39;, &#39;textposition&#39;, &#39;textfont&#39;, &#39;r&#39;, &#39;t&#39;, &#39;error_x&#39;, &#39;error_y&#39;, &#39;xcalendar&#39;, &#39;ycalendar&#39;, &#39;xaxis&#39;, &#39;yaxis&#39;, &#39;idssrc&#39;, &#39;customdatasrc&#39;, &#39;hoverinfosrc&#39;, &#39;xsrc&#39;, &#39;ysrc&#39;, &#39;textsrc&#39;, &#39;hovertextsrc&#39;, &#39;textpositionsrc&#39;, &#39;rsrc&#39;, &#39;tsrc&#39;, &#39;key&#39;, &#39;set&#39;, &#39;frame&#39;, &#39;transforms&#39;, &#39;_isNestedKey&#39;, &#39;_isSimpleKey&#39;, &#39;_isGraticule&#39;, &#39;_bbox&#39;</code></pre>
+<div id="htmlwidget-1" style="width:288px;height:288px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"visdat":{"16ff4bc3e648":["function () ","plotlyVisDat"],"16ff2a43a7d4":["function () ","data"]},"cur_data":"16ff2a43a7d4","attrs":{"16ff2a43a7d4":{"x":{},"y":{},"z":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"xend":{},"yend":{},"type":"scatter","mode":"lines","zend":{},"color":["black"],"inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"xaxis":{"domain":[0,1],"automargin":true,"title":"x_from"},"yaxis":{"domain":[0,1],"automargin":true,"title":"y_from"},"scene":{"zaxis":{"title":"z_from"}},"hovermode":"closest","showlegend":false},"source":"A","config":{"modeBarButtonsToAdd":[{"name":"Collaborate","icon":{"width":1000,"ascent":500,"descent":-50,"path":"M487 375c7-10 9-23 5-36l-79-259c-3-12-11-23-22-31-11-8-22-12-35-12l-263 0c-15 0-29 5-43 15-13 10-23 23-28 37-5 13-5 25-1 37 0 0 0 3 1 7 1 5 1 8 1 11 0 2 0 4-1 6 0 3-1 5-1 6 1 2 2 4 3 6 1 2 2 4 4 6 2 3 4 5 5 7 5 7 9 16 13 26 4 10 7 19 9 26 0 2 0 5 0 9-1 4-1 6 0 8 0 2 2 5 4 8 3 3 5 5 5 7 4 6 8 15 12 26 4 11 7 19 7 26 1 1 0 4 0 9-1 4-1 7 0 8 1 2 3 5 6 8 4 4 6 6 6 7 4 5 8 13 13 24 4 11 7 20 7 28 1 1 0 4 0 7-1 3-1 6-1 7 0 2 1 4 3 6 1 1 3 4 5 6 2 3 3 5 5 6 1 2 3 5 4 9 2 3 3 7 5 10 1 3 2 6 4 10 2 4 4 7 6 9 2 3 4 5 7 7 3 2 7 3 11 3 3 0 8 0 13-1l0-1c7 2 12 2 14 2l218 0c14 0 25-5 32-16 8-10 10-23 6-37l-79-259c-7-22-13-37-20-43-7-7-19-10-37-10l-248 0c-5 0-9-2-11-5-2-3-2-7 0-12 4-13 18-20 41-20l264 0c5 0 10 2 16 5 5 3 8 6 10 11l85 282c2 5 2 10 2 17 7-3 13-7 17-13z m-304 0c-1-3-1-5 0-7 1-1 3-2 6-2l174 0c2 0 4 1 7 2 2 2 4 4 5 7l6 18c0 3 0 5-1 7-1 1-3 2-6 2l-173 0c-3 0-5-1-8-2-2-2-4-4-4-7z m-24-73c-1-3-1-5 0-7 2-2 3-2 6-2l174 0c2 0 5 0 7 2 3 2 4 4 5 7l6 18c1 2 0 5-1 6-1 2-3 3-5 3l-174 0c-3 0-5-1-7-3-3-1-4-4-5-6z"},"click":"function(gd) { \n        // is this being viewed in RStudio?\n        if (location.search == '?viewer_pane=1') {\n          alert('To learn about plotly for collaboration, visit:\\n https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html');\n        } else {\n          window.open('https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html', '_blank');\n        }\n      }"}],"cloud":false},"data":[{"x":[10.0513873919252,10.8726494121712,null,10.0513873919252,10.0049639077167,null,10.0513873919252,11.0543369105304,null,10.8726494121712,12.0230251990042,null,10.8726494121712,10.8156611426198,null,12.0230251990042,11.6069834900545,null,12.0230251990042,11.0729244199622,null,11.6069834900545,10.0049639077167,null,11.6069834900545,11.5272175920833,null,10.0049639077167,9.83831855980565,null,11.0543369105304,11.0729244199622,null,11.0543369105304,11.5272175920833,null,10.8156611426198,11.5272175920833,null,10.8156611426198,9.83831855980565,null,11.0729244199622,9.83831855980565],"y":[17.0427905313819,18.3731661276791,null,17.0427905313819,17.8170011579443,null,17.0427905313819,16.2208063271446,null,18.3731661276791,18.1727535993232,null,18.3731661276791,18.5700642922754,null,18.1727535993232,18.1155361206087,null,18.1727535993232,17.2518870130491,null,18.1155361206087,17.8170011579443,null,18.1155361206087,17.148051656421,null,17.8170011579443,18.1668851378811,null,16.2208063271446,17.2518870130491,null,16.2208063271446,17.148051656421,null,18.5700642922754,17.148051656421,null,18.5700642922754,18.1668851378811,null,17.2518870130491,18.1668851378811],"z":[17.3910511553234,17.3910511553234,17.3910511553234,18.0650143079719,18.0650143079719,17.6342438268503,17.6342438268503,16.0721798372531,16.0721798372531,16.2318514545894,17.3658377143319,17.3658377143319,16.9286396485918,16.9286396485918,18.208613773443],"type":"scatter","mode":"lines","zend":[18.0650143079719,16.2318514545894,17.3658377143319,17.6342438268503,16.9286396485918,16.0721798372531,18.208613773443,16.2318514545894,16.3475165831642,17.4761229801153,18.208613773443,16.3475165831642,16.3475165831642,17.4761229801153,17.4761229801153],"marker":{"color":"rgba(0,0,0,1)","line":{"color":"rgba(0,0,0,1)"}},"textfont":{"color":"rgba(0,0,0,1)"},"error_y":{"color":"rgba(0,0,0,1)"},"error_x":{"color":"rgba(0,0,0,1)"},"line":{"color":"rgba(0,0,0,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"base_url":"https://plot.ly"},"evals":["config.modeBarButtonsToAdd.0.click"],"jsHooks":[]}</script>
+<p>The slightly more cumbersome solution is to organize the links as very short paths, distinguished by a grouping variable, in preparation for <code>plotly::add_paths()</code>:</p>
+<pre class="r"><code>petersen %&gt;%
+  activate(links) %&gt;%
+  as_tibble() %&gt;%
+  mutate(link = row_number()) %&gt;%
+  gather(end, node, from, to) %&gt;%
+  left_join(nodes, by = &quot;node&quot;) %&gt;%
+  group_by(link) %&gt;%
+  print() -&gt; links</code></pre>
+<pre><code>## # A tibble: 30 x 6
+## # Groups:   link [15]
+##     link end    node     x     y     z
+##    &lt;int&gt; &lt;chr&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1     1 from      1  10.1  17.0  17.4
+##  2     2 from      1  10.1  17.0  17.4
+##  3     3 from      1  10.1  17.0  17.4
+##  4     4 from      2  10.9  18.4  18.1
+##  5     5 from      2  10.9  18.4  18.1
+##  6     6 from      3  12.0  18.2  17.6
+##  7     7 from      3  12.0  18.2  17.6
+##  8     8 from      4  11.6  18.1  16.1
+##  9     9 from      4  11.6  18.1  16.1
+## 10    10 from      5  10.0  17.8  16.2
+## # … with 20 more rows</code></pre>
+<pre class="r"><code>pl &lt;- plot_ly(nodes, x = ~x, y = ~y, z = ~z)
+pl &lt;- add_paths(pl, data = links, x = ~x, y = ~y, z = ~z, color = I(&quot;black&quot;))
+pl</code></pre>
+<div id="htmlwidget-2" style="width:384px;height:384px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"visdat":{"16ff596c214e":["function () ","plotlyVisDat"],"16ff49feb5bf":["function () ","data"]},"cur_data":"16ff49feb5bf","attrs":{"16ff49feb5bf":{"x":{},"y":{},"z":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter3d","mode":"lines","color":["black"],"inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"scene":{"xaxis":{"title":"x"},"yaxis":{"title":"y"},"zaxis":{"title":"z"}},"hovermode":"closest","showlegend":false},"source":"A","config":{"modeBarButtonsToAdd":[{"name":"Collaborate","icon":{"width":1000,"ascent":500,"descent":-50,"path":"M487 375c7-10 9-23 5-36l-79-259c-3-12-11-23-22-31-11-8-22-12-35-12l-263 0c-15 0-29 5-43 15-13 10-23 23-28 37-5 13-5 25-1 37 0 0 0 3 1 7 1 5 1 8 1 11 0 2 0 4-1 6 0 3-1 5-1 6 1 2 2 4 3 6 1 2 2 4 4 6 2 3 4 5 5 7 5 7 9 16 13 26 4 10 7 19 9 26 0 2 0 5 0 9-1 4-1 6 0 8 0 2 2 5 4 8 3 3 5 5 5 7 4 6 8 15 12 26 4 11 7 19 7 26 1 1 0 4 0 9-1 4-1 7 0 8 1 2 3 5 6 8 4 4 6 6 6 7 4 5 8 13 13 24 4 11 7 20 7 28 1 1 0 4 0 7-1 3-1 6-1 7 0 2 1 4 3 6 1 1 3 4 5 6 2 3 3 5 5 6 1 2 3 5 4 9 2 3 3 7 5 10 1 3 2 6 4 10 2 4 4 7 6 9 2 3 4 5 7 7 3 2 7 3 11 3 3 0 8 0 13-1l0-1c7 2 12 2 14 2l218 0c14 0 25-5 32-16 8-10 10-23 6-37l-79-259c-7-22-13-37-20-43-7-7-19-10-37-10l-248 0c-5 0-9-2-11-5-2-3-2-7 0-12 4-13 18-20 41-20l264 0c5 0 10 2 16 5 5 3 8 6 10 11l85 282c2 5 2 10 2 17 7-3 13-7 17-13z m-304 0c-1-3-1-5 0-7 1-1 3-2 6-2l174 0c2 0 4 1 7 2 2 2 4 4 5 7l6 18c0 3 0 5-1 7-1 1-3 2-6 2l-173 0c-3 0-5-1-8-2-2-2-4-4-4-7z m-24-73c-1-3-1-5 0-7 2-2 3-2 6-2l174 0c2 0 5 0 7 2 3 2 4 4 5 7l6 18c1 2 0 5-1 6-1 2-3 3-5 3l-174 0c-3 0-5-1-7-3-3-1-4-4-5-6z"},"click":"function(gd) { \n        // is this being viewed in RStudio?\n        if (location.search == '?viewer_pane=1') {\n          alert('To learn about plotly for collaboration, visit:\\n https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html');\n        } else {\n          window.open('https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html', '_blank');\n        }\n      }"}],"cloud":false},"data":[{"x":[10.0513873919252,10.8726494121712,null,10.0513873919252,10.0049639077167,null,10.0513873919252,11.0543369105304,null,10.8726494121712,12.0230251990042,null,10.8726494121712,10.8156611426198,null,12.0230251990042,11.6069834900545,null,12.0230251990042,11.0729244199622,null,11.6069834900545,10.0049639077167,null,11.6069834900545,11.5272175920833,null,10.0049639077167,9.83831855980565,null,11.0543369105304,11.0729244199622,null,11.0543369105304,11.5272175920833,null,10.8156611426198,11.5272175920833,null,10.8156611426198,9.83831855980565,null,11.0729244199622,9.83831855980565],"y":[17.0427905313819,18.3731661276791,null,17.0427905313819,17.8170011579443,null,17.0427905313819,16.2208063271446,null,18.3731661276791,18.1727535993232,null,18.3731661276791,18.5700642922754,null,18.1727535993232,18.1155361206087,null,18.1727535993232,17.2518870130491,null,18.1155361206087,17.8170011579443,null,18.1155361206087,17.148051656421,null,17.8170011579443,18.1668851378811,null,16.2208063271446,17.2518870130491,null,16.2208063271446,17.148051656421,null,18.5700642922754,17.148051656421,null,18.5700642922754,18.1668851378811,null,17.2518870130491,18.1668851378811],"z":[17.3910511553234,18.0650143079719,null,17.3910511553234,16.2318514545894,null,17.3910511553234,17.3658377143319,null,18.0650143079719,17.6342438268503,null,18.0650143079719,16.9286396485918,null,17.6342438268503,16.0721798372531,null,17.6342438268503,18.208613773443,null,16.0721798372531,16.2318514545894,null,16.0721798372531,16.3475165831642,null,16.2318514545894,17.4761229801153,null,17.3658377143319,18.208613773443,null,17.3658377143319,16.3475165831642,null,16.9286396485918,16.3475165831642,null,16.9286396485918,17.4761229801153,null,18.208613773443,17.4761229801153],"type":"scatter3d","mode":"lines","marker":{"color":"rgba(0,0,0,1)","line":{"color":"rgba(0,0,0,1)"}},"textfont":{"color":"rgba(0,0,0,1)"},"error_y":{"color":"rgba(0,0,0,1)"},"error_x":{"color":"rgba(0,0,0,1)"},"line":{"color":"rgba(0,0,0,1)"},"frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"base_url":"https://plot.ly"},"evals":["config.modeBarButtonsToAdd.0.click"],"jsHooks":[]}</script>
+</div>
+<div id="linking-cycles" class="section level3">
+<h3>linking cycles</h3>
+<p>Finally, a lucky guess hit upon two linked cycles in the above embedding, highlighted <code>"firebrick"</code> and <code>"forestgreen"</code> in the following 3-dimensional plot:</p>
+<pre class="r"><code>cycle1 &lt;- 1:5
+cycle2 &lt;- c(6, 8, 10, 7, 9)
+cycle1 %&gt;%
+  {get.edge.ids(petersen, rbind(., .[c(2:5, 1)]))} %&gt;%
+  tibble::enframe(name = NULL, value = &quot;link&quot;) %&gt;%
+  inner_join(links, by = &quot;link&quot;) -&gt;
+  cycle1
+cycle2 %&gt;%
+  {get.edge.ids(petersen, rbind(., .[c(2:length(.), 1)]))} %&gt;%
+  tibble::enframe(name = NULL, value = &quot;link&quot;) %&gt;%
+  inner_join(links, by = &quot;link&quot;) -&gt; cycle2
+pl %&gt;%
+  add_paths(data = cycle1, x = ~x, y = ~y, z = ~z, color = I(&quot;firebrick&quot;)) %&gt;%
+  add_paths(data = cycle2, x = ~x, y = ~y, z = ~z, color = I(&quot;forestgreen&quot;)) %&gt;%
+  layout(showlegend = FALSE)</code></pre>
+<div id="htmlwidget-3" style="width:384px;height:384px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3">{"x":{"visdat":{"16ff596c214e":["function () ","plotlyVisDat"],"16ff49feb5bf":["function () ","data"],"16ff543ee222":["function () ","data"],"16ff6c705163":["function () ","data"]},"cur_data":"16ff6c705163","attrs":{"16ff49feb5bf":{"x":{},"y":{},"z":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter3d","mode":"lines","color":["black"],"inherit":true},"16ff543ee222":{"x":{},"y":{},"z":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter3d","mode":"lines","color":["firebrick"],"inherit":true},"16ff6c705163":{"x":{},"y":{},"z":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter3d","mode":"lines","color":["forestgreen"],"inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"showlegend":false,"scene":{"xaxis":{"title":"x"},"yaxis":{"title":"y"},"zaxis":{"title":"z"}},"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":[{"name":"Collaborate","icon":{"width":1000,"ascent":500,"descent":-50,"path":"M487 375c7-10 9-23 5-36l-79-259c-3-12-11-23-22-31-11-8-22-12-35-12l-263 0c-15 0-29 5-43 15-13 10-23 23-28 37-5 13-5 25-1 37 0 0 0 3 1 7 1 5 1 8 1 11 0 2 0 4-1 6 0 3-1 5-1 6 1 2 2 4 3 6 1 2 2 4 4 6 2 3 4 5 5 7 5 7 9 16 13 26 4 10 7 19 9 26 0 2 0 5 0 9-1 4-1 6 0 8 0 2 2 5 4 8 3 3 5 5 5 7 4 6 8 15 12 26 4 11 7 19 7 26 1 1 0 4 0 9-1 4-1 7 0 8 1 2 3 5 6 8 4 4 6 6 6 7 4 5 8 13 13 24 4 11 7 20 7 28 1 1 0 4 0 7-1 3-1 6-1 7 0 2 1 4 3 6 1 1 3 4 5 6 2 3 3 5 5 6 1 2 3 5 4 9 2 3 3 7 5 10 1 3 2 6 4 10 2 4 4 7 6 9 2 3 4 5 7 7 3 2 7 3 11 3 3 0 8 0 13-1l0-1c7 2 12 2 14 2l218 0c14 0 25-5 32-16 8-10 10-23 6-37l-79-259c-7-22-13-37-20-43-7-7-19-10-37-10l-248 0c-5 0-9-2-11-5-2-3-2-7 0-12 4-13 18-20 41-20l264 0c5 0 10 2 16 5 5 3 8 6 10 11l85 282c2 5 2 10 2 17 7-3 13-7 17-13z m-304 0c-1-3-1-5 0-7 1-1 3-2 6-2l174 0c2 0 4 1 7 2 2 2 4 4 5 7l6 18c0 3 0 5-1 7-1 1-3 2-6 2l-173 0c-3 0-5-1-8-2-2-2-4-4-4-7z m-24-73c-1-3-1-5 0-7 2-2 3-2 6-2l174 0c2 0 5 0 7 2 3 2 4 4 5 7l6 18c1 2 0 5-1 6-1 2-3 3-5 3l-174 0c-3 0-5-1-7-3-3-1-4-4-5-6z"},"click":"function(gd) { \n        // is this being viewed in RStudio?\n        if (location.search == '?viewer_pane=1') {\n          alert('To learn about plotly for collaboration, visit:\\n https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html');\n        } else {\n          window.open('https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html', '_blank');\n        }\n      }"}],"cloud":false},"data":[{"x":[10.0513873919252,10.8726494121712,null,10.0513873919252,10.0049639077167,null,10.0513873919252,11.0543369105304,null,10.8726494121712,12.0230251990042,null,10.8726494121712,10.8156611426198,null,12.0230251990042,11.6069834900545,null,12.0230251990042,11.0729244199622,null,11.6069834900545,10.0049639077167,null,11.6069834900545,11.5272175920833,null,10.0049639077167,9.83831855980565,null,11.0543369105304,11.0729244199622,null,11.0543369105304,11.5272175920833,null,10.8156611426198,11.5272175920833,null,10.8156611426198,9.83831855980565,null,11.0729244199622,9.83831855980565],"y":[17.0427905313819,18.3731661276791,null,17.0427905313819,17.8170011579443,null,17.0427905313819,16.2208063271446,null,18.3731661276791,18.1727535993232,null,18.3731661276791,18.5700642922754,null,18.1727535993232,18.1155361206087,null,18.1727535993232,17.2518870130491,null,18.1155361206087,17.8170011579443,null,18.1155361206087,17.148051656421,null,17.8170011579443,18.1668851378811,null,16.2208063271446,17.2518870130491,null,16.2208063271446,17.148051656421,null,18.5700642922754,17.148051656421,null,18.5700642922754,18.1668851378811,null,17.2518870130491,18.1668851378811],"z":[17.3910511553234,18.0650143079719,null,17.3910511553234,16.2318514545894,null,17.3910511553234,17.3658377143319,null,18.0650143079719,17.6342438268503,null,18.0650143079719,16.9286396485918,null,17.6342438268503,16.0721798372531,null,17.6342438268503,18.208613773443,null,16.0721798372531,16.2318514545894,null,16.0721798372531,16.3475165831642,null,16.2318514545894,17.4761229801153,null,17.3658377143319,18.208613773443,null,17.3658377143319,16.3475165831642,null,16.9286396485918,16.3475165831642,null,16.9286396485918,17.4761229801153,null,18.208613773443,17.4761229801153],"type":"scatter3d","mode":"lines","marker":{"color":"rgba(0,0,0,1)","line":{"color":"rgba(0,0,0,1)"}},"textfont":{"color":"rgba(0,0,0,1)"},"error_y":{"color":"rgba(0,0,0,1)"},"error_x":{"color":"rgba(0,0,0,1)"},"line":{"color":"rgba(0,0,0,1)"},"frame":null},{"x":[10.0513873919252,10.8726494121712,10.8726494121712,12.0230251990042,12.0230251990042,11.6069834900545,11.6069834900545,10.0049639077167,10.0513873919252,10.0049639077167],"y":[17.0427905313819,18.3731661276791,18.3731661276791,18.1727535993232,18.1727535993232,18.1155361206087,18.1155361206087,17.8170011579443,17.0427905313819,17.8170011579443],"z":[17.3910511553234,18.0650143079719,18.0650143079719,17.6342438268503,17.6342438268503,16.0721798372531,16.0721798372531,16.2318514545894,17.3910511553234,16.2318514545894],"type":"scatter3d","mode":"lines","marker":{"color":"rgba(178,34,34,1)","line":{"color":"rgba(178,34,34,1)"}},"textfont":{"color":"rgba(178,34,34,1)"},"error_y":{"color":"rgba(178,34,34,1)"},"error_x":{"color":"rgba(178,34,34,1)"},"line":{"color":"rgba(178,34,34,1)"},"frame":null},{"x":[11.0543369105304,11.0729244199622,11.0729244199622,9.83831855980565,10.8156611426198,9.83831855980565,10.8156611426198,11.5272175920833,11.0543369105304,11.5272175920833],"y":[16.2208063271446,17.2518870130491,17.2518870130491,18.1668851378811,18.5700642922754,18.1668851378811,18.5700642922754,17.148051656421,16.2208063271446,17.148051656421],"z":[17.3658377143319,18.208613773443,18.208613773443,17.4761229801153,16.9286396485918,17.4761229801153,16.9286396485918,16.3475165831642,17.3658377143319,16.3475165831642],"type":"scatter3d","mode":"lines","marker":{"color":"rgba(34,139,34,1)","line":{"color":"rgba(34,139,34,1)"}},"textfont":{"color":"rgba(34,139,34,1)"},"error_y":{"color":"rgba(34,139,34,1)"},"error_x":{"color":"rgba(34,139,34,1)"},"line":{"color":"rgba(34,139,34,1)"},"frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"base_url":"https://plot.ly"},"evals":["config.modeBarButtonsToAdd.0.click"],"jsHooks":[]}</script>
+<p>I’m happy to rest here, having figured out how to perform the famous embeddability-preserving operations and to render 3-dimensional graphics using <strong>plotly</strong> — which is about to become important as we prepare to present our anatomical analysis. If you take some further steps on your own, i’d be glad to hear about it!</p>
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>I’m being carefully vague here while referring to possibly unpublished work.<a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn2"><p>I’m thinking here of consolidation as the mathematical analog of Mendeleev’s periodic table, which introduced a useful conceptual schema that was ultimately validated not by its elegance alone but by the brand new elements (pun) it implied For one of the best stories of consolodationist success in mathematics, read <a href="http://math.ucr.edu/home/baez/octonions/node1.html">Baez’s popular chapter about the discoveries of the quarternions and the octonions</a> leading up to the general Cayley–Dickson construction. A more recent example i’ve come to love is <a href="https://www.ams.org/journals/ecgd/2015-19-13/S1088-4173-2015-00287-8/">the modulus-based family of distance measures by Albin, Brunner, Perez, Poggi-Corradini, and Wiens</a> that interpolate continuously between shortest path length and min flow–max cut distance.<a href="#fnref2" class="footnote-back">↩</a></p></li>
+<li id="fn3"><p>I’m thinking of this “alignment” or “entanglement” to myself as the subspaces of the spaces of cycles of <span class="math inline">\(G\)</span> and its complement, in the homological sense, having high-dimensional intersection, but that’s just a feeling.<a href="#fnref3" class="footnote-back">↩</a></p></li>
+<li id="fn4"><p>I might call this graph “series–complete” on the ordered partition <span class="math inline">\((1,3,3,1)\)</span>, since the links are precisely the pairs of nodes in adjacent subsets. Probably graph theorists have a term for this.<a href="#fnref4" class="footnote-back">↩</a></p></li>
+</ol>
+</div>
+</description>
       <content:encoded>
 <script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
 <script src="/rmarkdown-libs/plotly-binding/plotly.js"></script>
@@ -673,11 +1770,271 @@ pl %&gt;%
     <item>
       <title>Sampling uniformly from an embedded Klein bottle</title>
       <link>/2019/02/01/sampling/</link>
-      <pubDate>Fri, 01 Feb 2019 00:00:00 +0000</pubDate>
+      <pubDate>2019 Feb 01 (Fri), 00:00:00 +0000</pubDate>
       
       <guid>/2019/02/01/sampling/</guid>
-      <description>an apparent dearth of toy TDA samplers Experimenting and practicing with topological data analytic (TDA) tools requires a healthy diversity of suitable data sets. Several real-world classics can be found in various packages, for example the glucose and insulin test data collected and analyzed by Reaven and Miller and later used by Singh, Carlsson, and Mémoli to illustrate the Mapper construction, which is included in the heplots package:
-data(Diabetes, package = &amp;quot;heplots&amp;quot;) head(Diabetes) ## relwt glufast glutest instest sspg group ## 1 0.</description>
+      <description>
+
+
+<div id="an-apparent-dearth-of-toy-tda-samplers" class="section level3">
+<h3>an apparent dearth of toy TDA samplers</h3>
+<p>Experimenting and practicing with topological data analytic (TDA) tools requires a healthy diversity of suitable data sets. Several real-world classics can be found in various packages, for example the glucose and insulin test data <a href="https://link.springer.com/article/10.1007/BF00423145">collected and analyzed by Reaven and Miller</a> and later <a href="http://diglib.eg.org/handle/10.2312/SPBG.SPBG07.091-100">used by Singh, Carlsson, and Mémoli</a> to illustrate the Mapper construction, which is included in the <strong>heplots</strong> package:</p>
+<pre class="r"><code>data(Diabetes, package = &quot;heplots&quot;)
+head(Diabetes)</code></pre>
+<pre><code>##   relwt glufast glutest instest sspg  group
+## 1  0.81      80     356     124   55 Normal
+## 2  0.95      97     289     117   76 Normal
+## 3  0.94     105     319     143  105 Normal
+## 4  1.04      90     356     199  108 Normal
+## 5  1.00      90     323     240  143 Normal
+## 6  0.76      86     381     157  165 Normal</code></pre>
+<p>For purposes of validation and comparison in particular, we need to supplement empirical data sets, which reflect potentially interesting but unknown topological structure, with artificial data sets that have known, and often simple, intrinsic topology. Probably the most commonly used are simulated samples from a circle, which are straightforward to generate in R:</p>
+<pre class="r"><code>library(magrittr)
+library(tibble)
+library(dplyr)
+library(ggplot2)
+tibble(theta = runif(120, 0, 2*pi)) %&gt;%
+  mutate(x = cos(theta), y = sin(theta)) %&gt;%
+  mutate_at(vars(x, y), funs(. + rnorm(n = length(.), sd = .1))) %&gt;%
+  print() %&gt;%
+  select(x, y) %&gt;%
+  ggplot(aes(x = x, y = y)) + coord_fixed() + geom_point()</code></pre>
+<pre><code>## Warning: funs() is soft deprecated as of dplyr 0.8.0
+## Please use a list of either functions or lambdas: 
+## 
+##   # Simple named list: 
+##   list(mean = mean, median = median)
+## 
+##   # Auto named with `tibble::lst()`: 
+##   tibble::lst(mean, median)
+## 
+##   # Using lambdas
+##   list(~ mean(., trim = .2), ~ median(., na.rm = TRUE))
+## This warning is displayed once per session.</code></pre>
+<pre><code>## # A tibble: 120 x 3
+##    theta      x       y
+##    &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
+##  1  1.50  0.228  0.879 
+##  2  2.40 -0.841  0.463 
+##  3  2.67 -0.747  0.507 
+##  4  4.68 -0.118 -1.11  
+##  5  2.24 -0.849  0.753 
+##  6  3.63 -0.880 -0.464 
+##  7  6.18  1.07  -0.0112
+##  8  5.00  0.321 -0.852 
+##  9  5.52  0.807 -0.631 
+## 10  4.31 -0.376 -0.948 
+## # … with 110 more rows</code></pre>
+<p><img src="/post/2019-02-01-sampling_files/figure-html/circle%20sample-1.png" width="672" /></p>
+<p>The underlying sampling protocol is, to my understanding, typical:<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></p>
+<ol style="list-style-type: decimal">
+<li>Pick a topological property to test for. In this case, most researchers want a loop, or a non-trivial generator in <span class="math inline">\(H_1(\,\cdot\,,\mathbb{Z})\)</span>.</li>
+<li>Choose a manifold <span class="math inline">\(M\)</span> having the desired property. The circle <span class="math inline">\(M=S^1\)</span> is the simplest choice.</li>
+<li>Choose a parameterization <span class="math inline">\(f:I\to M\subset\mathbb{R}^m\)</span> from a parameter space <span class="math inline">\(I\)</span> to an embedding of the manifold in an ambient Euclidean space. Most TDA actually depends on a data set having an underlying geometry, from which topological “nearness” is inferred. <em>This choice determines that underlying geometry.</em> Above, the parameter space is <span class="math inline">\([0,2\pi)\)</span> and <span class="math inline">\(f(\theta)=(\cos(\theta),\sin(\theta))\)</span>.</li>
+<li>Sample points <span class="math inline">\(S\subset M\)</span> uniformly from the embedded manifold. The idea of uniformity makes sense because the manifold has a measure induced from the ambient space.</li>
+<li>Optionally, add random noise to <span class="math inline">\(S\)</span>, usually from a standard <span class="math inline">\(m\)</span>-dimensional Gaussian distribution.</li>
+</ol>
+<p>While working with Raoul on <a href="https://github.com/rrrlw/ggtda">the <strong>ggtda</strong> package</a>, i’ve realized both how useful these simple artificial data sets are and how difficult they can be to find or produce. The <strong>TDA</strong> package can <a href="https://rdrr.io/cran/TDA/man/sphereUnif.html">sample uniformly a sphere</a>, and the <strong>KODAMA</strong> package can <a href="https://rdrr.io/cran/KODAMA/man/spirals.html">generate noisy spiral arrangements</a>; but the most comprehensive sources i’ve found are the Python module <strong>TaDAsets</strong>, <a href="https://github.com/scikit-tda/tadasets/blob/master/tadasets/sample.py">which includes three</a>, and <a href="https://lvdmaaten.github.io/drtoolbox/">the Matlab toolbox <strong>drtoolbox</strong></a>, which includes seven. So, i’ve started accumulating “noisy shape” samplers into <a href="https://github.com/corybrunson/tdaunif">a lightweight R package</a> that can be used as an alternative to saving specific samples for illustrative use in packages like <strong>ggtda</strong>. (If a better source exists that i haven’t found, please let me know!)</p>
+</div>
+<div id="what-else-but-a-klein-bottle" class="section level3">
+<h3>what else but a Klein bottle?</h3>
+<p>Naturally, the first thing i wanted to do was sample uniformly from a Klein bottle <span class="math inline">\(\mathbb{K}\)</span>. Parameterizations are easy to find, e.g. <a href="https://en.wikipedia.org/wiki/Klein_bottle#Parametrization">on Wikipedia</a>, and i opted for one that looked most similar to the usual “doughnut” parameterization of the torus in <span class="math inline">\(\mathbb{R}^3\)</span>, namely the “Möbius tube” in <span class="math inline">\(\mathbb{R}^4\)</span>:</p>
+<p><span class="math display">\[\begin{align*}
+w(\theta,\phi) &amp;= (1 + r\cos\theta)\cos\phi \\
+x(\theta,\phi) &amp;= (1 + r\cos\theta)\sin\phi \\
+y(\theta,\phi) &amp;= r\sin\theta\cos\frac{\phi}{2} \\
+z(\theta,\phi) &amp;= r\sin\theta\sin\frac{\phi}{2}
+\end{align*}\]</span></p>
+<p>The parameter space is <span class="math inline">\([0,2\pi)\times[0,2\pi)\ni(\theta,\phi)\)</span>, while <span class="math inline">\(r\)</span> is a constant that determines the shape of the embedded manifold. (Here i’ve simplified the Wikipedia parameterization by setting <span class="math inline">\(R=1\)</span> and assuming that <span class="math inline">\(0\leq r\leq 1\)</span>.) So here’s a <a href="http://adv-r.had.co.nz/Functional-programming.html#closures">closure</a> that takes <code>r</code> as input and returns a parameterization function that sends a data frame of <span class="math inline">\(\theta,\phi\)</span> coordinates to one of <span class="math inline">\((w,x,y,z)\)</span> coordinates:</p>
+<pre class="r"><code>param_klein &lt;- function(r) {
+  if (r &lt; 0 | r &gt; 1) stop(&quot;`r` must be between 0 and 1.&quot;)
+  function(data) {
+    with(data, tibble(
+      w = (1 + r * cos(theta)) * cos(phi),
+      x = (1 + r * cos(theta)) * sin(phi),
+      y = r * sin(theta) * cos(phi / 2),
+      z = r * sin(theta) * sin(phi / 2)
+    ))
+  }
+}</code></pre>
+<p>Sampling is another matter. Though we know the embedding warps the parameter space, stretching parts of it while compressing others, it’s tempting to presuppose that this warping will not vary too much, and just take uniform samples from the parameter space and map them to the ambient space. Here’s where that gets us, without adding additional noise:</p>
+<pre class="r"><code>f_klein &lt;- param_klein(r = .75)
+tibble(theta = runif(360, 0, 2*pi), phi = runif(360, 0, 2*pi)) %&gt;%
+  f_klein() %&gt;%
+  print() %&gt;%
+  pairs(asp = 1, pch = 19, cex = .5, col = &quot;#00000077&quot;)</code></pre>
+<pre><code>## # A tibble: 360 x 4
+##          w       x       y       z
+##      &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+##  1  0.341  -1.24   -0.550   0.419 
+##  2  0.343  -0.0362  0.364  -0.0192
+##  3 -0.930   0.443  -0.165  -0.731 
+##  4 -0.141  -0.209   0.0240 -0.0450
+##  5 -1.13    0.509  -0.149  -0.694 
+##  6 -0.854   1.26    0.252   0.476 
+##  7  0.0760  0.503  -0.430  -0.370 
+##  8 -0.0723 -1.43   -0.420   0.442 
+##  9 -0.245  -0.164  -0.0745  0.245 
+## 10  0.773   0.500  -0.715  -0.211 
+## # … with 350 more rows</code></pre>
+<p><img src="/post/2019-02-01-sampling_files/figure-html/sample%20klein%20bottle%20uniformly%20from%20parameter%20space-1.png" width="672" /></p>
+<p>The features of the manifold are recognizable: The projection onto <span class="math inline">\(w\)</span> and <span class="math inline">\(x\)</span> is like that of a torus, while complementary “pinches” are discernible in the <span class="math inline">\(y\)</span> and <span class="math inline">\(z\)</span> directions with respect to <span class="math inline">\(w\)</span>. However, it’s also clear that more points have been sampled toward the center of the shape, where the parameterization “moves” most slowly, while fewer have been sampled toward the periphery.
+While we can visually pick out other regions of higher and lower concentrations, it’s not obvious how to determine how much of this is due to warping by the parameterization versus the angle from which we’re viewing the sample in these scatterplots.</p>
+</div>
+<div id="point-cloud-topology-is-sensitive-to-geometry" class="section level3">
+<h3>point cloud topology is sensitive to geometry</h3>
+<p>To better illustrate the potential problem, let’s go back to the noisy circle. The standard parameterization has the very nice property that the rate at which <span class="math inline">\(f(\theta)\)</span> traverses the circle, with respect to the rate at which <span class="math inline">\(\theta\)</span> proceeds along the interval, is constant. In analytic terms, the gradient <span class="math inline">\(\nabla f=(\frac{\partial x}{\partial\theta},\frac{\partial y}{\partial\theta})\)</span> has constant magnitude. Instead of this standard, consider the alternative, highly suspect parameterization <span class="math inline">\(g:[-2,2)\to\mathbb{R}^2\)</span> given by</p>
+<p><span class="math display">\[g(t) = \begin{cases}
+(t+1,\sqrt{1-(t+1)^2}) &amp; t\leq 0 \\
+(1-t,-\sqrt{1-(1-t)^2}) &amp; t&gt;0
+\end{cases}\]</span></p>
+<p>This map takes the interval <span class="math inline">\([-2,0]\)</span>, shifts it rightward to <span class="math inline">\([-1,1]\)</span>, and lifts it to the upper hemicircle; to complement, it shifts <span class="math inline">\(0,2\)</span> leftward to <span class="math inline">\((-1,1)\)</span>, reverses it (so that the map is continuous at <span class="math inline">\(t=0\)</span>), and drops it to the lower hemicircle. Here’s how the sampling procedure shakes out:</p>
+<pre class="r"><code>tibble(t = runif(120, -2, 2)) %&gt;%
+  mutate(x = ifelse(t &lt;= 0, t + 1, 1 - t)) %&gt;%
+  mutate(y = ifelse(t &lt;= 0, sqrt(1 - x^2), -sqrt(1 - x^2))) %&gt;%
+  mutate_at(vars(x, y), funs(. + rnorm(n = length(.), sd = .1))) %&gt;%
+  select(x, y) %&gt;%
+  ggplot(aes(x = x, y = y)) + coord_fixed() + geom_point()</code></pre>
+<p><img src="/post/2019-02-01-sampling_files/figure-html/sample%20circle%20uniformly%20from%20parameter%20space-1.png" width="672" /></p>
+<p>Notice the sparsity of points near <span class="math inline">\((-1,0)\)</span> and <span class="math inline">\((1,0)\)</span>. This is because, as <span class="math inline">\(x(t)\)</span> moves steadily away from these endpoints, <span class="math inline">\(y(t)\)</span> bolts away from them; so that the Euclidean distance <span class="math inline">\(\sqrt{x^2+y^2}\)</span> between <span class="math inline">\(g(t_0)\)</span> and <span class="math inline">\(g(t_1)\)</span> is larger when <span class="math inline">\(t_0\)</span> and <span class="math inline">\(t_1\)</span> are closer to these endpoints than when they are closer to <span class="math inline">\((0,1)\)</span> or <span class="math inline">\((0,-1)\)</span>.
+This is the sort of problem we want to be sure to avoid when sampling from the embedded Klein bottle.</p>
+</div>
+<div id="reforming-a-deformed-sampler" class="section level2">
+<h2>reforming a deformed sampler</h2>
+<p>My solution comes from <a href="https://projecteuclid.org/euclid.imsc/1379942050">a very cool paper titled “Sampling from a Manifold”</a>, by mathematicians Persi Diaconis and Mehrdad Shahshahani and statistician Susan Holmes.
+I don’t remember how i first came across this paper, but i found it simultaneously exciting and exhausting to read — excited by the prospect of using basic calculus and computational trickery to generate uniform manifold samples, exhausted by the way rigorous details were either compactified or outsourced. This post was ultimately motivated by a desire, for my own future benefit at least, to have a thoroughly documented application of their method available for reference.</p>
+<p>Recall the Möbius tube parameterization <span class="math inline">\(f:[0,2\pi)\times[0,2\pi)\to\mathbb{R}^4\)</span> above. To correct for the warping <span class="math inline">\(f\)</span> introduces, the strategy is to measure this warping locally (i.e. as a function of the parameters <span class="math inline">\(\theta\)</span> and <span class="math inline">\(\phi\)</span>) and then filter our random samples in a way that undoes its effects.</p>
+<div id="vector-derivatives" class="section level3">
+<h3>vector derivatives</h3>
+<p>As i alluded in the example of the circle, the warping arises from differences in the rate at which distances in the domain <span class="math inline">\(I\subset\mathbb{R}^2\)</span> translate into distances in the codomain <span class="math inline">\(\mathbb{R}^4\)</span>. That is to say, we measure the warping in terms of derivatives. The vector-valued function <span class="math inline">\(f\)</span> has two inputs and four outputs, so its <span class="math inline">\(4\times 2\)</span> <em>Jacobian</em> (derivative) matrix <span class="math inline">\(J_f\)</span> is given by</p>
+<p><span class="math display">\[J_f=
+\left[\ \frac{\partial f}{\partial\theta}\ \frac{\partial f}{\partial\phi}\ \right]=
+\left[\begin{array}{cc}
+\frac{\partial w}{\partial\theta} &amp; \frac{\partial w}{\partial\phi} \\
+\frac{\partial x}{\partial\theta} &amp; \frac{\partial x}{\partial\phi} \\
+\frac{\partial y}{\partial\theta} &amp; \frac{\partial y}{\partial\phi} \\
+\frac{\partial z}{\partial\theta} &amp; \frac{\partial z}{\partial\phi}
+\end{array}\right]=
+\left[\begin{array}{cc}
+-r\sin\theta\cos\phi &amp; -(1+r\cos\theta)\sin\phi \\
+-r\sin\theta\sin\phi &amp; (1+r\cos\theta)\cos\phi \\
+r\cos\theta\cos\frac{\phi}{2} &amp; -\frac{1}{2}r\sin\theta\sin\frac{\phi}{2} \\
+r\cos\theta\sin\frac{\phi}{2} &amp; \frac{1}{2}r\sin\theta\cos\frac{\phi}{2}
+\end{array}\right]\]</span></p>
+<p>Locally, the domain is composed of rectangles <span class="math inline">\((\theta,\theta+\Delta\theta)\times(\phi,\phi+\Delta\phi)\)</span>, while the codomain is, up to linear approximation, composed of parallelograms <span class="math inline">\((f,f+\frac{\partial f}{\partial\theta}\Delta\theta,f+\frac{\partial f}{\partial\phi}\Delta\phi,f+\frac{\partial f}{\partial\theta}\Delta\theta+\frac{\partial f}{\partial\phi}\Delta\phi)\)</span>.
+Whereas the domain rectangles have area <span class="math inline">\(\Delta\theta\Delta\phi\)</span>, the codomain parallelograms have area <span class="math inline">\(\Delta A=(\lvert\frac{\partial f}{\partial\theta}\rvert\lvert\frac{\partial f}{\partial\phi}\rvert\cos\omega)\Delta\theta\Delta\phi\)</span>, where <span class="math inline">\(\omega\)</span> is the angle between the vectors <span class="math inline">\(\frac{\partial f}{\partial\theta}\)</span> and <span class="math inline">\(\frac{\partial f}{\partial\phi}\)</span>. The local area function is then <span class="math inline">\(\lvert\frac{\partial f}{\partial\theta}\rvert\lvert\frac{\partial f}{\partial\phi}\rvert\cos\omega\)</span>.</p>
+<p>The more elegant way to understand this<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> is by imagining that <span class="math inline">\(f\)</span> takes a space, say <span class="math inline">\(\mathbb{R}^2\)</span>, to itself. In this case, the matrix <span class="math inline">\(J_f=\left[\ \frac{\partial f}{\partial\theta}\ \frac{\partial f}{\partial\phi}\ \right]\)</span> consists of the two (column) vectors in <span class="math inline">\(\mathbb{R}^2\)</span> defining the parallelogram corresponding to the unit rectangle based at <span class="math inline">\((\theta,\phi)\in\mathbb{R}^2\)</span>, so that the area of the parallelogram is the absolute value of <span class="math inline">\(\det J_f\)</span>. This generalizes to the formula <span class="math inline">\(j_f=\sqrt{\det({J_f}^\top{J_f})}\)</span> when the domain and codomain have different dimensions.</p>
+<p>A bit of algebra (minus the frustrating hours i lost after forgetting to differentiate constants) yields the Jacobian determinant
+<span class="math display">\[j_f = r\sqrt{(1+r\cos\theta)^2 + (\frac{1}{2}r\sin\theta)^2}\text.\]</span>
+As before, the function is returned from a closure that depends on <code>r</code>:</p>
+<pre class="r"><code>jacobian_klein &lt;- function(r) {
+  function(theta) r * sqrt((1 + r * cos(theta)) ^ 2 + (.5 * r * sin(theta)) ^ 2)
+}</code></pre>
+<p>Here’s how the Jacobian determinant — that is, the expanding and contracting of area by the parameterization — depends on <span class="math inline">\(\theta\)</span>:</p>
+<pre class="r"><code>j_klein &lt;- jacobian_klein(r = .75)
+tibble(theta = seq(0, 2*pi, length.out = 60)) %&gt;%
+  mutate(jacobian = j_klein(theta)) %&gt;%
+  print() %&gt;%
+  ggplot(aes(x = theta, y = jacobian)) +
+  ylim(c(0, NA)) +
+  geom_line() +
+  geom_area(fill = &quot;#00000077&quot;)</code></pre>
+<pre><code>## # A tibble: 60 x 2
+##    theta jacobian
+##    &lt;dbl&gt;    &lt;dbl&gt;
+##  1 0         1.31
+##  2 0.106     1.31
+##  3 0.213     1.30
+##  4 0.319     1.29
+##  5 0.426     1.27
+##  6 0.532     1.24
+##  7 0.639     1.21
+##  8 0.745     1.18
+##  9 0.852     1.14
+## 10 0.958     1.10
+## # … with 50 more rows</code></pre>
+<p><img src="/post/2019-02-01-sampling_files/figure-html/klein%20bottle%20jacobian%20versus%20theta-1.png" width="672" /></p>
+<p>Looking back at the scatterplots, the contraction is least near <span class="math inline">\(\theta=0\)</span> and <span class="math inline">\(\theta=2\pi\)</span>, toward the periphery of the Klein bottle where <span class="math inline">\(w\)</span> and <span class="math inline">\(x\)</span> are at their greatest amplitudes (with respect to <span class="math inline">\(\phi\)</span>), and greatest near <span class="math inline">\(\theta=\pi\)</span>, toward the center.</p>
+</div>
+<div id="de-biasing-samples" class="section level3">
+<h3>de-biasing samples</h3>
+<p>We can now use our knowledge of derivatives to preempt the bias they introduce. The motivation is that, if the surface is expanded by a factor of <span class="math inline">\(k\)</span> near the point <span class="math inline">\((\theta_0,\phi_0)\)</span>, then <span class="math inline">\(k\)</span> times as many points should be sampled there, so that the density of points on the warped surface is uniform. The idea of <em>rejection sampling</em>, with a density function <span class="math inline">\(\delta:I\to[0,1]\)</span>, is to sample many points uniformly and then retain each point <span class="math inline">\((\theta_0,\phi_0)\)</span> with probability <span class="math inline">\(\delta(\theta_0,\phi_0)\)</span>.</p>
+<p>In fact, we don’t have to calculate the density function exactly, so that it has unit integral over the domain <span class="math inline">\(I\)</span>; it is enough to make sure that we retain samples in the correct proportion. Since the Jacobian is maximized at <span class="math inline">\(\theta=0\)</span> for any choice of <span class="math inline">\(r\)</span>,<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> this can be accomplished as follows:</p>
+<ol style="list-style-type: decimal">
+<li>Sample <span class="math inline">\(\theta\in[0,2\pi)\)</span> uniformly.</li>
+<li>Sample <span class="math inline">\(\eta\in[0,j_f(0)]\)</span> uniformly.</li>
+<li>If <span class="math inline">\(j_f(\theta) &gt; \eta\)</span>, then retain the value <span class="math inline">\(\theta\)</span>; otherwise, reject <span class="math inline">\(\theta\)</span>.</li>
+</ol>
+<p>Effectively, we retain <span class="math inline">\(\theta\)</span> when <span class="math inline">\((\theta,\eta)\)</span> lies in the shaded region above and reject it when not. The procedure repeats until enough values are retained. This leads me to the following rejection sampler:</p>
+<pre class="r"><code>sample_klein_theta &lt;- function(n, r) {
+  x &lt;- c()
+  while (length(x) &lt; n) {
+    theta &lt;- stats::runif(n, 0, 2 * pi)
+    jacobian &lt;- jacobian_klein(r)
+    jacobian_theta &lt;- sapply(theta, jacobian)
+    eta &lt;- stats::runif(n, 0, jacobian(0))
+    x &lt;- c(x, theta[jacobian_theta &gt; eta])
+  }
+  x[1:n]
+}
+sample_klein &lt;- function(n, r) {
+  d &lt;- tibble(
+    phi = stats::runif(n, 0, 2*pi),
+    theta = sample_klein_theta(n, r)
+  )
+  f &lt;- param_klein(r)
+  f(d)
+}</code></pre>
+<p>We can compare this to the naïve sampler above that did not account for warping by the parameterization:</p>
+<pre class="r"><code>sample_klein(n = 360, r = .75) %&gt;%
+  print() %&gt;%
+  pairs(asp = 1, pch = 19, cex = .5, col = &quot;#00000077&quot;)</code></pre>
+<pre><code>## # A tibble: 360 x 4
+##         w      x       y       z
+##     &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+##  1 -1.43  -0.914 -0.0799  0.273 
+##  2  0.698  0.105  0.688   0.0513
+##  3 -0.836  1.37  -0.216  -0.386 
+##  4 -0.286  0.329 -0.205  -0.450 
+##  5  1.15  -0.537 -0.685   0.152 
+##  6  0.719 -0.191  0.699  -0.0913
+##  7 -0.537 -1.02  -0.380   0.628 
+##  8 -0.376 -1.23   0.412  -0.557 
+##  9  0.848 -1.53   0.0276 -0.0163
+## 10 -1.03   1.42   0.0252  0.0493
+## # … with 350 more rows</code></pre>
+<p><img src="/post/2019-02-01-sampling_files/figure-html/sample%20klein%20bottle%20uniformly%20within%20ambient%20space-1.png" width="672" /></p>
+<p>The differences are minor in most of the coordinate scatterplots, but the concentration of points near the center of the <span class="math inline">\(w,x\)</span>-projection is clearly less than before, and not discernibly different at this “inner” region of the surface than at the “outer” regions.</p>
+</div>
+<div id="validation-via-persistent-homology" class="section level3">
+<h3>validation via persistent homology</h3>
+<p>It makes sense to wrap up with a validation test. In an inversion of the usual protocol, i’ll use a widely-used implementation of persistent homology (PH) to validate my sampler. Since PH is based on distances in the ambient space <span class="math inline">\(\mathbb{R}^4\)</span>, the topological features of the Klein bottle — two generators of the rank-1 homology group <span class="math inline">\(H_1(\mathbb{K},\mathbb{Z})\)</span> — should be more clearly discernible from the points sampled uniformly from the embedded manifold than from those embedded from a uniform sample on the parameter space. In order to better illustrate the limiting case, i’ve boosted the sample size to 840 and set the minor radius to half the major radius. Here are the persistence diagrams for both samples:</p>
+<pre class="r"><code>f_klein &lt;- param_klein(r = .5)
+tibble(theta = runif(840, 0, 2*pi), phi = runif(840, 0, 2*pi)) %&gt;%
+  f_klein() %&gt;%
+  as.matrix() %&gt;%
+  TDAstats::calculate_homology(dim = 1) %&gt;%
+  TDAstats::plot_persist() -&gt;
+  ph_klein_warp
+sample_klein(n = 840, r = .5) %&gt;%
+  as.matrix() %&gt;%
+  TDAstats::calculate_homology(dim = 1) %&gt;%
+  TDAstats::plot_persist() -&gt;
+  ph_klein_unif
+gridExtra::grid.arrange(ph_klein_warp, ph_klein_unif, ncol = 2)</code></pre>
+<p><img src="/post/2019-02-01-sampling_files/figure-html/persistent%20homology%20of%20klein%20bottle%20samples-1.png" width="672" /></p>
+<p>Indeed, while PH captures the topology of <span class="math inline">\(\mathbb{K}\)</span> from both samples, the noise is noticeably reduced in the latter. Voila!</p>
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Some of these steps might be permuted, e.g. one could generate noise in the parameter space before embedding the sample, depending on what real-world problem you wants to simulate.<a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn2"><p>Here’s where i’ll corroborate the authors’ recommendation of <a href="https://archive.org/details/HubbardJ.H.HubbardB.B.VectorCalculusLinearAlgebraAndDifferentialFormsAUnifiedApp/">the book by Hubbard and Hubbard</a>.<a href="#fnref2" class="footnote-back">↩</a></p></li>
+<li id="fn3"><p>By my handiwork, <span class="math inline">\(\frac{\partial j_f}{\partial\theta}\)</span> has numerator <span class="math inline">\(-r^2\sin\theta(4+3r\cos\theta)\)</span>, which vanishes at <span class="math inline">\(\theta=0,\pi\)</span>.<a href="#fnref3" class="footnote-back">↩</a></p></li>
+</ol>
+</div>
+</description>
       <content:encoded>
 
 

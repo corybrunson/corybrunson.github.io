@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Methodology on murmuring in the background</title>
-    <link>/categories/methodology/</link>
-    <description>Recent content in Methodology on murmuring in the background</description>
+    <title>Eigendecomposition on murmuring in the background</title>
+    <link>/tags/eigendecomposition/</link>
+    <description>Recent content in Eigendecomposition on murmuring in the background</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 16 Aug 2019 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/categories/methodology/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/tags/eigendecomposition/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -19,16 +19,6 @@
       <guid>/2019/08/16/rank-correlations/</guid>
       <description>A fundamental idea in biplot methodology is the conference of inertia, a phrase i picked up from an SO answer by ttnphns and quickly incorporated into ordr. The basic idea arises from the central properties of a biplot, illustrated here for principal components analysis: A case–variable data matrix \(X\in\mathbb{R}^{n\times m}\) of ratio variables1 is singular-value decomposed as \(X=UDV^\top\), for example the mtcars data set:
 x &amp;lt;- scale(mtcars, center = TRUE, scale = TRUE) s &amp;lt;- svd(x) r &amp;lt;- length(s$d) Under this convention, \(U\in\mathbb{R}^{n\times r}\) and \(V\in\mathbb{R}^{m\times r}\) arise from eigendecompositions of \(XX^\top\) and of \(X^\top X\), respectively, and \(D\in\mathbb{R}^{r\times r}\) is the diagonal matrix of the square roots of their (common) eigenvalues.</description>
-    </item>
-    
-    <item>
-      <title>Sampling uniformly from an embedded Klein bottle</title>
-      <link>/2019/02/01/sampling/</link>
-      <pubDate>Fri, 01 Feb 2019 00:00:00 +0000</pubDate>
-      
-      <guid>/2019/02/01/sampling/</guid>
-      <description>an apparent dearth of toy TDA samplers Experimenting and practicing with topological data analytic (TDA) tools requires a healthy diversity of suitable data sets. Several real-world classics can be found in various packages, for example the glucose and insulin test data collected and analyzed by Reaven and Miller and later used by Singh, Carlsson, and Mémoli to illustrate the Mapper construction, which is included in the heplots package:
-data(Diabetes, package = &amp;quot;heplots&amp;quot;) head(Diabetes) ## relwt glufast glutest instest sspg group ## 1 0.</description>
     </item>
     
   </channel>

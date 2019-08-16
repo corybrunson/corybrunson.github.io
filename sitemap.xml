@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>/2019/08/16/rank-correlations/</loc>
+    <lastmod>2019-08-16T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/2019/08/02/lda/</loc>
     <lastmod>2019-08-02T00:00:00+00:00</lastmod>
   </url>
@@ -24,7 +29,7 @@
   
   <url>
     <loc>/tags/biplot/</loc>
-    <lastmod>2019-08-02T00:00:00+00:00</lastmod>
+    <lastmod>2019-08-16T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -34,8 +39,20 @@
   </url>
   
   <url>
+    <loc>/tags/correlation/</loc>
+    <lastmod>2019-08-16T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>/categories/curiosity/</loc>
     <lastmod>2019-03-01T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/tags/eigendecomposition/</loc>
+    <lastmod>2019-08-16T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -65,7 +82,7 @@
   
   <url>
     <loc>/categories/methodology/</loc>
-    <lastmod>2019-08-02T00:00:00+00:00</lastmod>
+    <lastmod>2019-08-16T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -83,7 +100,19 @@
   
   <url>
     <loc>/post/</loc>
+    <lastmod>2019-08-16T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/categories/progress/</loc>
     <lastmod>2019-08-02T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/tags/rank/</loc>
+    <lastmod>2019-08-16T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -101,13 +130,13 @@
   
   <url>
     <loc>/tags/</loc>
-    <lastmod>2019-08-02T00:00:00+00:00</lastmod>
+    <lastmod>2019-08-16T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/</loc>
-    <lastmod>2019-08-02T00:00:00+00:00</lastmod>
+    <lastmod>2019-08-16T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   

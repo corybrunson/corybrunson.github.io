@@ -6,7 +6,7 @@
     <description>Recent content in Tags on murmuring in the background</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 02 Aug 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 16 Aug 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     
@@ -14,9 +14,27 @@
     <item>
       <title>Biplot</title>
       <link>/tags/biplot/</link>
-      <pubDate>Fri, 02 Aug 2019 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 16 Aug 2019 00:00:00 +0000</pubDate>
       
       <guid>/tags/biplot/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Correlation</title>
+      <link>/tags/correlation/</link>
+      <pubDate>Fri, 16 Aug 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/correlation/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Eigendecomposition</title>
+      <link>/tags/eigendecomposition/</link>
+      <pubDate>Fri, 16 Aug 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/eigendecomposition/</guid>
       <description></description>
     </item>
     
@@ -44,24 +62,6 @@
       <pubDate>Fri, 01 Feb 2019 00:00:00 +0000</pubDate>
       
       <guid>/tags/klein-bottle/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Linear Discriminant Analysis</title>
-      <link>/tags/linear-discriminant-analysis/</link>
-      <pubDate>Fri, 02 Aug 2019 00:00:00 +0000</pubDate>
-      
-      <guid>/tags/linear-discriminant-analysis/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Ordination</title>
-      <link>/tags/ordination/</link>
-      <pubDate>Fri, 02 Aug 2019 00:00:00 +0000</pubDate>
-      
-      <guid>/tags/ordination/</guid>
       <description></description>
     </item>
     
