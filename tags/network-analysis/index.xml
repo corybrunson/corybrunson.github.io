@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Network Analysis on murmuring in the background</title>
+    <link>/tags/network-analysis/</link>
+    <description>Recent content in Network Analysis on murmuring in the background</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 30 Aug 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/network-analysis/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>comparable pairwise and multivariate associations from presence-absence data</title>
+      <link>/2019/08/30/presence-absence/</link>
+      <pubDate>Fri, 30 Aug 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/2019/08/30/presence-absence/</guid>
+      <description>A project i’ve had in the works for years, and “almost done” since last summer, is a sensitivity and robustness analysis of several techniques used in studies of “comorbidity networks” (also “disease graphs”, “disease maps”, etc.) that have appeared over the past 20 years. As i begin the abstract:
+ Comorbidity network analysis (CNA) is an increasingly popular approach in systems medicine, in which mathematical graphs encode epidemiological correlations (links) between diseases (nodes) inferred from their occurrence in an underlying patient population.</description>
+    </item>
+    
+  </channel>
+</rss>
