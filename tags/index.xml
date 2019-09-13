@@ -6,10 +6,19 @@
     <description>Recent content in Tags on murmuring in the background</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 16 Aug 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 13 Sep 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Alluvial Plots</title>
+      <link>/tags/alluvial-plots/</link>
+      <pubDate>Fri, 13 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/alluvial-plots/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>Biplot</title>
@@ -48,20 +57,11 @@
     </item>
     
     <item>
-      <title>Graph Theory</title>
-      <link>/tags/graph-theory/</link>
-      <pubDate>Fri, 01 Mar 2019 00:00:00 +0000</pubDate>
+      <title>Finches</title>
+      <link>/tags/finches/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>/tags/graph-theory/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Klein Bottle</title>
-      <link>/tags/klein-bottle/</link>
-      <pubDate>Fri, 01 Feb 2019 00:00:00 +0000</pubDate>
-      
-      <guid>/tags/klein-bottle/</guid>
+      <guid>/tags/finches/</guid>
       <description></description>
     </item>
     

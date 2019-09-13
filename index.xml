@@ -6,10 +6,264 @@
     <description>Recent content on murmuring in the background</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>2019 Aug 30 (Fri), 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>2019 Sep 13 (Fri), 00:00:00 +0000</lastBuildDate>
     
         <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>defining and taxonomizing alluvial diagrams</title>
+      <link>/2019/09/13/alluvial-vs-sankey/</link>
+      <pubDate>2019 Sep 13 (Fri), 00:00:00 +0000</pubDate>
+      
+      <guid>/2019/09/13/alluvial-vs-sankey/</guid>
+      <description>
+
+
+<div id="background" class="section level2">
+<h2>Background</h2>
+<p>I first encountered alluvial diagrams, so-called, in a widely-shared <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0008694">paper</a> by Martin Rosvall and Carl T. Bergstrom. They were investigating the shifting boundaries between distinct scientific fields (“modules”), as reconstructed from sequential years of journal citation data (“states”), and proposed a specialized flow diagram “to highlight the significant changes, fusions, and fissions that the modules undergo between each pair of successive states”. At the time, i was unfamiliar with Sankey diagrams and only passingly familiar with flow diagrams—mostly by way of my computational biologist colleagues and their literature-derived signal transduction networks—but i could imagine myriad uses for this type of visualization and eventually went searching for an implementation in R.</p>
+<p>This led me to the <a href="https://github.com/mbojan/alluvial">alluvial</a> package, which Michał Bojanowski was actively developing. As i got more comfortable with and excited about the then-ascendant tidyverse, i took it upon myself to put together <a href="https://github.com/corybrunson/ggalluvial">a ggplot2 extension</a>, which has since become considerably widely used. I later learned that previous developers had released similar extensions, specifically “parallel sets plots” in Thomas Lin Pedersen’s <a href="https://ggforce.data-imaginist.com">ggforce</a> and in Heike Hofmann and Marie Vendettouli’s <a href="https://github.com/heike/ggparallel">ggparallel</a>.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>
+With continual exposure to these diverse implementations, i began to notice some subtle but important distinctions between others’ and my design principles. It also became clear that there was no consensus distinction between <em>alluvial</em> diagrams/plots and the more well-established genres of <em>Sankey</em> diagrams and <em>parallel sets</em> plots—indeed, no consensus on whether a distinction existed! Based on <a href="https://github.com/corybrunson/ggalluvial/issues">the ggalluvial issues page</a> and <a href="https://stackoverflow.com/search?q=ggalluvial">an occasional query on Stack Overflow</a>, the lack of generally accepted terms surrounding these sorts of diagrams remains a source of confusion.<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> My goal in this post is to propose some vocabulary and a taxonomy to <del>alluviate</del> alleviate this confusion, or at least serve as a point of reference for others to propose improvements!</p>
+</div>
+<div id="a-proposed-taxonomy-for-width-encoded-diagrams" class="section level2">
+<h2>A proposed taxonomy for width-encoded diagrams</h2>
+<p>Since the terms “diagram” and “plot” (along with “chart”) are sometimes used interchangeably and sometimes fiercely contested, i’ll adopt a convention here and invite suggestions to improve it: <strong>Diagrams</strong> visualize information, <strong>charts</strong> are diagrams whose information is stored as data, and <strong>plots</strong> are charts that are uniquely determined from data by a fixed set of plotting rules.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a>
+In these terms, ggalluvial and the other R packages discussed here unambiguously produce <em>plots</em>.</p>
+<p>Here are how i think these various diagrams—flow, Sankey, parallel sets, and alluvial—are related:</p>
+<ol style="list-style-type: decimal">
+<li><em>Flow diagrams encode directed flows.</em> Flow diagrams may use ribbons, arrows, or other graphical elements to represent flows—that is, directed processes. For example, directed network diagrams of resource transmission between nodes are flow diagrams. Note that flows are not necessarily between nodes: Many Sankey diagrams include incoming or outgoing arrows representing flows from or to elements outside the diagram.</li>
+<li><em>Sankey diagrams are flow diagrams with flow weights encoded as ribbon widths.</em> Flow diagrams may be unweighted: Signal transduction networks, for example, usually are. While Sankey diagrams are extremely flexible, their defining characteristic is that weighted flows are represented by ribbons whose widths indicate the weights or “volumes” of flows through them.</li>
+<li><a href="https://datascience.blog.wzb.eu/2016/09/27/parallel-coordinate-plots-for-discrete-and-categorical-data-in-r-a-comparison/">Parallel coordinates plots</a> depict cases in a data set by their coordinates along several continuous dimensions, i.e. their values at several continuous variables, arrayed along a discrete axis. <em>Parallel sets plots are analogous to parallel coordinates plots with discrete-valued classificatory dimensions in place of continuous-valued coordinate dimensions.</em> This requires that the plotting rules both determine the order of the classes along each dimension and preserve their relative sizes. In practice, this means that ribbon widths indicate either the absolute weights of the cases or their proportions of the total weight.</li>
+<li><em>Alluvial plots are parallel sets plots in which classes are ordered consistently across dimensions and stacked without gaps at each dimension.</em> This yields a plot with a meaningful continuous axis perpendicular to the discrete axis: The height of a stack at any class is the cumulative weight of the preceding classes, and the stacked sets at different dimensions can be directly compared as stacked bar plots. (Alluvial plots also tend to use splines rather than segments to delineate ribbons, though i think this is far less important than the rules that position the sets and ribbon boundaries.)</li>
+</ol>
+<div id="examples" class="section level3">
+<h3>Examples</h3>
+<p>I’m not rendering any plots in this post, so i’ll illustrate these distinctions by pointing to several examples of each, with an emphasis on examples that are “mislabeled” according to my taxonomy:</p>
+<ol style="list-style-type: decimal">
+<li>Flow diagrams that are <em>not</em> Sankey diagrams:
+<ul>
+<li><a href="https://commons.wikimedia.org/wiki/File:Typical_Signal_Schedule_and_Traffic_Flow_Diagram,_North-South_across_Market_(1929).png">Typical Signal Schedule and Traffic Flow Diagram</a>, Wikimedia Commons</li>
+<li><a href="https://commons.wikimedia.org/wiki/File:VA_Business_Line_Finance_and_Accounting.jpg">VA Business Line Finance and Accounting</a>, Wikimedia Commons</li>
+<li><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5438221/figure/F2/">Process flow diagram</a>, Alonso et al (2017)</li>
+</ul></li>
+<li>Sankey diagrams:
+<ul>
+<li><a href="https://commons.wikimedia.org/wiki/File:JIE_Sankey_V5_Fig1.png">The Thermal Efficiency of Steam Engines</a>, Wikimedia Commons</li>
+<li><a href="https://commons.wikimedia.org/wiki/File:Sankey_Diagram_of_US_Consumer_Expenditure_in_2012.jpg">Sankey Diagram of US Consumer Expenditure in 2012</a>, Wikimedia Commons</li>
+<li><a href="https://commons.wikimedia.org/wiki/File:Earth_heat_balance_Sankey_diagram.svg">Earth heat balance Sankey diagram</a>, Wikimedia Commons</li>
+<li><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5438221/figure/F3/">Sankey diagram</a>, Alonso et al (2017)</li>
+</ul></li>
+<li>Parallel sets plots that are <em>not</em> alluvial plots:
+<ul>
+<li><a href="https://www.jasondavies.com/parallel-sets/">Titanic Survivors</a>, Jason Davies</li>
+<li><a href="https://xeno.graphics/stacked-area-alluvial-diagram/">Stacked area alluvial diagram</a>, Xenographics (note that the vertical axis applies only to the area plot)</li>
+<li><a href="https://commons.wikimedia.org/wiki/File:Sankey_Diagram_-_Income_Statement.jpg">Sankey Diagram - Income Statement</a>, Wikimedia Commons</li>
+<li><a href="https://journals.plos.org/plosone/article/figure?id=10.1371/journal.pone.0008694.g003">Mapping change in science</a>, <em>PLoS ONE</em></li>
+<li><a href="https://www.researchgate.net/figure/Figure-S1-Sankey-diagram-on-global-green-virtual-water-flows-Sankey_fig5_303306020">Sankey diagram on global green virtual water flows</a>, Serrano, Guan, Duarte, and Paavola (2016)</li>
+</ul></li>
+<li>Alluvial plots:
+<ul>
+<li><a href="https://www.theinformationlab.co.uk/2018/03/09/build-sankey-diagram-tableau-without-data-prep-beforehand/">Superstore’s Super Sankey</a>, The Information Lab</li>
+<li><a href="https://www.theguardian.com/politics/2016/may/06/holyrood-elections-see-rise-of-team-ruth-and-demise-of-labour-vision">How Scotland’s political geography changed, seat by seat</a>, <em>The Guardian</em></li>
+<li><a href="https://www.researchgate.net/figure/Alluvial-diagram-for-mapping-changes-in-the-Global-network-The-top-ten-communities_fig6_267734552">Alluvial diagram for mapping changes in the Global network</a>, Lu and Brelsford (2014)</li>
+</ul></li>
+</ol>
+</div>
+<div id="how-my-proposal-stacks-up" class="section level3">
+<h3>How my proposal stacks up</h3>
+<p>Without exhaustively surveying the Internet and technical literature, it’s worthwhile to benchmark my distinctions against those made by some popular chart catalogues, which are much more representative of usage patterns. Xenographics lists several at the end of <a href="https://xeno.graphics/articles/on-graphonyms-the-importance-of-chart-type-names/">their discussion of graphonyms</a>, and of these three make clear distinctions between some of the types described above:</p>
+<ul>
+<li><a href="https://datavizproject.com/">The DataViz Project</a> describes Sankey diagrams as i did above, and distinguishes alluvial plots from parallel sets plots only in terms of the orientation of the axes (which is horizontal versus vertical) and of the shapes of the connecting ribbons.</li>
+<li><a href="https://datavizcatalogue.com">The Data Visualization Catalogue</a> distinguishes parallel sets plots from Sankey diagrams as not using arrows and binning the flows (ribbons) at regular intervals. (They don’t have an entry on alluvial plots.)</li>
+<li><a href="http://visualizationuniverse.com/charts/">The Visualization Universe</a> has entries for Sankey diagrams and alluvial plots, but their descriptions are excerpts (or, at least, subsets) of those of the DataViz Project.</li>
+</ul>
+<p>Importantly, in my taxonomy, by and large, <strong>alluvial plots are not Sankey diagrams, nor even flow diagrams</strong>. This seems appropriate on reflection, since even the original alluvial diagrams did not represent the transmission of material or information between nodes but changes in classification over time.<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a> This is not to say that alluvial plots cannot represent flow data—several popular examples do—but that the plot elements are not <em>specific</em> to flow data; and that, as a result, the directedness of flow data may not be conveyed well in an alluvial plot.<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a> I seem to be in agreement with the popular catalogues here.<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a></p>
+<p>A more subtle pattern of usage reflected in my proposal is that parallel sets plots may resize flows from dimension to dimension to reflect changes in proportion that do not necessarily correspond to chances in amount. This must be done carefully in such plots, but it would be anathema to a Sankey diagram.
+I’ll also endorse Elijah Meeks’ point, <a href="https://medium.com/@Elijah_Meeks/alluvial-charts-and-their-discontents-10a77d55216b">from this Medium post</a>, that Sankey diagrams can include cycles, whereas parallel sets and alluvial plots would not be able to encode such patterns.</p>
+<p>I’m also making a distinction between alluvial and parallel sets plots that the catalogues—and, in my experience, other developers—don’t make.
+Indeed, i haven’t seen a discussion anywhere else of whether a parallel sets or alluvial plot puts repeated categories in the same order, or whether the parallel sets are stacked so that the perpendicular axis measures their cumulative size, or whether either of these features is relevant to the choice of which type of plot is better-suited to a given purpose.
+Having spent hours on the problem of whether different orderings might benefit a plot, and having been prompted several times to implement gaps between the sets, i’ve come to take the strong position that this distinction matters and that the terminology should reflect it.
+While good definitions describe usage rather than prescribe it, i think it’s worth making an argument for this particular technical distinction while the terminology has not yet, ahem, sedemented.</p>
+</div>
+</div>
+<div id="a-prescription-for-distinguishing-alluvial-and-parallel-sets-plots" class="section level2">
+<h2>A prescription for distinguishing alluvial and parallel sets plots</h2>
+<p>To reiterate:</p>
+<blockquote>
+<p><em>Alluvial plots are parallel sets plots in which classes are ordered consistently across dimensions and stacked without gaps at each dimension.</em></p>
+</blockquote>
+<div id="caveat" class="section level3">
+<h3>Caveat</h3>
+<p>Neither Rosvall and Bergstrom, who popularized alluvial diagrams, nor Bojanowski, on whose package i based ggalluvial, included a cumulative weight axis perpendicular to the dimensions axis. In fact, what originally prompted me to omit the gaps between strata in ggalluvial was that i didn’t know how to get rid of the vertical axis! Like every great idea i believe i’ve had, i arrived at this one via gradient descent.</p>
+<p>That’s still not to say i was first: Hofmann and Vendettouli wrote ggparallel to stack the sets in each dimension and retain a vertical axis in their plots. There may well be other such implementations, but i’m most familiar with the R ecosystem.</p>
+</div>
+<div id="utility" class="section level3">
+<h3>Utility</h3>
+<p>First, i claim that the features that distinguish alluvial from parallel sets plots—consistent ordering of sets and a cumulative weight axis—have practical importance.
+In particular, they have importance <em>beyond</em> the ability to visually distinguish the sets and compare their weights along each dimension, as can be done from any parallel sets plot.
+The use cases i’ve surveyed reveal three distinct settings in which alluvial plots are superior to other parallel sets plots:<a href="#fn7" class="footnote-ref" id="fnref7"><sup>7</sup></a></p>
+<p><strong>Repeated categorical measures data:</strong>
+Several users have used alluvial plots to represent data consisting of partitions of cases into the same (or overlapping) classification schemes at different times, in particular before and after some intervention or other significant event.
+See scholarly examples in <a href="https://www.sciencedirect.com/science/article/pii/S0378429018317337">Baudron, Ndoli, Habarurema, and Silva (2019)</a>, <a href="https://www.sciencedirect.com/science/article/pii/S0195925518302026">Kissinger and Reznik (2019)</a>, <a href="https://onlinelibrary.wiley.com/doi/full/10.1111/gec3.12441">Muenchow, Schäfer, and Krüger (2019)</a>, <a href="https://www.jneurosci.org/content/39/28/5534.abstract">Chong et al (2019)</a>, and <a href="https://onlinelibrary.wiley.com/doi/full/10.1002/ejhf.1547">Schlotter et al (2019)</a>, and tweeted examples by <a href="https://twitter.com/KenSteif/status/1006542071375761408">KenSteif</a>, <a href="https://twitter.com/frau_dr_barber/status/1130167116164927488">frau_dr_barber</a>, <a href="https://twitter.com/ericpgreen/status/1133840554968666112">ericpgreen</a>, and <a href="https://twitter.com/5amStats/status/1135153961227509762">5amStats</a> (starboard image).
+For these diagrams to communicate the data efficiently, it is essential that the classes be consistently ordered.
+Some implementations of parallel sets plots default to this behavior, as <a href="https://matthewdharris.com/2017/11/11/a-brief-diversion-into-static-alluvial-sankey-diagrams-in-r/">showcased by Matt Harris</a>; but others may automatically sort the sets by size, and still others allow arbitrary orderings—which may be useful for interactive exploration, as with Meeks’ implementation, but inappropriate for static renderings.</p>
+<p><strong>Multipartite network data:</strong>
+A handful of users have used alluvial plots to represent multipartite graphs, which necessarily satisfy the constraint that the total degree of the nodes in each part is the same. In particular, genomic analyses produce one-to-one connections among stages in transcription processes (lncRNA, miRNA, and mRNA), which have been encoded into alluvial plots by <a href="https://peerj.com/articles/6091/">Zheng et al (2018)</a>, <a href="https://cancerci.biomedcentral.com/articles/10.1186/s12935-019-0817-y">Long et al (2019a)</a>, and <a href="https://www.frontiersin.org/articles/10.3389/fonc.2019.00649/full">Long et al (2019b)</a>. See <a href="https://www.frontiersin.org/articles/10.3389/fimmu.2019.00660/full">Vazquez Bernat et al (2019)</a> for a similar usage, and <a href="https://twitter.com/MyriamCTraub/status/1169236685160402946">MyriamCTraub</a> and <a href="https://twitter.com/BenMoretti/status/1100378930865827840">BenMoretti</a> on Twitter.
+A similar principle is at work in <a href="https://watanabesmith.rbind.io/post/ranked-black-mirror/">Watanabe Smith’s illustration of ranked-choice voting</a>, especially with respect to those occasions when a voter lost influence by only ranking a few of the options (which segues into the next setting).
+While these users excluded the cumulative weight axis, through the fixed heights of the stacked sets the plots communicate that the total degree at each stage is the same.</p>
+<p><strong>Censored data:</strong>
+Finally, something i think alluvial plots do exceptionally better than general parallel sets plots is accentuate censoredness in data. Check out scholarly articles by <a href="https://www.sciencedirect.com/science/article/pii/S1075996418301021">Seekatz et al (2018)</a> and <a href="https://journals.lww.com/ccmjournal/Fulltext/2019/01000/Evaluating_Delivery_of_Low_Tidal_Volume.8.aspx">Sjoding, Gong, Hass, and Iwashyna (2019)</a> and <a href="https://mdneuzerling.com/post/my-data-science-job-hunt/">David Neuzerling’s reflections on the job hunt</a>, which use alluvial plots to depict changes in subjects’ status across several time points or stages with a specific set (or blank space where it would be) for subjects who became unavailable later in the study. The cumulative weight axis and gridlines allow the reader to immediately discern the reduction in sample size at each step.
+(Though they use network data, <a href="https://www.nature.com/articles/srep06773">Lu and Brelsford (2014)</a> make similar use of this property to visualize non-connections between sets together with connections.)</p>
+<p>That’s the substance of my argument for the alluvial–parallel sets distinction, but i’ll finish with a bit of fluorish.</p>
+</div>
+<div id="connotativity" class="section level3">
+<h3>Connotativity</h3>
+<p>The special features of alluvial plots are connoted by their peculiar terminology: I’ve decided to call the rectangles representing the parallel sets “strata” to suggest that they are more stable than the crisscrossing alluvia, and indeed this stability (with respect to their order in the plot) is what users expect when many of the categorical dimensions classify subjects into the same categories. The term also suggests, as does “alluvia”, that the various sets into which the subjects are partitioned at each (usually horizontal) position along the dimension axis are themselves (vertically) positioned in accordance with gravity. That is, they have “settled” one atop another with no defiantly empty space in between.</p>
+<p>Thus i deposit my case.</p>
+</div>
+</div>
+<div id="coda" class="section level2">
+<h2>Coda</h2>
+<p>I am by no means an expert in data visualization! While i feel strongly that my taxonomy makes the best of the present scrambling of terms, i am quite open to countersuggestions and especially to use cases that undercut it. If you come across them, please do send them my way.</p>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>I only just discovered Yawei Ge and Hofmann’s <a href="https://yaweige.github.io/ggpcp/">ggpcp</a> package for general parallel coordinate plots, under active development!<a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn2"><p>That’s not to say that useful distinctions haven’t been made somewhere, e.g. the technical literature on data visualization, but i feel confident in claiming that they have had limited effects on practice!<a href="#fnref2" class="footnote-back">↩</a></p></li>
+<li id="fn3"><p>In ggplot2, these rules are the stat, geom, coord, and scale layers. One of the great contributions of ggplot2, in my view, was to make them explicit to lay users like myself.<a href="#fnref3" class="footnote-back">↩</a></p></li>
+<li id="fn4"><p>It’s unfortunate that i named the ribbons between adjacent axes <em>flows</em> in ggalluvial, but i maintain that it was preferable to calling them <em>fans</em>.<a href="#fnref4" class="footnote-back">↩</a></p></li>
+<li id="fn5"><p>A similar misfit is a simplicial complex represented by a network diagram: The type of diagram is designed for a different type of data (pairwise-relational with possible directedness and multiplicity) and fails to convey essential data elements (higher-dimensional simplices).<a href="#fnref5" class="footnote-back">↩</a></p></li>
+<li id="fn6"><p>A contrary example is RAWGraphs, which <a href="https://rawgraphs.io/learning/how-to-make-an-alluvial-diagram/">describes alluvial plots</a> as “a specific kind of Sankey diagrams”.<a href="#fnref6" class="footnote-back">↩</a></p></li>
+<li id="fn7"><p>I found most of these examples by searching for “ggalluvial” in Google Scholar or Twitter.<a href="#fnref7" class="footnote-back">↩</a></p></li>
+</ol>
+</div>
+</description>
+      <content:encoded>
+
+
+<div id="background" class="section level2">
+<h2>Background</h2>
+<p>I first encountered alluvial diagrams, so-called, in a widely-shared <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0008694">paper</a> by Martin Rosvall and Carl T. Bergstrom. They were investigating the shifting boundaries between distinct scientific fields (“modules”), as reconstructed from sequential years of journal citation data (“states”), and proposed a specialized flow diagram “to highlight the significant changes, fusions, and fissions that the modules undergo between each pair of successive states”. At the time, i was unfamiliar with Sankey diagrams and only passingly familiar with flow diagrams—mostly by way of my computational biologist colleagues and their literature-derived signal transduction networks—but i could imagine myriad uses for this type of visualization and eventually went searching for an implementation in R.</p>
+<p>This led me to the <a href="https://github.com/mbojan/alluvial">alluvial</a> package, which Michał Bojanowski was actively developing. As i got more comfortable with and excited about the then-ascendant tidyverse, i took it upon myself to put together <a href="https://github.com/corybrunson/ggalluvial">a ggplot2 extension</a>, which has since become considerably widely used. I later learned that previous developers had released similar extensions, specifically “parallel sets plots” in Thomas Lin Pedersen’s <a href="https://ggforce.data-imaginist.com">ggforce</a> and in Heike Hofmann and Marie Vendettouli’s <a href="https://github.com/heike/ggparallel">ggparallel</a>.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>
+With continual exposure to these diverse implementations, i began to notice some subtle but important distinctions between others’ and my design principles. It also became clear that there was no consensus distinction between <em>alluvial</em> diagrams/plots and the more well-established genres of <em>Sankey</em> diagrams and <em>parallel sets</em> plots—indeed, no consensus on whether a distinction existed! Based on <a href="https://github.com/corybrunson/ggalluvial/issues">the ggalluvial issues page</a> and <a href="https://stackoverflow.com/search?q=ggalluvial">an occasional query on Stack Overflow</a>, the lack of generally accepted terms surrounding these sorts of diagrams remains a source of confusion.<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> My goal in this post is to propose some vocabulary and a taxonomy to <del>alluviate</del> alleviate this confusion, or at least serve as a point of reference for others to propose improvements!</p>
+</div>
+<div id="a-proposed-taxonomy-for-width-encoded-diagrams" class="section level2">
+<h2>A proposed taxonomy for width-encoded diagrams</h2>
+<p>Since the terms “diagram” and “plot” (along with “chart”) are sometimes used interchangeably and sometimes fiercely contested, i’ll adopt a convention here and invite suggestions to improve it: <strong>Diagrams</strong> visualize information, <strong>charts</strong> are diagrams whose information is stored as data, and <strong>plots</strong> are charts that are uniquely determined from data by a fixed set of plotting rules.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a>
+In these terms, ggalluvial and the other R packages discussed here unambiguously produce <em>plots</em>.</p>
+<p>Here are how i think these various diagrams—flow, Sankey, parallel sets, and alluvial—are related:</p>
+<ol style="list-style-type: decimal">
+<li><em>Flow diagrams encode directed flows.</em> Flow diagrams may use ribbons, arrows, or other graphical elements to represent flows—that is, directed processes. For example, directed network diagrams of resource transmission between nodes are flow diagrams. Note that flows are not necessarily between nodes: Many Sankey diagrams include incoming or outgoing arrows representing flows from or to elements outside the diagram.</li>
+<li><em>Sankey diagrams are flow diagrams with flow weights encoded as ribbon widths.</em> Flow diagrams may be unweighted: Signal transduction networks, for example, usually are. While Sankey diagrams are extremely flexible, their defining characteristic is that weighted flows are represented by ribbons whose widths indicate the weights or “volumes” of flows through them.</li>
+<li><a href="https://datascience.blog.wzb.eu/2016/09/27/parallel-coordinate-plots-for-discrete-and-categorical-data-in-r-a-comparison/">Parallel coordinates plots</a> depict cases in a data set by their coordinates along several continuous dimensions, i.e. their values at several continuous variables, arrayed along a discrete axis. <em>Parallel sets plots are analogous to parallel coordinates plots with discrete-valued classificatory dimensions in place of continuous-valued coordinate dimensions.</em> This requires that the plotting rules both determine the order of the classes along each dimension and preserve their relative sizes. In practice, this means that ribbon widths indicate either the absolute weights of the cases or their proportions of the total weight.</li>
+<li><em>Alluvial plots are parallel sets plots in which classes are ordered consistently across dimensions and stacked without gaps at each dimension.</em> This yields a plot with a meaningful continuous axis perpendicular to the discrete axis: The height of a stack at any class is the cumulative weight of the preceding classes, and the stacked sets at different dimensions can be directly compared as stacked bar plots. (Alluvial plots also tend to use splines rather than segments to delineate ribbons, though i think this is far less important than the rules that position the sets and ribbon boundaries.)</li>
+</ol>
+<div id="examples" class="section level3">
+<h3>Examples</h3>
+<p>I’m not rendering any plots in this post, so i’ll illustrate these distinctions by pointing to several examples of each, with an emphasis on examples that are “mislabeled” according to my taxonomy:</p>
+<ol style="list-style-type: decimal">
+<li>Flow diagrams that are <em>not</em> Sankey diagrams:
+<ul>
+<li><a href="https://commons.wikimedia.org/wiki/File:Typical_Signal_Schedule_and_Traffic_Flow_Diagram,_North-South_across_Market_(1929).png">Typical Signal Schedule and Traffic Flow Diagram</a>, Wikimedia Commons</li>
+<li><a href="https://commons.wikimedia.org/wiki/File:VA_Business_Line_Finance_and_Accounting.jpg">VA Business Line Finance and Accounting</a>, Wikimedia Commons</li>
+<li><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5438221/figure/F2/">Process flow diagram</a>, Alonso et al (2017)</li>
+</ul></li>
+<li>Sankey diagrams:
+<ul>
+<li><a href="https://commons.wikimedia.org/wiki/File:JIE_Sankey_V5_Fig1.png">The Thermal Efficiency of Steam Engines</a>, Wikimedia Commons</li>
+<li><a href="https://commons.wikimedia.org/wiki/File:Sankey_Diagram_of_US_Consumer_Expenditure_in_2012.jpg">Sankey Diagram of US Consumer Expenditure in 2012</a>, Wikimedia Commons</li>
+<li><a href="https://commons.wikimedia.org/wiki/File:Earth_heat_balance_Sankey_diagram.svg">Earth heat balance Sankey diagram</a>, Wikimedia Commons</li>
+<li><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5438221/figure/F3/">Sankey diagram</a>, Alonso et al (2017)</li>
+</ul></li>
+<li>Parallel sets plots that are <em>not</em> alluvial plots:
+<ul>
+<li><a href="https://www.jasondavies.com/parallel-sets/">Titanic Survivors</a>, Jason Davies</li>
+<li><a href="https://xeno.graphics/stacked-area-alluvial-diagram/">Stacked area alluvial diagram</a>, Xenographics (note that the vertical axis applies only to the area plot)</li>
+<li><a href="https://commons.wikimedia.org/wiki/File:Sankey_Diagram_-_Income_Statement.jpg">Sankey Diagram - Income Statement</a>, Wikimedia Commons</li>
+<li><a href="https://journals.plos.org/plosone/article/figure?id=10.1371/journal.pone.0008694.g003">Mapping change in science</a>, <em>PLoS ONE</em></li>
+<li><a href="https://www.researchgate.net/figure/Figure-S1-Sankey-diagram-on-global-green-virtual-water-flows-Sankey_fig5_303306020">Sankey diagram on global green virtual water flows</a>, Serrano, Guan, Duarte, and Paavola (2016)</li>
+</ul></li>
+<li>Alluvial plots:
+<ul>
+<li><a href="https://www.theinformationlab.co.uk/2018/03/09/build-sankey-diagram-tableau-without-data-prep-beforehand/">Superstore’s Super Sankey</a>, The Information Lab</li>
+<li><a href="https://www.theguardian.com/politics/2016/may/06/holyrood-elections-see-rise-of-team-ruth-and-demise-of-labour-vision">How Scotland’s political geography changed, seat by seat</a>, <em>The Guardian</em></li>
+<li><a href="https://www.researchgate.net/figure/Alluvial-diagram-for-mapping-changes-in-the-Global-network-The-top-ten-communities_fig6_267734552">Alluvial diagram for mapping changes in the Global network</a>, Lu and Brelsford (2014)</li>
+</ul></li>
+</ol>
+</div>
+<div id="how-my-proposal-stacks-up" class="section level3">
+<h3>How my proposal stacks up</h3>
+<p>Without exhaustively surveying the Internet and technical literature, it’s worthwhile to benchmark my distinctions against those made by some popular chart catalogues, which are much more representative of usage patterns. Xenographics lists several at the end of <a href="https://xeno.graphics/articles/on-graphonyms-the-importance-of-chart-type-names/">their discussion of graphonyms</a>, and of these three make clear distinctions between some of the types described above:</p>
+<ul>
+<li><a href="https://datavizproject.com/">The DataViz Project</a> describes Sankey diagrams as i did above, and distinguishes alluvial plots from parallel sets plots only in terms of the orientation of the axes (which is horizontal versus vertical) and of the shapes of the connecting ribbons.</li>
+<li><a href="https://datavizcatalogue.com">The Data Visualization Catalogue</a> distinguishes parallel sets plots from Sankey diagrams as not using arrows and binning the flows (ribbons) at regular intervals. (They don’t have an entry on alluvial plots.)</li>
+<li><a href="http://visualizationuniverse.com/charts/">The Visualization Universe</a> has entries for Sankey diagrams and alluvial plots, but their descriptions are excerpts (or, at least, subsets) of those of the DataViz Project.</li>
+</ul>
+<p>Importantly, in my taxonomy, by and large, <strong>alluvial plots are not Sankey diagrams, nor even flow diagrams</strong>. This seems appropriate on reflection, since even the original alluvial diagrams did not represent the transmission of material or information between nodes but changes in classification over time.<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a> This is not to say that alluvial plots cannot represent flow data—several popular examples do—but that the plot elements are not <em>specific</em> to flow data; and that, as a result, the directedness of flow data may not be conveyed well in an alluvial plot.<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a> I seem to be in agreement with the popular catalogues here.<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a></p>
+<p>A more subtle pattern of usage reflected in my proposal is that parallel sets plots may resize flows from dimension to dimension to reflect changes in proportion that do not necessarily correspond to chances in amount. This must be done carefully in such plots, but it would be anathema to a Sankey diagram.
+I’ll also endorse Elijah Meeks’ point, <a href="https://medium.com/@Elijah_Meeks/alluvial-charts-and-their-discontents-10a77d55216b">from this Medium post</a>, that Sankey diagrams can include cycles, whereas parallel sets and alluvial plots would not be able to encode such patterns.</p>
+<p>I’m also making a distinction between alluvial and parallel sets plots that the catalogues—and, in my experience, other developers—don’t make.
+Indeed, i haven’t seen a discussion anywhere else of whether a parallel sets or alluvial plot puts repeated categories in the same order, or whether the parallel sets are stacked so that the perpendicular axis measures their cumulative size, or whether either of these features is relevant to the choice of which type of plot is better-suited to a given purpose.
+Having spent hours on the problem of whether different orderings might benefit a plot, and having been prompted several times to implement gaps between the sets, i’ve come to take the strong position that this distinction matters and that the terminology should reflect it.
+While good definitions describe usage rather than prescribe it, i think it’s worth making an argument for this particular technical distinction while the terminology has not yet, ahem, sedemented.</p>
+</div>
+</div>
+<div id="a-prescription-for-distinguishing-alluvial-and-parallel-sets-plots" class="section level2">
+<h2>A prescription for distinguishing alluvial and parallel sets plots</h2>
+<p>To reiterate:</p>
+<blockquote>
+<p><em>Alluvial plots are parallel sets plots in which classes are ordered consistently across dimensions and stacked without gaps at each dimension.</em></p>
+</blockquote>
+<div id="caveat" class="section level3">
+<h3>Caveat</h3>
+<p>Neither Rosvall and Bergstrom, who popularized alluvial diagrams, nor Bojanowski, on whose package i based ggalluvial, included a cumulative weight axis perpendicular to the dimensions axis. In fact, what originally prompted me to omit the gaps between strata in ggalluvial was that i didn’t know how to get rid of the vertical axis! Like every great idea i believe i’ve had, i arrived at this one via gradient descent.</p>
+<p>That’s still not to say i was first: Hofmann and Vendettouli wrote ggparallel to stack the sets in each dimension and retain a vertical axis in their plots. There may well be other such implementations, but i’m most familiar with the R ecosystem.</p>
+</div>
+<div id="utility" class="section level3">
+<h3>Utility</h3>
+<p>First, i claim that the features that distinguish alluvial from parallel sets plots—consistent ordering of sets and a cumulative weight axis—have practical importance.
+In particular, they have importance <em>beyond</em> the ability to visually distinguish the sets and compare their weights along each dimension, as can be done from any parallel sets plot.
+The use cases i’ve surveyed reveal three distinct settings in which alluvial plots are superior to other parallel sets plots:<a href="#fn7" class="footnote-ref" id="fnref7"><sup>7</sup></a></p>
+<p><strong>Repeated categorical measures data:</strong>
+Several users have used alluvial plots to represent data consisting of partitions of cases into the same (or overlapping) classification schemes at different times, in particular before and after some intervention or other significant event.
+See scholarly examples in <a href="https://www.sciencedirect.com/science/article/pii/S0378429018317337">Baudron, Ndoli, Habarurema, and Silva (2019)</a>, <a href="https://www.sciencedirect.com/science/article/pii/S0195925518302026">Kissinger and Reznik (2019)</a>, <a href="https://onlinelibrary.wiley.com/doi/full/10.1111/gec3.12441">Muenchow, Schäfer, and Krüger (2019)</a>, <a href="https://www.jneurosci.org/content/39/28/5534.abstract">Chong et al (2019)</a>, and <a href="https://onlinelibrary.wiley.com/doi/full/10.1002/ejhf.1547">Schlotter et al (2019)</a>, and tweeted examples by <a href="https://twitter.com/KenSteif/status/1006542071375761408">KenSteif</a>, <a href="https://twitter.com/frau_dr_barber/status/1130167116164927488">frau_dr_barber</a>, <a href="https://twitter.com/ericpgreen/status/1133840554968666112">ericpgreen</a>, and <a href="https://twitter.com/5amStats/status/1135153961227509762">5amStats</a> (starboard image).
+For these diagrams to communicate the data efficiently, it is essential that the classes be consistently ordered.
+Some implementations of parallel sets plots default to this behavior, as <a href="https://matthewdharris.com/2017/11/11/a-brief-diversion-into-static-alluvial-sankey-diagrams-in-r/">showcased by Matt Harris</a>; but others may automatically sort the sets by size, and still others allow arbitrary orderings—which may be useful for interactive exploration, as with Meeks’ implementation, but inappropriate for static renderings.</p>
+<p><strong>Multipartite network data:</strong>
+A handful of users have used alluvial plots to represent multipartite graphs, which necessarily satisfy the constraint that the total degree of the nodes in each part is the same. In particular, genomic analyses produce one-to-one connections among stages in transcription processes (lncRNA, miRNA, and mRNA), which have been encoded into alluvial plots by <a href="https://peerj.com/articles/6091/">Zheng et al (2018)</a>, <a href="https://cancerci.biomedcentral.com/articles/10.1186/s12935-019-0817-y">Long et al (2019a)</a>, and <a href="https://www.frontiersin.org/articles/10.3389/fonc.2019.00649/full">Long et al (2019b)</a>. See <a href="https://www.frontiersin.org/articles/10.3389/fimmu.2019.00660/full">Vazquez Bernat et al (2019)</a> for a similar usage, and <a href="https://twitter.com/MyriamCTraub/status/1169236685160402946">MyriamCTraub</a> and <a href="https://twitter.com/BenMoretti/status/1100378930865827840">BenMoretti</a> on Twitter.
+A similar principle is at work in <a href="https://watanabesmith.rbind.io/post/ranked-black-mirror/">Watanabe Smith’s illustration of ranked-choice voting</a>, especially with respect to those occasions when a voter lost influence by only ranking a few of the options (which segues into the next setting).
+While these users excluded the cumulative weight axis, through the fixed heights of the stacked sets the plots communicate that the total degree at each stage is the same.</p>
+<p><strong>Censored data:</strong>
+Finally, something i think alluvial plots do exceptionally better than general parallel sets plots is accentuate censoredness in data. Check out scholarly articles by <a href="https://www.sciencedirect.com/science/article/pii/S1075996418301021">Seekatz et al (2018)</a> and <a href="https://journals.lww.com/ccmjournal/Fulltext/2019/01000/Evaluating_Delivery_of_Low_Tidal_Volume.8.aspx">Sjoding, Gong, Hass, and Iwashyna (2019)</a> and <a href="https://mdneuzerling.com/post/my-data-science-job-hunt/">David Neuzerling’s reflections on the job hunt</a>, which use alluvial plots to depict changes in subjects’ status across several time points or stages with a specific set (or blank space where it would be) for subjects who became unavailable later in the study. The cumulative weight axis and gridlines allow the reader to immediately discern the reduction in sample size at each step.
+(Though they use network data, <a href="https://www.nature.com/articles/srep06773">Lu and Brelsford (2014)</a> make similar use of this property to visualize non-connections between sets together with connections.)</p>
+<p>That’s the substance of my argument for the alluvial–parallel sets distinction, but i’ll finish with a bit of fluorish.</p>
+</div>
+<div id="connotativity" class="section level3">
+<h3>Connotativity</h3>
+<p>The special features of alluvial plots are connoted by their peculiar terminology: I’ve decided to call the rectangles representing the parallel sets “strata” to suggest that they are more stable than the crisscrossing alluvia, and indeed this stability (with respect to their order in the plot) is what users expect when many of the categorical dimensions classify subjects into the same categories. The term also suggests, as does “alluvia”, that the various sets into which the subjects are partitioned at each (usually horizontal) position along the dimension axis are themselves (vertically) positioned in accordance with gravity. That is, they have “settled” one atop another with no defiantly empty space in between.</p>
+<p>Thus i deposit my case.</p>
+</div>
+</div>
+<div id="coda" class="section level2">
+<h2>Coda</h2>
+<p>I am by no means an expert in data visualization! While i feel strongly that my taxonomy makes the best of the present scrambling of terms, i am quite open to countersuggestions and especially to use cases that undercut it. If you come across them, please do send them my way.</p>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>I only just discovered Yawei Ge and Hofmann’s <a href="https://yaweige.github.io/ggpcp/">ggpcp</a> package for general parallel coordinate plots, under active development!<a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn2"><p>That’s not to say that useful distinctions haven’t been made somewhere, e.g. the technical literature on data visualization, but i feel confident in claiming that they have had limited effects on practice!<a href="#fnref2" class="footnote-back">↩</a></p></li>
+<li id="fn3"><p>In ggplot2, these rules are the stat, geom, coord, and scale layers. One of the great contributions of ggplot2, in my view, was to make them explicit to lay users like myself.<a href="#fnref3" class="footnote-back">↩</a></p></li>
+<li id="fn4"><p>It’s unfortunate that i named the ribbons between adjacent axes <em>flows</em> in ggalluvial, but i maintain that it was preferable to calling them <em>fans</em>.<a href="#fnref4" class="footnote-back">↩</a></p></li>
+<li id="fn5"><p>A similar misfit is a simplicial complex represented by a network diagram: The type of diagram is designed for a different type of data (pairwise-relational with possible directedness and multiplicity) and fails to convey essential data elements (higher-dimensional simplices).<a href="#fnref5" class="footnote-back">↩</a></p></li>
+<li id="fn6"><p>A contrary example is RAWGraphs, which <a href="https://rawgraphs.io/learning/how-to-make-an-alluvial-diagram/">describes alluvial plots</a> as “a specific kind of Sankey diagrams”.<a href="#fnref6" class="footnote-back">↩</a></p></li>
+<li id="fn7"><p>I found most of these examples by searching for “ggalluvial” in Google Scholar or Twitter.<a href="#fnref7" class="footnote-back">↩</a></p></li>
+</ol>
+</div>
+</content:encoded>
+    </item>
     
     <item>
       <title>comparable pairwise and multivariate associations from presence-absence data</title>
@@ -1836,544 +2090,6 @@ pl %&gt;%
 <li id="fn2"><p>I’m thinking here of consolidation as the mathematical analog of Mendeleev’s periodic table, which introduced a useful conceptual schema that was ultimately validated not by its elegance alone but by the brand new elements (pun) it implied For one of the best stories of consolodationist success in mathematics, read <a href="http://math.ucr.edu/home/baez/octonions/node1.html">Baez’s popular chapter about the discoveries of the quarternions and the octonions</a> leading up to the general Cayley–Dickson construction. A more recent example i’ve come to love is <a href="https://www.ams.org/journals/ecgd/2015-19-13/S1088-4173-2015-00287-8/">the modulus-based family of distance measures by Albin, Brunner, Perez, Poggi-Corradini, and Wiens</a> that interpolate continuously between shortest path length and min flow–max cut distance.<a href="#fnref2" class="footnote-back">↩</a></p></li>
 <li id="fn3"><p>I’m thinking of this “alignment” or “entanglement” to myself as the subspaces of the spaces of cycles of <span class="math inline">\(G\)</span> and its complement, in the homological sense, having high-dimensional intersection, but that’s just a feeling.<a href="#fnref3" class="footnote-back">↩</a></p></li>
 <li id="fn4"><p>I might call this graph “series–complete” on the ordered partition <span class="math inline">\((1,3,3,1)\)</span>, since the links are precisely the pairs of nodes in adjacent subsets. Probably graph theorists have a term for this.<a href="#fnref4" class="footnote-back">↩</a></p></li>
-</ol>
-</div>
-</content:encoded>
-    </item>
-    
-    <item>
-      <title>Sampling uniformly from an embedded Klein bottle</title>
-      <link>/2019/02/01/sampling/</link>
-      <pubDate>2019 Feb 01 (Fri), 00:00:00 +0000</pubDate>
-      
-      <guid>/2019/02/01/sampling/</guid>
-      <description>
-
-
-<div id="an-apparent-dearth-of-toy-tda-samplers" class="section level3">
-<h3>an apparent dearth of toy TDA samplers</h3>
-<p>Experimenting and practicing with topological data analytic (TDA) tools requires a healthy diversity of suitable data sets. Several real-world classics can be found in various packages, for example the glucose and insulin test data <a href="https://link.springer.com/article/10.1007/BF00423145">collected and analyzed by Reaven and Miller</a> and later <a href="http://diglib.eg.org/handle/10.2312/SPBG.SPBG07.091-100">used by Singh, Carlsson, and Mémoli</a> to illustrate the Mapper construction, which is included in the <strong>heplots</strong> package:</p>
-<pre class="r"><code>data(Diabetes, package = &quot;heplots&quot;)
-head(Diabetes)</code></pre>
-<pre><code>##   relwt glufast glutest instest sspg  group
-## 1  0.81      80     356     124   55 Normal
-## 2  0.95      97     289     117   76 Normal
-## 3  0.94     105     319     143  105 Normal
-## 4  1.04      90     356     199  108 Normal
-## 5  1.00      90     323     240  143 Normal
-## 6  0.76      86     381     157  165 Normal</code></pre>
-<p>For purposes of validation and comparison in particular, we need to supplement empirical data sets, which reflect potentially interesting but unknown topological structure, with artificial data sets that have known, and often simple, intrinsic topology. Probably the most commonly used are simulated samples from a circle, which are straightforward to generate in R:</p>
-<pre class="r"><code>library(magrittr)
-library(tibble)
-library(dplyr)
-library(ggplot2)
-tibble(theta = runif(120, 0, 2*pi)) %&gt;%
-  mutate(x = cos(theta), y = sin(theta)) %&gt;%
-  mutate_at(vars(x, y), funs(. + rnorm(n = length(.), sd = .1))) %&gt;%
-  print() %&gt;%
-  select(x, y) %&gt;%
-  ggplot(aes(x = x, y = y)) + coord_fixed() + geom_point()</code></pre>
-<pre><code>## Warning: funs() is soft deprecated as of dplyr 0.8.0
-## Please use a list of either functions or lambdas: 
-## 
-##   # Simple named list: 
-##   list(mean = mean, median = median)
-## 
-##   # Auto named with `tibble::lst()`: 
-##   tibble::lst(mean, median)
-## 
-##   # Using lambdas
-##   list(~ mean(., trim = .2), ~ median(., na.rm = TRUE))
-## This warning is displayed once per session.</code></pre>
-<pre><code>## # A tibble: 120 x 3
-##    theta      x      y
-##    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
-##  1 0.694  0.750  0.565
-##  2 3.93  -0.662 -0.679
-##  3 0.344  0.851  0.262
-##  4 1.77  -0.308  1.06 
-##  5 0.352  0.932  0.424
-##  6 0.739  0.722  0.657
-##  7 0.789  0.704  0.773
-##  8 4.03  -0.713 -0.935
-##  9 2.25  -0.459  0.806
-## 10 0.742  0.745  0.703
-## # … with 110 more rows</code></pre>
-<p><img src="/post/2019-02-01-sampling_files/figure-html/circle%20sample-1.png" width="672" /></p>
-<p>The underlying sampling protocol is, to my understanding, typical:<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></p>
-<ol style="list-style-type: decimal">
-<li>Pick a topological property to test for. In this case, most researchers want a loop, or a non-trivial generator in <span class="math inline">\(H_1(\,\cdot\,,\mathbb{Z})\)</span>.</li>
-<li>Choose a manifold <span class="math inline">\(M\)</span> having the desired property. The circle <span class="math inline">\(M=S^1\)</span> is the simplest choice.</li>
-<li>Choose a parameterization <span class="math inline">\(f:I\to M\subset\mathbb{R}^m\)</span> from a parameter space <span class="math inline">\(I\)</span> to an embedding of the manifold in an ambient Euclidean space. Most TDA actually depends on a data set having an underlying geometry, from which topological “nearness” is inferred. <em>This choice determines that underlying geometry.</em> Above, the parameter space is <span class="math inline">\([0,2\pi)\)</span> and <span class="math inline">\(f(\theta)=(\cos(\theta),\sin(\theta))\)</span>.</li>
-<li>Sample points <span class="math inline">\(S\subset M\)</span> uniformly from the embedded manifold. The idea of uniformity makes sense because the manifold has a measure induced from the ambient space.</li>
-<li>Optionally, add random noise to <span class="math inline">\(S\)</span>, usually from a standard <span class="math inline">\(m\)</span>-dimensional Gaussian distribution.</li>
-</ol>
-<p>While working with Raoul on <a href="https://github.com/rrrlw/ggtda">the <strong>ggtda</strong> package</a>, i’ve realized both how useful these simple artificial data sets are and how difficult they can be to find or produce. The <strong>TDA</strong> package can <a href="https://rdrr.io/cran/TDA/man/sphereUnif.html">sample uniformly a sphere</a>, and the <strong>KODAMA</strong> package can <a href="https://rdrr.io/cran/KODAMA/man/spirals.html">generate noisy spiral arrangements</a>; but the most comprehensive sources i’ve found are the Python module <strong>TaDAsets</strong>, <a href="https://github.com/scikit-tda/tadasets/blob/master/tadasets/sample.py">which includes three</a>, and <a href="https://lvdmaaten.github.io/drtoolbox/">the Matlab toolbox <strong>drtoolbox</strong></a>, which includes seven. So, i’ve started accumulating “noisy shape” samplers into <a href="https://github.com/corybrunson/tdaunif">a lightweight R package</a> that can be used as an alternative to saving specific samples for illustrative use in packages like <strong>ggtda</strong>. (If a better source exists that i haven’t found, please let me know!)</p>
-</div>
-<div id="what-else-but-a-klein-bottle" class="section level3">
-<h3>what else but a Klein bottle?</h3>
-<p>Naturally, the first thing i wanted to do was sample uniformly from a Klein bottle <span class="math inline">\(\mathbb{K}\)</span>. Parameterizations are easy to find, e.g. <a href="https://en.wikipedia.org/wiki/Klein_bottle#Parametrization">on Wikipedia</a>, and i opted for one that looked most similar to the usual “doughnut” parameterization of the torus in <span class="math inline">\(\mathbb{R}^3\)</span>, namely the “Möbius tube” in <span class="math inline">\(\mathbb{R}^4\)</span>:</p>
-<p><span class="math display">\[\begin{align*}
-w(\theta,\phi) &amp;= (1 + r\cos\theta)\cos\phi \\
-x(\theta,\phi) &amp;= (1 + r\cos\theta)\sin\phi \\
-y(\theta,\phi) &amp;= r\sin\theta\cos\frac{\phi}{2} \\
-z(\theta,\phi) &amp;= r\sin\theta\sin\frac{\phi}{2}
-\end{align*}\]</span></p>
-<p>The parameter space is <span class="math inline">\([0,2\pi)\times[0,2\pi)\ni(\theta,\phi)\)</span>, while <span class="math inline">\(r\)</span> is a constant that determines the shape of the embedded manifold. (Here i’ve simplified the Wikipedia parameterization by setting <span class="math inline">\(R=1\)</span> and assuming that <span class="math inline">\(0\leq r\leq 1\)</span>.) So here’s a <a href="http://adv-r.had.co.nz/Functional-programming.html#closures">closure</a> that takes <code>r</code> as input and returns a parameterization function that sends a data frame of <span class="math inline">\(\theta,\phi\)</span> coordinates to one of <span class="math inline">\((w,x,y,z)\)</span> coordinates:</p>
-<pre class="r"><code>param_klein &lt;- function(r) {
-  if (r &lt; 0 | r &gt; 1) stop(&quot;`r` must be between 0 and 1.&quot;)
-  function(data) {
-    with(data, tibble(
-      w = (1 + r * cos(theta)) * cos(phi),
-      x = (1 + r * cos(theta)) * sin(phi),
-      y = r * sin(theta) * cos(phi / 2),
-      z = r * sin(theta) * sin(phi / 2)
-    ))
-  }
-}</code></pre>
-<p>Sampling is another matter. Though we know the embedding warps the parameter space, stretching parts of it while compressing others, it’s tempting to presuppose that this warping will not vary too much, and just take uniform samples from the parameter space and map them to the ambient space. Here’s where that gets us, without adding additional noise:</p>
-<pre class="r"><code>f_klein &lt;- param_klein(r = .75)
-tibble(theta = runif(360, 0, 2*pi), phi = runif(360, 0, 2*pi)) %&gt;%
-  f_klein() %&gt;%
-  print() %&gt;%
-  pairs(asp = 1, pch = 19, cex = .5, col = &quot;#00000077&quot;)</code></pre>
-<pre><code>## # A tibble: 360 x 4
-##          w      x       y       z
-##      &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
-##  1  0.300   0.938  0.606   0.442 
-##  2 -0.191   0.172  0.0377  0.0983
-##  3  1.69    0.296  0.238   0.0208
-##  4  0.0991  1.14  -0.542  -0.497 
-##  5  0.714  -0.678  0.696  -0.278 
-##  6 -0.340  -0.372 -0.227   0.514 
-##  7 -0.471   0.987  0.397   0.629 
-##  8  0.465   1.17   0.583   0.395 
-##  9  0.495  -0.405  0.619  -0.221 
-## 10  0.155   0.226  0.166   0.0874
-## # … with 350 more rows</code></pre>
-<p><img src="/post/2019-02-01-sampling_files/figure-html/sample%20klein%20bottle%20uniformly%20from%20parameter%20space-1.png" width="672" /></p>
-<p>The features of the manifold are recognizable: The projection onto <span class="math inline">\(w\)</span> and <span class="math inline">\(x\)</span> is like that of a torus, while complementary “pinches” are discernible in the <span class="math inline">\(y\)</span> and <span class="math inline">\(z\)</span> directions with respect to <span class="math inline">\(w\)</span>. However, it’s also clear that more points have been sampled toward the center of the shape, where the parameterization “moves” most slowly, while fewer have been sampled toward the periphery.
-While we can visually pick out other regions of higher and lower concentrations, it’s not obvious how to determine how much of this is due to warping by the parameterization versus the angle from which we’re viewing the sample in these scatterplots.</p>
-</div>
-<div id="point-cloud-topology-is-sensitive-to-geometry" class="section level3">
-<h3>point cloud topology is sensitive to geometry</h3>
-<p>To better illustrate the potential problem, let’s go back to the noisy circle. The standard parameterization has the very nice property that the rate at which <span class="math inline">\(f(\theta)\)</span> traverses the circle, with respect to the rate at which <span class="math inline">\(\theta\)</span> proceeds along the interval, is constant. In analytic terms, the gradient <span class="math inline">\(\nabla f=(\frac{\partial x}{\partial\theta},\frac{\partial y}{\partial\theta})\)</span> has constant magnitude. Instead of this standard, consider the alternative, highly suspect parameterization <span class="math inline">\(g:[-2,2)\to\mathbb{R}^2\)</span> given by</p>
-<p><span class="math display">\[g(t) = \begin{cases}
-(t+1,\sqrt{1-(t+1)^2}) &amp; t\leq 0 \\
-(1-t,-\sqrt{1-(1-t)^2}) &amp; t&gt;0
-\end{cases}\]</span></p>
-<p>This map takes the interval <span class="math inline">\([-2,0]\)</span>, shifts it rightward to <span class="math inline">\([-1,1]\)</span>, and lifts it to the upper hemicircle; to complement, it shifts <span class="math inline">\(0,2\)</span> leftward to <span class="math inline">\((-1,1)\)</span>, reverses it (so that the map is continuous at <span class="math inline">\(t=0\)</span>), and drops it to the lower hemicircle. Here’s how the sampling procedure shakes out:</p>
-<pre class="r"><code>tibble(t = runif(120, -2, 2)) %&gt;%
-  mutate(x = ifelse(t &lt;= 0, t + 1, 1 - t)) %&gt;%
-  mutate(y = ifelse(t &lt;= 0, sqrt(1 - x^2), -sqrt(1 - x^2))) %&gt;%
-  mutate_at(vars(x, y), funs(. + rnorm(n = length(.), sd = .1))) %&gt;%
-  select(x, y) %&gt;%
-  ggplot(aes(x = x, y = y)) + coord_fixed() + geom_point()</code></pre>
-<p><img src="/post/2019-02-01-sampling_files/figure-html/sample%20circle%20uniformly%20from%20parameter%20space-1.png" width="672" /></p>
-<p>Notice the sparsity of points near <span class="math inline">\((-1,0)\)</span> and <span class="math inline">\((1,0)\)</span>. This is because, as <span class="math inline">\(x(t)\)</span> moves steadily away from these endpoints, <span class="math inline">\(y(t)\)</span> bolts away from them; so that the Euclidean distance <span class="math inline">\(\sqrt{x^2+y^2}\)</span> between <span class="math inline">\(g(t_0)\)</span> and <span class="math inline">\(g(t_1)\)</span> is larger when <span class="math inline">\(t_0\)</span> and <span class="math inline">\(t_1\)</span> are closer to these endpoints than when they are closer to <span class="math inline">\((0,1)\)</span> or <span class="math inline">\((0,-1)\)</span>.
-This is the sort of problem we want to be sure to avoid when sampling from the embedded Klein bottle.</p>
-</div>
-<div id="reforming-a-deformed-sampler" class="section level3">
-<h3>reforming a deformed sampler</h3>
-<p>My solution comes from <a href="https://projecteuclid.org/euclid.imsc/1379942050">a very cool paper titled “Sampling from a Manifold”</a>, by mathematicians Persi Diaconis and Mehrdad Shahshahani and statistician Susan Holmes.
-I don’t remember how i first came across this paper, but i found it simultaneously exciting and exhausting to read — excited by the prospect of using basic calculus and computational trickery to generate uniform manifold samples, exhausted by the way rigorous details were either compactified or outsourced. This post was ultimately motivated by a desire, for my own future benefit at least, to have a thoroughly documented application of their method available for reference.</p>
-<p>Recall the Möbius tube parameterization <span class="math inline">\(f:[0,2\pi)\times[0,2\pi)\to\mathbb{R}^4\)</span> above. To correct for the warping <span class="math inline">\(f\)</span> introduces, the strategy is to measure this warping locally (i.e. as a function of the parameters <span class="math inline">\(\theta\)</span> and <span class="math inline">\(\phi\)</span>) and then filter our random samples in a way that undoes its effects.</p>
-</div>
-<div id="vector-derivatives" class="section level3">
-<h3>vector derivatives</h3>
-<p>As i alluded in the example of the circle, the warping arises from differences in the rate at which distances in the domain <span class="math inline">\(I\subset\mathbb{R}^2\)</span> translate into distances in the codomain <span class="math inline">\(\mathbb{R}^4\)</span>. That is to say, we measure the warping in terms of derivatives. The vector-valued function <span class="math inline">\(f\)</span> has two inputs and four outputs, so its <span class="math inline">\(4\times 2\)</span> <em>Jacobian</em> (derivative) matrix <span class="math inline">\(J_f\)</span> is given by</p>
-<p><span class="math display">\[J_f=
-\left[\ \frac{\partial f}{\partial\theta}\ \frac{\partial f}{\partial\phi}\ \right]=
-\left[\begin{array}{cc}
-\frac{\partial w}{\partial\theta} &amp; \frac{\partial w}{\partial\phi} \\
-\frac{\partial x}{\partial\theta} &amp; \frac{\partial x}{\partial\phi} \\
-\frac{\partial y}{\partial\theta} &amp; \frac{\partial y}{\partial\phi} \\
-\frac{\partial z}{\partial\theta} &amp; \frac{\partial z}{\partial\phi}
-\end{array}\right]=
-\left[\begin{array}{cc}
--r\sin\theta\cos\phi &amp; -(1+r\cos\theta)\sin\phi \\
--r\sin\theta\sin\phi &amp; (1+r\cos\theta)\cos\phi \\
-r\cos\theta\cos\frac{\phi}{2} &amp; -\frac{1}{2}r\sin\theta\sin\frac{\phi}{2} \\
-r\cos\theta\sin\frac{\phi}{2} &amp; \frac{1}{2}r\sin\theta\cos\frac{\phi}{2}
-\end{array}\right]\]</span></p>
-<p>Locally, the domain is composed of rectangles <span class="math inline">\((\theta,\theta+\Delta\theta)\times(\phi,\phi+\Delta\phi)\)</span>, while the codomain is, up to linear approximation, composed of parallelograms <span class="math inline">\((f,f+\frac{\partial f}{\partial\theta}\Delta\theta,f+\frac{\partial f}{\partial\phi}\Delta\phi,f+\frac{\partial f}{\partial\theta}\Delta\theta+\frac{\partial f}{\partial\phi}\Delta\phi)\)</span>.
-Whereas the domain rectangles have area <span class="math inline">\(\Delta\theta\Delta\phi\)</span>, the codomain parallelograms have area <span class="math inline">\(\Delta A=(\lvert\frac{\partial f}{\partial\theta}\rvert\lvert\frac{\partial f}{\partial\phi}\rvert\cos\omega)\Delta\theta\Delta\phi\)</span>, where <span class="math inline">\(\omega\)</span> is the angle between the vectors <span class="math inline">\(\frac{\partial f}{\partial\theta}\)</span> and <span class="math inline">\(\frac{\partial f}{\partial\phi}\)</span>. The local area function is then <span class="math inline">\(\lvert\frac{\partial f}{\partial\theta}\rvert\lvert\frac{\partial f}{\partial\phi}\rvert\cos\omega\)</span>.</p>
-<p>The more elegant way to understand this<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> is by imagining that <span class="math inline">\(f\)</span> takes a space, say <span class="math inline">\(\mathbb{R}^2\)</span>, to itself. In this case, the matrix <span class="math inline">\(J_f=\left[\ \frac{\partial f}{\partial\theta}\ \frac{\partial f}{\partial\phi}\ \right]\)</span> consists of the two (column) vectors in <span class="math inline">\(\mathbb{R}^2\)</span> defining the parallelogram corresponding to the unit rectangle based at <span class="math inline">\((\theta,\phi)\in\mathbb{R}^2\)</span>, so that the area of the parallelogram is the absolute value of <span class="math inline">\(\det J_f\)</span>. This generalizes to the formula <span class="math inline">\(j_f=\sqrt{\det({J_f}^\top{J_f})}\)</span> when the domain and codomain have different dimensions.</p>
-<p>A bit of algebra (minus the frustrating hours i lost after forgetting to differentiate constants) yields the Jacobian determinant
-<span class="math display">\[j_f = r\sqrt{(1+r\cos\theta)^2 + (\frac{1}{2}r\sin\theta)^2}\text.\]</span>
-As before, the function is returned from a closure that depends on <code>r</code>:</p>
-<pre class="r"><code>jacobian_klein &lt;- function(r) {
-  function(theta) r * sqrt((1 + r * cos(theta)) ^ 2 + (.5 * r * sin(theta)) ^ 2)
-}</code></pre>
-<p>Here’s how the Jacobian determinant — that is, the expanding and contracting of area by the parameterization — depends on <span class="math inline">\(\theta\)</span>:</p>
-<pre class="r"><code>j_klein &lt;- jacobian_klein(r = .75)
-tibble(theta = seq(0, 2*pi, length.out = 60)) %&gt;%
-  mutate(jacobian = j_klein(theta)) %&gt;%
-  print() %&gt;%
-  ggplot(aes(x = theta, y = jacobian)) +
-  ylim(c(0, NA)) +
-  geom_line() +
-  geom_area(fill = &quot;#00000077&quot;)</code></pre>
-<pre><code>## # A tibble: 60 x 2
-##    theta jacobian
-##    &lt;dbl&gt;    &lt;dbl&gt;
-##  1 0         1.31
-##  2 0.106     1.31
-##  3 0.213     1.30
-##  4 0.319     1.29
-##  5 0.426     1.27
-##  6 0.532     1.24
-##  7 0.639     1.21
-##  8 0.745     1.18
-##  9 0.852     1.14
-## 10 0.958     1.10
-## # … with 50 more rows</code></pre>
-<p><img src="/post/2019-02-01-sampling_files/figure-html/klein%20bottle%20jacobian%20versus%20theta-1.png" width="672" /></p>
-<p>Looking back at the scatterplots, the contraction is least near <span class="math inline">\(\theta=0\)</span> and <span class="math inline">\(\theta=2\pi\)</span>, toward the periphery of the Klein bottle where <span class="math inline">\(w\)</span> and <span class="math inline">\(x\)</span> are at their greatest amplitudes (with respect to <span class="math inline">\(\phi\)</span>), and greatest near <span class="math inline">\(\theta=\pi\)</span>, toward the center.</p>
-</div>
-<div id="de-biasing-samples" class="section level3">
-<h3>de-biasing samples</h3>
-<p>We can now use our knowledge of derivatives to preempt the bias they introduce. The motivation is that, if the surface is expanded by a factor of <span class="math inline">\(k\)</span> near the point <span class="math inline">\((\theta_0,\phi_0)\)</span>, then <span class="math inline">\(k\)</span> times as many points should be sampled there, so that the density of points on the warped surface is uniform. The idea of <em>rejection sampling</em>, with a density function <span class="math inline">\(\delta:I\to[0,1]\)</span>, is to sample many points uniformly and then retain each point <span class="math inline">\((\theta_0,\phi_0)\)</span> with probability <span class="math inline">\(\delta(\theta_0,\phi_0)\)</span>.</p>
-<p>In fact, we don’t have to calculate the density function exactly, so that it has unit integral over the domain <span class="math inline">\(I\)</span>; it is enough to make sure that we retain samples in the correct proportion. Since the Jacobian is maximized at <span class="math inline">\(\theta=0\)</span> for any choice of <span class="math inline">\(r\)</span>,<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> this can be accomplished as follows:</p>
-<ol style="list-style-type: decimal">
-<li>Sample <span class="math inline">\(\theta\in[0,2\pi)\)</span> uniformly.</li>
-<li>Sample <span class="math inline">\(\eta\in[0,j_f(0)]\)</span> uniformly.</li>
-<li>If <span class="math inline">\(j_f(\theta) &gt; \eta\)</span>, then retain the value <span class="math inline">\(\theta\)</span>; otherwise, reject <span class="math inline">\(\theta\)</span>.</li>
-</ol>
-<p>Effectively, we retain <span class="math inline">\(\theta\)</span> when <span class="math inline">\((\theta,\eta)\)</span> lies in the shaded region above and reject it when not. The procedure repeats until enough values are retained. This leads me to the following rejection sampler:</p>
-<pre class="r"><code>sample_klein_theta &lt;- function(n, r) {
-  x &lt;- c()
-  while (length(x) &lt; n) {
-    theta &lt;- runif(n, 0, 2 * pi)
-    jacobian &lt;- jacobian_klein(r)
-    jacobian_theta &lt;- sapply(theta, jacobian)
-    eta &lt;- runif(n, 0, jacobian(0))
-    x &lt;- c(x, theta[jacobian_theta &gt; eta])
-  }
-  x[1:n]
-}
-sample_klein &lt;- function(n, r) {
-  d &lt;- tibble(
-    phi = runif(n, 0, 2*pi),
-    theta = sample_klein_theta(n, r)
-  )
-  f &lt;- param_klein(r)
-  f(d)
-}</code></pre>
-<p>We can compare this to the naïve sampler above that did not account for warping by the parameterization:</p>
-<pre class="r"><code>sample_klein(n = 360, r = .75) %&gt;%
-  print() %&gt;%
-  pairs(asp = 1, pch = 19, cex = .5, col = &quot;#00000077&quot;)</code></pre>
-<pre><code>## # A tibble: 360 x 4
-##          w      x       y       z
-##      &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
-##  1  1.59   -0.326  0.411  -0.0417
-##  2 -0.0144  0.459 -0.362  -0.373 
-##  3 -0.853   1.12  -0.280  -0.565 
-##  4 -1.66    0.243 -0.0237 -0.326 
-##  5 -1.43    0.712 -0.105  -0.446 
-##  6  1.19    0.595 -0.654  -0.154 
-##  7  0.222  -0.506  0.504  -0.329 
-##  8  1.32   -0.334  0.654  -0.0818
-##  9  0.861   0.361 -0.732  -0.147 
-## 10  0.0688  1.22  -0.521  -0.492 
-## # … with 350 more rows</code></pre>
-<p><img src="/post/2019-02-01-sampling_files/figure-html/sample%20klein%20bottle%20uniformly%20within%20ambient%20space-1.png" width="672" /></p>
-<p>The differences are minor in most of the coordinate scatterplots, but the concentration of points near the center of the <span class="math inline">\(w,x\)</span>-projection is clearly less than before, and not discernibly different at this “inner” region of the surface than at the “outer” regions.</p>
-</div>
-<div id="validation-via-persistent-homology" class="section level3">
-<h3>validation via persistent homology</h3>
-<p>It makes sense to wrap up with a validation test. In an inversion of the usual protocol, i’ll use a widely-used implementation of persistent homology (PH) to validate my sampler. Since PH is based on distances in the ambient space <span class="math inline">\(\mathbb{R}^4\)</span>, the topological features of the Klein bottle — two generators of the rank-1 homology group <span class="math inline">\(H_1(\mathbb{K},\mathbb{Z})\)</span> — should be more clearly discernible from the points sampled uniformly from the embedded manifold than from those embedded from a uniform sample on the parameter space. In order to better illustrate the limiting case, i’ve boosted the sample size to 840 and set the minor radius to half the major radius. Here are the persistence diagrams for both samples:</p>
-<pre class="r"><code>f_klein &lt;- param_klein(r = .5)
-tibble(theta = runif(840, 0, 2*pi), phi = runif(840, 0, 2*pi)) %&gt;%
-  f_klein() %&gt;%
-  as.matrix() %&gt;%
-  TDAstats::calculate_homology(dim = 1) %&gt;%
-  TDAstats::plot_persist() +
-  scale_y_continuous(limits = c(0, 1)) -&gt;
-  ph_klein_warp
-sample_klein(n = 840, r = .5) %&gt;%
-  as.matrix() %&gt;%
-  TDAstats::calculate_homology(dim = 1) %&gt;%
-  TDAstats::plot_persist() +
-  scale_y_continuous(limits = c(0, 1)) -&gt;
-  ph_klein_unif
-gridExtra::grid.arrange(ph_klein_warp, ph_klein_unif, ncol = 2)</code></pre>
-<p><img src="/post/2019-02-01-sampling_files/figure-html/persistent%20homology%20of%20klein%20bottle%20samples-1.png" width="672" /></p>
-<p>Indeed, while PH captures the topology of <span class="math inline">\(\mathbb{K}\)</span> from both samples, the noise is noticeably reduced in the latter. Voila!<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a></p>
-</div>
-<div class="footnotes">
-<hr />
-<ol>
-<li id="fn1"><p>Some of these steps might be permuted, e.g. one could generate noise in the parameter space before embedding the sample, depending on what real-world problem you wants to simulate.<a href="#fnref1" class="footnote-back">↩</a></p></li>
-<li id="fn2"><p>Here’s where i’ll corroborate the authors’ recommendation of <a href="https://archive.org/details/HubbardJ.H.HubbardB.B.VectorCalculusLinearAlgebraAndDifferentialFormsAUnifiedApp/">the book by Hubbard and Hubbard</a>.<a href="#fnref2" class="footnote-back">↩</a></p></li>
-<li id="fn3"><p>By my handiwork, <span class="math inline">\(\frac{\partial j_f}{\partial\theta}\)</span> has numerator <span class="math inline">\(-r^2\sin\theta(4+3r\cos\theta)\)</span>, which vanishes at <span class="math inline">\(\theta=0,\pi\)</span>.<a href="#fnref3" class="footnote-back">↩</a></p></li>
-<li id="fn4"><p>I finally got around to setting a random seed for this post and took the opportunity to run it several times. While the present version uses the randomly-selected seed, other runs produced PH diagrams that sometimes favored the naïve over the uniform sample (in terms of noise). So, this is by no means a conclusive observation, though one may be in the works….<a href="#fnref4" class="footnote-back">↩</a></p></li>
-</ol>
-</div>
-</description>
-      <content:encoded>
-
-
-<div id="an-apparent-dearth-of-toy-tda-samplers" class="section level3">
-<h3>an apparent dearth of toy TDA samplers</h3>
-<p>Experimenting and practicing with topological data analytic (TDA) tools requires a healthy diversity of suitable data sets. Several real-world classics can be found in various packages, for example the glucose and insulin test data <a href="https://link.springer.com/article/10.1007/BF00423145">collected and analyzed by Reaven and Miller</a> and later <a href="http://diglib.eg.org/handle/10.2312/SPBG.SPBG07.091-100">used by Singh, Carlsson, and Mémoli</a> to illustrate the Mapper construction, which is included in the <strong>heplots</strong> package:</p>
-<pre class="r"><code>data(Diabetes, package = &quot;heplots&quot;)
-head(Diabetes)</code></pre>
-<pre><code>##   relwt glufast glutest instest sspg  group
-## 1  0.81      80     356     124   55 Normal
-## 2  0.95      97     289     117   76 Normal
-## 3  0.94     105     319     143  105 Normal
-## 4  1.04      90     356     199  108 Normal
-## 5  1.00      90     323     240  143 Normal
-## 6  0.76      86     381     157  165 Normal</code></pre>
-<p>For purposes of validation and comparison in particular, we need to supplement empirical data sets, which reflect potentially interesting but unknown topological structure, with artificial data sets that have known, and often simple, intrinsic topology. Probably the most commonly used are simulated samples from a circle, which are straightforward to generate in R:</p>
-<pre class="r"><code>library(magrittr)
-library(tibble)
-library(dplyr)
-library(ggplot2)
-tibble(theta = runif(120, 0, 2*pi)) %&gt;%
-  mutate(x = cos(theta), y = sin(theta)) %&gt;%
-  mutate_at(vars(x, y), funs(. + rnorm(n = length(.), sd = .1))) %&gt;%
-  print() %&gt;%
-  select(x, y) %&gt;%
-  ggplot(aes(x = x, y = y)) + coord_fixed() + geom_point()</code></pre>
-<pre><code>## Warning: funs() is soft deprecated as of dplyr 0.8.0
-## Please use a list of either functions or lambdas: 
-## 
-##   # Simple named list: 
-##   list(mean = mean, median = median)
-## 
-##   # Auto named with `tibble::lst()`: 
-##   tibble::lst(mean, median)
-## 
-##   # Using lambdas
-##   list(~ mean(., trim = .2), ~ median(., na.rm = TRUE))
-## This warning is displayed once per session.</code></pre>
-<pre><code>## # A tibble: 120 x 3
-##    theta      x      y
-##    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
-##  1 0.694  0.750  0.565
-##  2 3.93  -0.662 -0.679
-##  3 0.344  0.851  0.262
-##  4 1.77  -0.308  1.06 
-##  5 0.352  0.932  0.424
-##  6 0.739  0.722  0.657
-##  7 0.789  0.704  0.773
-##  8 4.03  -0.713 -0.935
-##  9 2.25  -0.459  0.806
-## 10 0.742  0.745  0.703
-## # … with 110 more rows</code></pre>
-<p><img src="/post/2019-02-01-sampling_files/figure-html/circle%20sample-1.png" width="672" /></p>
-<p>The underlying sampling protocol is, to my understanding, typical:<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></p>
-<ol style="list-style-type: decimal">
-<li>Pick a topological property to test for. In this case, most researchers want a loop, or a non-trivial generator in <span class="math inline">\(H_1(\,\cdot\,,\mathbb{Z})\)</span>.</li>
-<li>Choose a manifold <span class="math inline">\(M\)</span> having the desired property. The circle <span class="math inline">\(M=S^1\)</span> is the simplest choice.</li>
-<li>Choose a parameterization <span class="math inline">\(f:I\to M\subset\mathbb{R}^m\)</span> from a parameter space <span class="math inline">\(I\)</span> to an embedding of the manifold in an ambient Euclidean space. Most TDA actually depends on a data set having an underlying geometry, from which topological “nearness” is inferred. <em>This choice determines that underlying geometry.</em> Above, the parameter space is <span class="math inline">\([0,2\pi)\)</span> and <span class="math inline">\(f(\theta)=(\cos(\theta),\sin(\theta))\)</span>.</li>
-<li>Sample points <span class="math inline">\(S\subset M\)</span> uniformly from the embedded manifold. The idea of uniformity makes sense because the manifold has a measure induced from the ambient space.</li>
-<li>Optionally, add random noise to <span class="math inline">\(S\)</span>, usually from a standard <span class="math inline">\(m\)</span>-dimensional Gaussian distribution.</li>
-</ol>
-<p>While working with Raoul on <a href="https://github.com/rrrlw/ggtda">the <strong>ggtda</strong> package</a>, i’ve realized both how useful these simple artificial data sets are and how difficult they can be to find or produce. The <strong>TDA</strong> package can <a href="https://rdrr.io/cran/TDA/man/sphereUnif.html">sample uniformly a sphere</a>, and the <strong>KODAMA</strong> package can <a href="https://rdrr.io/cran/KODAMA/man/spirals.html">generate noisy spiral arrangements</a>; but the most comprehensive sources i’ve found are the Python module <strong>TaDAsets</strong>, <a href="https://github.com/scikit-tda/tadasets/blob/master/tadasets/sample.py">which includes three</a>, and <a href="https://lvdmaaten.github.io/drtoolbox/">the Matlab toolbox <strong>drtoolbox</strong></a>, which includes seven. So, i’ve started accumulating “noisy shape” samplers into <a href="https://github.com/corybrunson/tdaunif">a lightweight R package</a> that can be used as an alternative to saving specific samples for illustrative use in packages like <strong>ggtda</strong>. (If a better source exists that i haven’t found, please let me know!)</p>
-</div>
-<div id="what-else-but-a-klein-bottle" class="section level3">
-<h3>what else but a Klein bottle?</h3>
-<p>Naturally, the first thing i wanted to do was sample uniformly from a Klein bottle <span class="math inline">\(\mathbb{K}\)</span>. Parameterizations are easy to find, e.g. <a href="https://en.wikipedia.org/wiki/Klein_bottle#Parametrization">on Wikipedia</a>, and i opted for one that looked most similar to the usual “doughnut” parameterization of the torus in <span class="math inline">\(\mathbb{R}^3\)</span>, namely the “Möbius tube” in <span class="math inline">\(\mathbb{R}^4\)</span>:</p>
-<p><span class="math display">\[\begin{align*}
-w(\theta,\phi) &amp;= (1 + r\cos\theta)\cos\phi \\
-x(\theta,\phi) &amp;= (1 + r\cos\theta)\sin\phi \\
-y(\theta,\phi) &amp;= r\sin\theta\cos\frac{\phi}{2} \\
-z(\theta,\phi) &amp;= r\sin\theta\sin\frac{\phi}{2}
-\end{align*}\]</span></p>
-<p>The parameter space is <span class="math inline">\([0,2\pi)\times[0,2\pi)\ni(\theta,\phi)\)</span>, while <span class="math inline">\(r\)</span> is a constant that determines the shape of the embedded manifold. (Here i’ve simplified the Wikipedia parameterization by setting <span class="math inline">\(R=1\)</span> and assuming that <span class="math inline">\(0\leq r\leq 1\)</span>.) So here’s a <a href="http://adv-r.had.co.nz/Functional-programming.html#closures">closure</a> that takes <code>r</code> as input and returns a parameterization function that sends a data frame of <span class="math inline">\(\theta,\phi\)</span> coordinates to one of <span class="math inline">\((w,x,y,z)\)</span> coordinates:</p>
-<pre class="r"><code>param_klein &lt;- function(r) {
-  if (r &lt; 0 | r &gt; 1) stop(&quot;`r` must be between 0 and 1.&quot;)
-  function(data) {
-    with(data, tibble(
-      w = (1 + r * cos(theta)) * cos(phi),
-      x = (1 + r * cos(theta)) * sin(phi),
-      y = r * sin(theta) * cos(phi / 2),
-      z = r * sin(theta) * sin(phi / 2)
-    ))
-  }
-}</code></pre>
-<p>Sampling is another matter. Though we know the embedding warps the parameter space, stretching parts of it while compressing others, it’s tempting to presuppose that this warping will not vary too much, and just take uniform samples from the parameter space and map them to the ambient space. Here’s where that gets us, without adding additional noise:</p>
-<pre class="r"><code>f_klein &lt;- param_klein(r = .75)
-tibble(theta = runif(360, 0, 2*pi), phi = runif(360, 0, 2*pi)) %&gt;%
-  f_klein() %&gt;%
-  print() %&gt;%
-  pairs(asp = 1, pch = 19, cex = .5, col = &quot;#00000077&quot;)</code></pre>
-<pre><code>## # A tibble: 360 x 4
-##          w      x       y       z
-##      &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
-##  1  0.300   0.938  0.606   0.442 
-##  2 -0.191   0.172  0.0377  0.0983
-##  3  1.69    0.296  0.238   0.0208
-##  4  0.0991  1.14  -0.542  -0.497 
-##  5  0.714  -0.678  0.696  -0.278 
-##  6 -0.340  -0.372 -0.227   0.514 
-##  7 -0.471   0.987  0.397   0.629 
-##  8  0.465   1.17   0.583   0.395 
-##  9  0.495  -0.405  0.619  -0.221 
-## 10  0.155   0.226  0.166   0.0874
-## # … with 350 more rows</code></pre>
-<p><img src="/post/2019-02-01-sampling_files/figure-html/sample%20klein%20bottle%20uniformly%20from%20parameter%20space-1.png" width="672" /></p>
-<p>The features of the manifold are recognizable: The projection onto <span class="math inline">\(w\)</span> and <span class="math inline">\(x\)</span> is like that of a torus, while complementary “pinches” are discernible in the <span class="math inline">\(y\)</span> and <span class="math inline">\(z\)</span> directions with respect to <span class="math inline">\(w\)</span>. However, it’s also clear that more points have been sampled toward the center of the shape, where the parameterization “moves” most slowly, while fewer have been sampled toward the periphery.
-While we can visually pick out other regions of higher and lower concentrations, it’s not obvious how to determine how much of this is due to warping by the parameterization versus the angle from which we’re viewing the sample in these scatterplots.</p>
-</div>
-<div id="point-cloud-topology-is-sensitive-to-geometry" class="section level3">
-<h3>point cloud topology is sensitive to geometry</h3>
-<p>To better illustrate the potential problem, let’s go back to the noisy circle. The standard parameterization has the very nice property that the rate at which <span class="math inline">\(f(\theta)\)</span> traverses the circle, with respect to the rate at which <span class="math inline">\(\theta\)</span> proceeds along the interval, is constant. In analytic terms, the gradient <span class="math inline">\(\nabla f=(\frac{\partial x}{\partial\theta},\frac{\partial y}{\partial\theta})\)</span> has constant magnitude. Instead of this standard, consider the alternative, highly suspect parameterization <span class="math inline">\(g:[-2,2)\to\mathbb{R}^2\)</span> given by</p>
-<p><span class="math display">\[g(t) = \begin{cases}
-(t+1,\sqrt{1-(t+1)^2}) &amp; t\leq 0 \\
-(1-t,-\sqrt{1-(1-t)^2}) &amp; t&gt;0
-\end{cases}\]</span></p>
-<p>This map takes the interval <span class="math inline">\([-2,0]\)</span>, shifts it rightward to <span class="math inline">\([-1,1]\)</span>, and lifts it to the upper hemicircle; to complement, it shifts <span class="math inline">\(0,2\)</span> leftward to <span class="math inline">\((-1,1)\)</span>, reverses it (so that the map is continuous at <span class="math inline">\(t=0\)</span>), and drops it to the lower hemicircle. Here’s how the sampling procedure shakes out:</p>
-<pre class="r"><code>tibble(t = runif(120, -2, 2)) %&gt;%
-  mutate(x = ifelse(t &lt;= 0, t + 1, 1 - t)) %&gt;%
-  mutate(y = ifelse(t &lt;= 0, sqrt(1 - x^2), -sqrt(1 - x^2))) %&gt;%
-  mutate_at(vars(x, y), funs(. + rnorm(n = length(.), sd = .1))) %&gt;%
-  select(x, y) %&gt;%
-  ggplot(aes(x = x, y = y)) + coord_fixed() + geom_point()</code></pre>
-<p><img src="/post/2019-02-01-sampling_files/figure-html/sample%20circle%20uniformly%20from%20parameter%20space-1.png" width="672" /></p>
-<p>Notice the sparsity of points near <span class="math inline">\((-1,0)\)</span> and <span class="math inline">\((1,0)\)</span>. This is because, as <span class="math inline">\(x(t)\)</span> moves steadily away from these endpoints, <span class="math inline">\(y(t)\)</span> bolts away from them; so that the Euclidean distance <span class="math inline">\(\sqrt{x^2+y^2}\)</span> between <span class="math inline">\(g(t_0)\)</span> and <span class="math inline">\(g(t_1)\)</span> is larger when <span class="math inline">\(t_0\)</span> and <span class="math inline">\(t_1\)</span> are closer to these endpoints than when they are closer to <span class="math inline">\((0,1)\)</span> or <span class="math inline">\((0,-1)\)</span>.
-This is the sort of problem we want to be sure to avoid when sampling from the embedded Klein bottle.</p>
-</div>
-<div id="reforming-a-deformed-sampler" class="section level3">
-<h3>reforming a deformed sampler</h3>
-<p>My solution comes from <a href="https://projecteuclid.org/euclid.imsc/1379942050">a very cool paper titled “Sampling from a Manifold”</a>, by mathematicians Persi Diaconis and Mehrdad Shahshahani and statistician Susan Holmes.
-I don’t remember how i first came across this paper, but i found it simultaneously exciting and exhausting to read — excited by the prospect of using basic calculus and computational trickery to generate uniform manifold samples, exhausted by the way rigorous details were either compactified or outsourced. This post was ultimately motivated by a desire, for my own future benefit at least, to have a thoroughly documented application of their method available for reference.</p>
-<p>Recall the Möbius tube parameterization <span class="math inline">\(f:[0,2\pi)\times[0,2\pi)\to\mathbb{R}^4\)</span> above. To correct for the warping <span class="math inline">\(f\)</span> introduces, the strategy is to measure this warping locally (i.e. as a function of the parameters <span class="math inline">\(\theta\)</span> and <span class="math inline">\(\phi\)</span>) and then filter our random samples in a way that undoes its effects.</p>
-</div>
-<div id="vector-derivatives" class="section level3">
-<h3>vector derivatives</h3>
-<p>As i alluded in the example of the circle, the warping arises from differences in the rate at which distances in the domain <span class="math inline">\(I\subset\mathbb{R}^2\)</span> translate into distances in the codomain <span class="math inline">\(\mathbb{R}^4\)</span>. That is to say, we measure the warping in terms of derivatives. The vector-valued function <span class="math inline">\(f\)</span> has two inputs and four outputs, so its <span class="math inline">\(4\times 2\)</span> <em>Jacobian</em> (derivative) matrix <span class="math inline">\(J_f\)</span> is given by</p>
-<p><span class="math display">\[J_f=
-\left[\ \frac{\partial f}{\partial\theta}\ \frac{\partial f}{\partial\phi}\ \right]=
-\left[\begin{array}{cc}
-\frac{\partial w}{\partial\theta} &amp; \frac{\partial w}{\partial\phi} \\
-\frac{\partial x}{\partial\theta} &amp; \frac{\partial x}{\partial\phi} \\
-\frac{\partial y}{\partial\theta} &amp; \frac{\partial y}{\partial\phi} \\
-\frac{\partial z}{\partial\theta} &amp; \frac{\partial z}{\partial\phi}
-\end{array}\right]=
-\left[\begin{array}{cc}
--r\sin\theta\cos\phi &amp; -(1+r\cos\theta)\sin\phi \\
--r\sin\theta\sin\phi &amp; (1+r\cos\theta)\cos\phi \\
-r\cos\theta\cos\frac{\phi}{2} &amp; -\frac{1}{2}r\sin\theta\sin\frac{\phi}{2} \\
-r\cos\theta\sin\frac{\phi}{2} &amp; \frac{1}{2}r\sin\theta\cos\frac{\phi}{2}
-\end{array}\right]\]</span></p>
-<p>Locally, the domain is composed of rectangles <span class="math inline">\((\theta,\theta+\Delta\theta)\times(\phi,\phi+\Delta\phi)\)</span>, while the codomain is, up to linear approximation, composed of parallelograms <span class="math inline">\((f,f+\frac{\partial f}{\partial\theta}\Delta\theta,f+\frac{\partial f}{\partial\phi}\Delta\phi,f+\frac{\partial f}{\partial\theta}\Delta\theta+\frac{\partial f}{\partial\phi}\Delta\phi)\)</span>.
-Whereas the domain rectangles have area <span class="math inline">\(\Delta\theta\Delta\phi\)</span>, the codomain parallelograms have area <span class="math inline">\(\Delta A=(\lvert\frac{\partial f}{\partial\theta}\rvert\lvert\frac{\partial f}{\partial\phi}\rvert\cos\omega)\Delta\theta\Delta\phi\)</span>, where <span class="math inline">\(\omega\)</span> is the angle between the vectors <span class="math inline">\(\frac{\partial f}{\partial\theta}\)</span> and <span class="math inline">\(\frac{\partial f}{\partial\phi}\)</span>. The local area function is then <span class="math inline">\(\lvert\frac{\partial f}{\partial\theta}\rvert\lvert\frac{\partial f}{\partial\phi}\rvert\cos\omega\)</span>.</p>
-<p>The more elegant way to understand this<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> is by imagining that <span class="math inline">\(f\)</span> takes a space, say <span class="math inline">\(\mathbb{R}^2\)</span>, to itself. In this case, the matrix <span class="math inline">\(J_f=\left[\ \frac{\partial f}{\partial\theta}\ \frac{\partial f}{\partial\phi}\ \right]\)</span> consists of the two (column) vectors in <span class="math inline">\(\mathbb{R}^2\)</span> defining the parallelogram corresponding to the unit rectangle based at <span class="math inline">\((\theta,\phi)\in\mathbb{R}^2\)</span>, so that the area of the parallelogram is the absolute value of <span class="math inline">\(\det J_f\)</span>. This generalizes to the formula <span class="math inline">\(j_f=\sqrt{\det({J_f}^\top{J_f})}\)</span> when the domain and codomain have different dimensions.</p>
-<p>A bit of algebra (minus the frustrating hours i lost after forgetting to differentiate constants) yields the Jacobian determinant
-<span class="math display">\[j_f = r\sqrt{(1+r\cos\theta)^2 + (\frac{1}{2}r\sin\theta)^2}\text.\]</span>
-As before, the function is returned from a closure that depends on <code>r</code>:</p>
-<pre class="r"><code>jacobian_klein &lt;- function(r) {
-  function(theta) r * sqrt((1 + r * cos(theta)) ^ 2 + (.5 * r * sin(theta)) ^ 2)
-}</code></pre>
-<p>Here’s how the Jacobian determinant — that is, the expanding and contracting of area by the parameterization — depends on <span class="math inline">\(\theta\)</span>:</p>
-<pre class="r"><code>j_klein &lt;- jacobian_klein(r = .75)
-tibble(theta = seq(0, 2*pi, length.out = 60)) %&gt;%
-  mutate(jacobian = j_klein(theta)) %&gt;%
-  print() %&gt;%
-  ggplot(aes(x = theta, y = jacobian)) +
-  ylim(c(0, NA)) +
-  geom_line() +
-  geom_area(fill = &quot;#00000077&quot;)</code></pre>
-<pre><code>## # A tibble: 60 x 2
-##    theta jacobian
-##    &lt;dbl&gt;    &lt;dbl&gt;
-##  1 0         1.31
-##  2 0.106     1.31
-##  3 0.213     1.30
-##  4 0.319     1.29
-##  5 0.426     1.27
-##  6 0.532     1.24
-##  7 0.639     1.21
-##  8 0.745     1.18
-##  9 0.852     1.14
-## 10 0.958     1.10
-## # … with 50 more rows</code></pre>
-<p><img src="/post/2019-02-01-sampling_files/figure-html/klein%20bottle%20jacobian%20versus%20theta-1.png" width="672" /></p>
-<p>Looking back at the scatterplots, the contraction is least near <span class="math inline">\(\theta=0\)</span> and <span class="math inline">\(\theta=2\pi\)</span>, toward the periphery of the Klein bottle where <span class="math inline">\(w\)</span> and <span class="math inline">\(x\)</span> are at their greatest amplitudes (with respect to <span class="math inline">\(\phi\)</span>), and greatest near <span class="math inline">\(\theta=\pi\)</span>, toward the center.</p>
-</div>
-<div id="de-biasing-samples" class="section level3">
-<h3>de-biasing samples</h3>
-<p>We can now use our knowledge of derivatives to preempt the bias they introduce. The motivation is that, if the surface is expanded by a factor of <span class="math inline">\(k\)</span> near the point <span class="math inline">\((\theta_0,\phi_0)\)</span>, then <span class="math inline">\(k\)</span> times as many points should be sampled there, so that the density of points on the warped surface is uniform. The idea of <em>rejection sampling</em>, with a density function <span class="math inline">\(\delta:I\to[0,1]\)</span>, is to sample many points uniformly and then retain each point <span class="math inline">\((\theta_0,\phi_0)\)</span> with probability <span class="math inline">\(\delta(\theta_0,\phi_0)\)</span>.</p>
-<p>In fact, we don’t have to calculate the density function exactly, so that it has unit integral over the domain <span class="math inline">\(I\)</span>; it is enough to make sure that we retain samples in the correct proportion. Since the Jacobian is maximized at <span class="math inline">\(\theta=0\)</span> for any choice of <span class="math inline">\(r\)</span>,<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> this can be accomplished as follows:</p>
-<ol style="list-style-type: decimal">
-<li>Sample <span class="math inline">\(\theta\in[0,2\pi)\)</span> uniformly.</li>
-<li>Sample <span class="math inline">\(\eta\in[0,j_f(0)]\)</span> uniformly.</li>
-<li>If <span class="math inline">\(j_f(\theta) &gt; \eta\)</span>, then retain the value <span class="math inline">\(\theta\)</span>; otherwise, reject <span class="math inline">\(\theta\)</span>.</li>
-</ol>
-<p>Effectively, we retain <span class="math inline">\(\theta\)</span> when <span class="math inline">\((\theta,\eta)\)</span> lies in the shaded region above and reject it when not. The procedure repeats until enough values are retained. This leads me to the following rejection sampler:</p>
-<pre class="r"><code>sample_klein_theta &lt;- function(n, r) {
-  x &lt;- c()
-  while (length(x) &lt; n) {
-    theta &lt;- runif(n, 0, 2 * pi)
-    jacobian &lt;- jacobian_klein(r)
-    jacobian_theta &lt;- sapply(theta, jacobian)
-    eta &lt;- runif(n, 0, jacobian(0))
-    x &lt;- c(x, theta[jacobian_theta &gt; eta])
-  }
-  x[1:n]
-}
-sample_klein &lt;- function(n, r) {
-  d &lt;- tibble(
-    phi = runif(n, 0, 2*pi),
-    theta = sample_klein_theta(n, r)
-  )
-  f &lt;- param_klein(r)
-  f(d)
-}</code></pre>
-<p>We can compare this to the naïve sampler above that did not account for warping by the parameterization:</p>
-<pre class="r"><code>sample_klein(n = 360, r = .75) %&gt;%
-  print() %&gt;%
-  pairs(asp = 1, pch = 19, cex = .5, col = &quot;#00000077&quot;)</code></pre>
-<pre><code>## # A tibble: 360 x 4
-##          w      x       y       z
-##      &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
-##  1  1.59   -0.326  0.411  -0.0417
-##  2 -0.0144  0.459 -0.362  -0.373 
-##  3 -0.853   1.12  -0.280  -0.565 
-##  4 -1.66    0.243 -0.0237 -0.326 
-##  5 -1.43    0.712 -0.105  -0.446 
-##  6  1.19    0.595 -0.654  -0.154 
-##  7  0.222  -0.506  0.504  -0.329 
-##  8  1.32   -0.334  0.654  -0.0818
-##  9  0.861   0.361 -0.732  -0.147 
-## 10  0.0688  1.22  -0.521  -0.492 
-## # … with 350 more rows</code></pre>
-<p><img src="/post/2019-02-01-sampling_files/figure-html/sample%20klein%20bottle%20uniformly%20within%20ambient%20space-1.png" width="672" /></p>
-<p>The differences are minor in most of the coordinate scatterplots, but the concentration of points near the center of the <span class="math inline">\(w,x\)</span>-projection is clearly less than before, and not discernibly different at this “inner” region of the surface than at the “outer” regions.</p>
-</div>
-<div id="validation-via-persistent-homology" class="section level3">
-<h3>validation via persistent homology</h3>
-<p>It makes sense to wrap up with a validation test. In an inversion of the usual protocol, i’ll use a widely-used implementation of persistent homology (PH) to validate my sampler. Since PH is based on distances in the ambient space <span class="math inline">\(\mathbb{R}^4\)</span>, the topological features of the Klein bottle — two generators of the rank-1 homology group <span class="math inline">\(H_1(\mathbb{K},\mathbb{Z})\)</span> — should be more clearly discernible from the points sampled uniformly from the embedded manifold than from those embedded from a uniform sample on the parameter space. In order to better illustrate the limiting case, i’ve boosted the sample size to 840 and set the minor radius to half the major radius. Here are the persistence diagrams for both samples:</p>
-<pre class="r"><code>f_klein &lt;- param_klein(r = .5)
-tibble(theta = runif(840, 0, 2*pi), phi = runif(840, 0, 2*pi)) %&gt;%
-  f_klein() %&gt;%
-  as.matrix() %&gt;%
-  TDAstats::calculate_homology(dim = 1) %&gt;%
-  TDAstats::plot_persist() +
-  scale_y_continuous(limits = c(0, 1)) -&gt;
-  ph_klein_warp
-sample_klein(n = 840, r = .5) %&gt;%
-  as.matrix() %&gt;%
-  TDAstats::calculate_homology(dim = 1) %&gt;%
-  TDAstats::plot_persist() +
-  scale_y_continuous(limits = c(0, 1)) -&gt;
-  ph_klein_unif
-gridExtra::grid.arrange(ph_klein_warp, ph_klein_unif, ncol = 2)</code></pre>
-<p><img src="/post/2019-02-01-sampling_files/figure-html/persistent%20homology%20of%20klein%20bottle%20samples-1.png" width="672" /></p>
-<p>Indeed, while PH captures the topology of <span class="math inline">\(\mathbb{K}\)</span> from both samples, the noise is noticeably reduced in the latter. Voila!<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a></p>
-</div>
-<div class="footnotes">
-<hr />
-<ol>
-<li id="fn1"><p>Some of these steps might be permuted, e.g. one could generate noise in the parameter space before embedding the sample, depending on what real-world problem you wants to simulate.<a href="#fnref1" class="footnote-back">↩</a></p></li>
-<li id="fn2"><p>Here’s where i’ll corroborate the authors’ recommendation of <a href="https://archive.org/details/HubbardJ.H.HubbardB.B.VectorCalculusLinearAlgebraAndDifferentialFormsAUnifiedApp/">the book by Hubbard and Hubbard</a>.<a href="#fnref2" class="footnote-back">↩</a></p></li>
-<li id="fn3"><p>By my handiwork, <span class="math inline">\(\frac{\partial j_f}{\partial\theta}\)</span> has numerator <span class="math inline">\(-r^2\sin\theta(4+3r\cos\theta)\)</span>, which vanishes at <span class="math inline">\(\theta=0,\pi\)</span>.<a href="#fnref3" class="footnote-back">↩</a></p></li>
-<li id="fn4"><p>I finally got around to setting a random seed for this post and took the opportunity to run it several times. While the present version uses the randomly-selected seed, other runs produced PH diagrams that sometimes favored the naïve over the uniform sample (in terms of noise). So, this is by no means a conclusive observation, though one may be in the works….<a href="#fnref4" class="footnote-back">↩</a></p></li>
 </ol>
 </div>
 </content:encoded>

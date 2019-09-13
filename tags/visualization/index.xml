@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Progress on murmuring in the background</title>
-    <link>/categories/progress/</link>
-    <description>Recent content in Progress on murmuring in the background</description>
+    <title>Visualization on murmuring in the background</title>
+    <link>/tags/visualization/</link>
+    <description>Recent content in Visualization on murmuring in the background</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 13 Sep 2019 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/categories/progress/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/tags/visualization/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -18,15 +18,6 @@
       
       <guid>/2019/09/13/alluvial-vs-sankey/</guid>
       <description>Background I first encountered alluvial diagrams, so-called, in a widely-shared paper by Martin Rosvall and Carl T. Bergstrom. They were investigating the shifting boundaries between distinct scientific fields (“modules”), as reconstructed from sequential years of journal citation data (“states”), and proposed a specialized flow diagram “to highlight the significant changes, fusions, and fissions that the modules undergo between each pair of successive states”. At the time, i was unfamiliar with Sankey diagrams and only passingly familiar with flow diagrams—mostly by way of my computational biologist colleagues and their literature-derived signal transduction networks—but i could imagine myriad uses for this type of visualization and eventually went searching for an implementation in R.</description>
-    </item>
-    
-    <item>
-      <title>I AM THE DISCRIMINANT</title>
-      <link>/2019/08/02/lda/</link>
-      <pubDate>Fri, 02 Aug 2019 00:00:00 +0000</pubDate>
-      
-      <guid>/2019/08/02/lda/</guid>
-      <description>For over a year (intermittently, not cumulatively) i’ve been developing an R package, ordr, for incorporating ordination techniques into a tidyverse workflow. (Credit where it’s due: Emily Paul, a summer intern from Avon High School, helped extend the package functionality and has since used it in other projects and provided critical feedback on its design.) This week, i finally deployed a pkgdown website and tweeted a meek solicitation for feedback.</description>
     </item>
     
   </channel>
