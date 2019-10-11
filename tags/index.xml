@@ -65,5 +65,23 @@
       <description></description>
     </item>
     
+    <item>
+      <title>Films</title>
+      <link>http://corybrunson.github.io/tags/films/</link>
+      <pubDate>Fri, 11 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>http://corybrunson.github.io/tags/films/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Flow Diagrams</title>
+      <link>http://corybrunson.github.io/tags/flow-diagrams/</link>
+      <pubDate>Fri, 13 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>http://corybrunson.github.io/tags/flow-diagrams/</guid>
+      <description></description>
+    </item>
+    
   </channel>
 </rss>

@@ -68,5 +68,15 @@ x &amp;lt;- scale(mtcars, center = TRUE, scale = TRUE) s &amp;lt;- svd(x) r &amp
       <description>inreach I make a habit of responding when people reach out for mathematical support in their work, at least when i think i can contribute something. An interesting network effect of this habit is that i actually get more second-hand (i.e. forwarded) feelers from colleagues than first-hand requests. As a result, i’ve gotten exposure to a lot of disciplines and questions that i’d’ve otherwise been unaware of entirely, for example the problem of feature identification in the immune profiles of cancer patients and the statistical bookkeeping required to model the nested factors determining medical imaging phenotypes.</description>
     </item>
     
+    <item>
+      <title>Sampling uniformly from an embedded Klein bottle</title>
+      <link>http://corybrunson.github.io/2019/02/01/sampling/</link>
+      <pubDate>Fri, 01 Feb 2019 00:00:00 +0000</pubDate>
+      
+      <guid>http://corybrunson.github.io/2019/02/01/sampling/</guid>
+      <description>an apparent dearth of toy TDA samplers Experimenting and practicing with topological data analytic (TDA) tools requires a healthy diversity of suitable data sets. Several real-world classics can be found in various packages, for example the glucose and insulin test data collected and analyzed by Reaven and Miller and later used by Singh, Carlsson, and Mémoli to illustrate the Mapper construction, which is included in the heplots package:
+data(Diabetes, package = &amp;quot;heplots&amp;quot;) head(Diabetes) ## relwt glufast glutest instest sspg group ## 1 0.</description>
+    </item>
+    
   </channel>
 </rss>
