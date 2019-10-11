@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Alluvial Plots on murmuring in the background</title>
-    <link>http://corybrunson.github.io/tags/alluvial-plots/</link>
+    <link>/tags/alluvial-plots/</link>
     <description>Recent content in Alluvial Plots on murmuring in the background</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 13 Sep 2019 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="http://corybrunson.github.io/tags/alluvial-plots/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/tags/alluvial-plots/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>defining and taxonomizing alluvial diagrams</title>
-      <link>http://corybrunson.github.io/2019/09/13/flow-taxonomy/</link>
+      <link>/2019/09/13/flow-taxonomy/</link>
       <pubDate>Fri, 13 Sep 2019 00:00:00 +0000</pubDate>
       
-      <guid>http://corybrunson.github.io/2019/09/13/flow-taxonomy/</guid>
+      <guid>/2019/09/13/flow-taxonomy/</guid>
       <description>Background I first encountered alluvial diagrams, so-called, in a widely-shared paper by Martin Rosvall and Carl T. Bergstrom. They were investigating the shifting boundaries between distinct scientific fields (“modules”), as reconstructed from sequential years of journal citation data (“states”), and proposed a specialized flow diagram “to highlight the significant changes, fusions, and fissions that the modules undergo between each pair of successive states”. At the time, i was unfamiliar with Sankey diagrams and only passingly familiar with flow diagrams—mostly by way of my computational biologist colleagues and their literature-derived signal transduction networks—but i could imagine myriad uses for this type of visualization and eventually went searching for an implementation in R.</description>
     </item>
     
