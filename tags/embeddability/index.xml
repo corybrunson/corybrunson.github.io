@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Embeddability on murmuring in the background</title>
-    <link>/tags/embeddability/</link>
+    <link>http://corybrunson.github.io/tags/embeddability/</link>
     <description>Recent content in Embeddability on murmuring in the background</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 01 Mar 2019 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/tags/embeddability/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://corybrunson.github.io/tags/embeddability/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>embed with the Petersens</title>
-      <link>/2019/03/01/embeddability/</link>
+      <link>http://corybrunson.github.io/2019/03/01/embeddability/</link>
       <pubDate>Fri, 01 Mar 2019 00:00:00 +0000</pubDate>
       
-      <guid>/2019/03/01/embeddability/</guid>
+      <guid>http://corybrunson.github.io/2019/03/01/embeddability/</guid>
       <description>inreach I make a habit of responding when people reach out for mathematical support in their work, at least when i think i can contribute something. An interesting network effect of this habit is that i actually get more second-hand (i.e. forwarded) feelers from colleagues than first-hand requests. As a result, i’ve gotten exposure to a lot of disciplines and questions that i’d’ve otherwise been unaware of entirely, for example the problem of feature identification in the immune profiles of cancer patients and the statistical bookkeeping required to model the nested factors determining medical imaging phenotypes.</description>
     </item>
     

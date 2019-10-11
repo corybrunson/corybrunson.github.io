@@ -2,70 +2,70 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on murmuring in the background</title>
-    <link>/post/</link>
+    <link>http://corybrunson.github.io/post/</link>
     <description>Recent content in Posts on murmuring in the background</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 13 Sep 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 11 Oct 2019 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://corybrunson.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
+      <title>my reaction to _Hidden Figures_</title>
+      <link>http://corybrunson.github.io/2019/10/11/hidden-figures/</link>
+      <pubDate>Fri, 11 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>http://corybrunson.github.io/2019/10/11/hidden-figures/</guid>
+      <description>I’m a bit overwhelmed and a bit sick this month, and i didn’t want to miss two fortnights in a row. I wrote up this reaction to seeing the film Hidden Figures a couple of years ago on Facebook, and several of my friends liked it then, so i’m sharing it here. It’s slightly edited. –Cory
+Hidden Figures was probably the best civil rights–focused film i’ve seen in a while—not to disparage Selma or The Butler, but my personal taste is for greater subtlety.</description>
+    </item>
+    
+    <item>
       <title>defining and taxonomizing alluvial diagrams</title>
-      <link>/2019/09/13/flow-taxonomy/</link>
+      <link>http://corybrunson.github.io/2019/09/13/flow-taxonomy/</link>
       <pubDate>Fri, 13 Sep 2019 00:00:00 +0000</pubDate>
       
-      <guid>/2019/09/13/flow-taxonomy/</guid>
+      <guid>http://corybrunson.github.io/2019/09/13/flow-taxonomy/</guid>
       <description>Background I first encountered alluvial diagrams, so-called, in a widely-shared paper by Martin Rosvall and Carl T. Bergstrom. They were investigating the shifting boundaries between distinct scientific fields (“modules”), as reconstructed from sequential years of journal citation data (“states”), and proposed a specialized flow diagram “to highlight the significant changes, fusions, and fissions that the modules undergo between each pair of successive states”. At the time, i was unfamiliar with Sankey diagrams and only passingly familiar with flow diagrams—mostly by way of my computational biologist colleagues and their literature-derived signal transduction networks—but i could imagine myriad uses for this type of visualization and eventually went searching for an implementation in R.</description>
     </item>
     
     <item>
       <title>comparable pairwise and multivariate associations from presence-absence data</title>
-      <link>/2019/08/30/presence-absence/</link>
+      <link>http://corybrunson.github.io/2019/08/30/presence-absence/</link>
       <pubDate>Fri, 30 Aug 2019 00:00:00 +0000</pubDate>
       
-      <guid>/2019/08/30/presence-absence/</guid>
+      <guid>http://corybrunson.github.io/2019/08/30/presence-absence/</guid>
       <description>A project i’ve had in the works for years, and “almost done” since last summer, is a sensitivity and robustness analysis of several techniques used in studies of “comorbidity networks” (also “disease graphs”, “disease maps”, etc.) that have appeared over the past 20 years. As i begin the abstract:
  Comorbidity network analysis (CNA) is an increasingly popular approach in systems medicine, in which mathematical graphs encode epidemiological correlations (links) between diseases (nodes) inferred from their occurrence in an underlying patient population.</description>
     </item>
     
     <item>
       <title>multidimensional scaling of variables, and rank correlations</title>
-      <link>/2019/08/16/rank-correlations/</link>
+      <link>http://corybrunson.github.io/2019/08/16/rank-correlations/</link>
       <pubDate>Fri, 16 Aug 2019 00:00:00 +0000</pubDate>
       
-      <guid>/2019/08/16/rank-correlations/</guid>
+      <guid>http://corybrunson.github.io/2019/08/16/rank-correlations/</guid>
       <description>A fundamental idea in biplot methodology is the conference of inertia, a phrase i picked up from an SO answer by ttnphns and quickly incorporated into ordr. The basic idea arises from the central properties of a biplot, illustrated here for principal components analysis: A case–variable data matrix \(X\in\mathbb{R}^{n\times m}\) of ratio variables1 is singular-value decomposed as \(X=UDV^\top\), for example the mtcars data set:
 x &amp;lt;- scale(mtcars, center = TRUE, scale = TRUE) s &amp;lt;- svd(x) r &amp;lt;- length(s$d) Under this convention, \(U\in\mathbb{R}^{n\times r}\) and \(V\in\mathbb{R}^{m\times r}\) arise from eigendecompositions of \(XX^\top\) and of \(X^\top X\), respectively, and \(D\in\mathbb{R}^{r\times r}\) is the diagonal matrix of the square roots of their (common) eigenvalues.</description>
     </item>
     
     <item>
       <title>I AM THE DISCRIMINANT</title>
-      <link>/2019/08/02/lda/</link>
+      <link>http://corybrunson.github.io/2019/08/02/lda/</link>
       <pubDate>Fri, 02 Aug 2019 00:00:00 +0000</pubDate>
       
-      <guid>/2019/08/02/lda/</guid>
+      <guid>http://corybrunson.github.io/2019/08/02/lda/</guid>
       <description>For over a year (intermittently, not cumulatively) i’ve been developing an R package, ordr, for incorporating ordination techniques into a tidyverse workflow. (Credit where it’s due: Emily Paul, a summer intern from Avon High School, helped extend the package functionality and has since used it in other projects and provided critical feedback on its design.) This week, i finally deployed a pkgdown website and tweeted a meek solicitation for feedback.</description>
     </item>
     
     <item>
       <title>embed with the Petersens</title>
-      <link>/2019/03/01/embeddability/</link>
+      <link>http://corybrunson.github.io/2019/03/01/embeddability/</link>
       <pubDate>Fri, 01 Mar 2019 00:00:00 +0000</pubDate>
       
-      <guid>/2019/03/01/embeddability/</guid>
+      <guid>http://corybrunson.github.io/2019/03/01/embeddability/</guid>
       <description>inreach I make a habit of responding when people reach out for mathematical support in their work, at least when i think i can contribute something. An interesting network effect of this habit is that i actually get more second-hand (i.e. forwarded) feelers from colleagues than first-hand requests. As a result, i’ve gotten exposure to a lot of disciplines and questions that i’d’ve otherwise been unaware of entirely, for example the problem of feature identification in the immune profiles of cancer patients and the statistical bookkeeping required to model the nested factors determining medical imaging phenotypes.</description>
-    </item>
-    
-    <item>
-      <title>Sampling uniformly from an embedded Klein bottle</title>
-      <link>/2019/02/01/sampling/</link>
-      <pubDate>Fri, 01 Feb 2019 00:00:00 +0000</pubDate>
-      
-      <guid>/2019/02/01/sampling/</guid>
-      <description>an apparent dearth of toy TDA samplers Experimenting and practicing with topological data analytic (TDA) tools requires a healthy diversity of suitable data sets. Several real-world classics can be found in various packages, for example the glucose and insulin test data collected and analyzed by Reaven and Miller and later used by Singh, Carlsson, and Mémoli to illustrate the Mapper construction, which is included in the heplots package:
-data(Diabetes, package = &amp;quot;heplots&amp;quot;) head(Diabetes) ## relwt glufast glutest instest sspg group ## 1 0.</description>
     </item>
     
   </channel>

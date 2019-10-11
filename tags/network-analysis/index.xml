@@ -2,32 +2,23 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Network Analysis on murmuring in the background</title>
-    <link>/tags/network-analysis/</link>
+    <link>http://corybrunson.github.io/tags/network-analysis/</link>
     <description>Recent content in Network Analysis on murmuring in the background</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 30 Aug 2019 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/tags/network-analysis/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://corybrunson.github.io/tags/network-analysis/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>comparable pairwise and multivariate associations from presence-absence data</title>
-      <link>/2019/08/30/presence-absence/</link>
+      <link>http://corybrunson.github.io/2019/08/30/presence-absence/</link>
       <pubDate>Fri, 30 Aug 2019 00:00:00 +0000</pubDate>
       
-      <guid>/2019/08/30/presence-absence/</guid>
+      <guid>http://corybrunson.github.io/2019/08/30/presence-absence/</guid>
       <description>A project i’ve had in the works for years, and “almost done” since last summer, is a sensitivity and robustness analysis of several techniques used in studies of “comorbidity networks” (also “disease graphs”, “disease maps”, etc.) that have appeared over the past 20 years. As i begin the abstract:
  Comorbidity network analysis (CNA) is an increasingly popular approach in systems medicine, in which mathematical graphs encode epidemiological correlations (links) between diseases (nodes) inferred from their occurrence in an underlying patient population.</description>
-    </item>
-    
-    <item>
-      <title>comparing pairwise and multivariate correlation networks</title>
-      <link>/1/01/01/correlation-networks/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>/1/01/01/correlation-networks/</guid>
-      <description>In each construction, two variables are linked in the network when their association is both discernible and strong. “Discernibility” has to do with the detection of a statistical signal, and is a cautious substitution for the misleading and often-abused term “significance”. “Strength” has to do with the size of the relative amount by which change in one variable predicts change in the other, assuming the pattern in the data reflects the latent relationship (and would be a better referent for “significance” anyway).</description>
     </item>
     
   </channel>

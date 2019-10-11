@@ -2,31 +2,31 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Biplot on murmuring in the background</title>
-    <link>/tags/biplot/</link>
+    <link>http://corybrunson.github.io/tags/biplot/</link>
     <description>Recent content in Biplot on murmuring in the background</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 16 Aug 2019 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/tags/biplot/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://corybrunson.github.io/tags/biplot/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>multidimensional scaling of variables, and rank correlations</title>
-      <link>/2019/08/16/rank-correlations/</link>
+      <link>http://corybrunson.github.io/2019/08/16/rank-correlations/</link>
       <pubDate>Fri, 16 Aug 2019 00:00:00 +0000</pubDate>
       
-      <guid>/2019/08/16/rank-correlations/</guid>
+      <guid>http://corybrunson.github.io/2019/08/16/rank-correlations/</guid>
       <description>A fundamental idea in biplot methodology is the conference of inertia, a phrase i picked up from an SO answer by ttnphns and quickly incorporated into ordr. The basic idea arises from the central properties of a biplot, illustrated here for principal components analysis: A case–variable data matrix \(X\in\mathbb{R}^{n\times m}\) of ratio variables1 is singular-value decomposed as \(X=UDV^\top\), for example the mtcars data set:
 x &amp;lt;- scale(mtcars, center = TRUE, scale = TRUE) s &amp;lt;- svd(x) r &amp;lt;- length(s$d) Under this convention, \(U\in\mathbb{R}^{n\times r}\) and \(V\in\mathbb{R}^{m\times r}\) arise from eigendecompositions of \(XX^\top\) and of \(X^\top X\), respectively, and \(D\in\mathbb{R}^{r\times r}\) is the diagonal matrix of the square roots of their (common) eigenvalues.</description>
     </item>
     
     <item>
       <title>I AM THE DISCRIMINANT</title>
-      <link>/2019/08/02/lda/</link>
+      <link>http://corybrunson.github.io/2019/08/02/lda/</link>
       <pubDate>Fri, 02 Aug 2019 00:00:00 +0000</pubDate>
       
-      <guid>/2019/08/02/lda/</guid>
+      <guid>http://corybrunson.github.io/2019/08/02/lda/</guid>
       <description>For over a year (intermittently, not cumulatively) i’ve been developing an R package, ordr, for incorporating ordination techniques into a tidyverse workflow. (Credit where it’s due: Emily Paul, a summer intern from Avon High School, helped extend the package functionality and has since used it in other projects and provided critical feedback on its design.) This week, i finally deployed a pkgdown website and tweeted a meek solicitation for feedback.</description>
     </item>
     

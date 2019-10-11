@@ -2,52 +2,43 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Methodology on murmuring in the background</title>
-    <link>/categories/methodology/</link>
+    <link>http://corybrunson.github.io/categories/methodology/</link>
     <description>Recent content in Methodology on murmuring in the background</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 30 Aug 2019 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/categories/methodology/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://corybrunson.github.io/categories/methodology/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>comparable pairwise and multivariate associations from presence-absence data</title>
-      <link>/2019/08/30/presence-absence/</link>
+      <link>http://corybrunson.github.io/2019/08/30/presence-absence/</link>
       <pubDate>Fri, 30 Aug 2019 00:00:00 +0000</pubDate>
       
-      <guid>/2019/08/30/presence-absence/</guid>
+      <guid>http://corybrunson.github.io/2019/08/30/presence-absence/</guid>
       <description>A project i’ve had in the works for years, and “almost done” since last summer, is a sensitivity and robustness analysis of several techniques used in studies of “comorbidity networks” (also “disease graphs”, “disease maps”, etc.) that have appeared over the past 20 years. As i begin the abstract:
  Comorbidity network analysis (CNA) is an increasingly popular approach in systems medicine, in which mathematical graphs encode epidemiological correlations (links) between diseases (nodes) inferred from their occurrence in an underlying patient population.</description>
     </item>
     
     <item>
       <title>multidimensional scaling of variables, and rank correlations</title>
-      <link>/2019/08/16/rank-correlations/</link>
+      <link>http://corybrunson.github.io/2019/08/16/rank-correlations/</link>
       <pubDate>Fri, 16 Aug 2019 00:00:00 +0000</pubDate>
       
-      <guid>/2019/08/16/rank-correlations/</guid>
+      <guid>http://corybrunson.github.io/2019/08/16/rank-correlations/</guid>
       <description>A fundamental idea in biplot methodology is the conference of inertia, a phrase i picked up from an SO answer by ttnphns and quickly incorporated into ordr. The basic idea arises from the central properties of a biplot, illustrated here for principal components analysis: A case–variable data matrix \(X\in\mathbb{R}^{n\times m}\) of ratio variables1 is singular-value decomposed as \(X=UDV^\top\), for example the mtcars data set:
 x &amp;lt;- scale(mtcars, center = TRUE, scale = TRUE) s &amp;lt;- svd(x) r &amp;lt;- length(s$d) Under this convention, \(U\in\mathbb{R}^{n\times r}\) and \(V\in\mathbb{R}^{m\times r}\) arise from eigendecompositions of \(XX^\top\) and of \(X^\top X\), respectively, and \(D\in\mathbb{R}^{r\times r}\) is the diagonal matrix of the square roots of their (common) eigenvalues.</description>
     </item>
     
     <item>
       <title>Sampling uniformly from an embedded Klein bottle</title>
-      <link>/2019/02/01/sampling/</link>
+      <link>http://corybrunson.github.io/2019/02/01/sampling/</link>
       <pubDate>Fri, 01 Feb 2019 00:00:00 +0000</pubDate>
       
-      <guid>/2019/02/01/sampling/</guid>
+      <guid>http://corybrunson.github.io/2019/02/01/sampling/</guid>
       <description>an apparent dearth of toy TDA samplers Experimenting and practicing with topological data analytic (TDA) tools requires a healthy diversity of suitable data sets. Several real-world classics can be found in various packages, for example the glucose and insulin test data collected and analyzed by Reaven and Miller and later used by Singh, Carlsson, and Mémoli to illustrate the Mapper construction, which is included in the heplots package:
 data(Diabetes, package = &amp;quot;heplots&amp;quot;) head(Diabetes) ## relwt glufast glutest instest sspg group ## 1 0.</description>
-    </item>
-    
-    <item>
-      <title>comparing pairwise and multivariate correlation networks</title>
-      <link>/1/01/01/correlation-networks/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>/1/01/01/correlation-networks/</guid>
-      <description>In each construction, two variables are linked in the network when their association is both discernible and strong. “Discernibility” has to do with the detection of a statistical signal, and is a cautious substitution for the misleading and often-abused term “significance”. “Strength” has to do with the size of the relative amount by which change in one variable predicts change in the other, assuming the pattern in the data reflects the latent relationship (and would be a better referent for “significance” anyway).</description>
     </item>
     
   </channel>

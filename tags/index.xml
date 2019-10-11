@@ -2,66 +2,66 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on murmuring in the background</title>
-    <link>/tags/</link>
+    <link>http://corybrunson.github.io/tags/</link>
     <description>Recent content in Tags on murmuring in the background</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 13 Sep 2019 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://corybrunson.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Alluvial Plots</title>
-      <link>/tags/alluvial-plots/</link>
+      <link>http://corybrunson.github.io/tags/alluvial-plots/</link>
       <pubDate>Fri, 13 Sep 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/alluvial-plots/</guid>
+      <guid>http://corybrunson.github.io/tags/alluvial-plots/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Biographies</title>
+      <link>http://corybrunson.github.io/tags/biographies/</link>
+      <pubDate>Fri, 11 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>http://corybrunson.github.io/tags/biographies/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Biplot</title>
-      <link>/tags/biplot/</link>
+      <link>http://corybrunson.github.io/tags/biplot/</link>
       <pubDate>Fri, 16 Aug 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/biplot/</guid>
+      <guid>http://corybrunson.github.io/tags/biplot/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Correlation</title>
-      <link>/tags/correlation/</link>
+      <link>http://corybrunson.github.io/tags/correlation/</link>
       <pubDate>Fri, 30 Aug 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/correlation/</guid>
+      <guid>http://corybrunson.github.io/tags/correlation/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Eigendecomposition</title>
-      <link>/tags/eigendecomposition/</link>
+      <link>http://corybrunson.github.io/tags/eigendecomposition/</link>
       <pubDate>Fri, 16 Aug 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/eigendecomposition/</guid>
+      <guid>http://corybrunson.github.io/tags/eigendecomposition/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Embeddability</title>
-      <link>/tags/embeddability/</link>
+      <link>http://corybrunson.github.io/tags/embeddability/</link>
       <pubDate>Fri, 01 Mar 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/embeddability/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Finches</title>
-      <link>/tags/finches/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>/tags/finches/</guid>
+      <guid>http://corybrunson.github.io/tags/embeddability/</guid>
       <description></description>
     </item>
     
