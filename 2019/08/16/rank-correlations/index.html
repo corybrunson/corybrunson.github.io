@@ -30,7 +30,7 @@
   <script src="/highlight/highlight.pack.js"></script>
   <script>hljs.initHighlightingOnLoad();</script>
 
-  <meta name="generator" content="Hugo 0.54.0" />
+  <meta name="generator" content="Hugo 0.44" />
   
 </head>
 <body>
@@ -117,10 +117,7 @@
             </div>
 
             <div class="post-content">
-                
-
-
-<p>A fundamental idea in biplot methodology is the <em>conference of inertia</em>, a phrase i picked up from <a href="https://stats.stackexchange.com/a/141755/68743">an SO answer by ttnphns</a> and quickly <a href="https://github.com/corybrunson/ordr/blob/master/R/ord-conference.r">incorporated into ordr</a>. The basic idea arises from the central properties of a biplot, illustrated here for principal components analysis: A case–variable data matrix <span class="math inline">\(X\in\mathbb{R}^{n\times m}\)</span> of ratio variables<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> is singular-value decomposed as <span class="math inline">\(X=UDV^\top\)</span>, for example the <code>mtcars</code> data set:</p>
+                <p>A fundamental idea in biplot methodology is the <em>conference of inertia</em>, a phrase i picked up from <a href="https://stats.stackexchange.com/a/141755/68743">an SO answer by ttnphns</a> and quickly <a href="https://github.com/corybrunson/ordr/blob/master/R/ord-conference.r">incorporated into ordr</a>. The basic idea arises from the central properties of a biplot, illustrated here for principal components analysis: A case–variable data matrix <span class="math inline">\(X\in\mathbb{R}^{n\times m}\)</span> of ratio variables<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> is singular-value decomposed as <span class="math inline">\(X=UDV^\top\)</span>, for example the <code>mtcars</code> data set:</p>
 <pre class="r"><code>x &lt;- scale(mtcars, center = TRUE, scale = TRUE)
 s &lt;- svd(x)
 r &lt;- length(s$d)</code></pre>

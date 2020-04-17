@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  
+  <meta charset="utf-8">
+  <title>how to calculate aesthetics in a ggplot2 extension - murmuring in the background</title>
+  <meta name="description" content="how to calculate aesthetics in a ggplot2 extension">
+  <meta name="author" content="Cory Brunson">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/fonts.css">
+  
+  
+  <link rel="stylesheet" href="https://unpkg.com/purecss@0.6.1/build/pure-min.css" integrity="sha384-CCTZv2q9I9m3UOxRLaJneXrrqKwUNOzZ6NGEUMwHtShDJ+nCoiXJCAgi05KfkLGY" crossorigin="anonymous">
+  
+  
+    <link rel="stylesheet" href="https://unpkg.com/purecss@0.6.1/build/grids-responsive-min.css">
+  
+  <link rel="stylesheet" href="/css/custom.css">
+
+  
+  
+  <link rel="stylesheet" href="/highlight/styles/github.css">
+  
+  <script src="/highlight/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
+  <meta name="generator" content="Hugo 0.44" />
+  
+</head>
+<body>
+
+<div class="header pure-g">
+    <div class="pure-u-1-24 pure-u-md-5-24"></div>
+    <div class="pure-u-11-12 pure-u-md-5-8">
+        <div class="desktop pure-menu pure-menu-horizontal nav-menu">
+            
+            <a href="/" class="site-title pure-menu-heading">murmuring in the background</a>
+            <ul class="pure-menu-list">
+				
+                
+                <li class="pure-menu-item">
+                    <a href="/categories/curiosity" class="pure-menu-link">Curiosity</a>
+                </li>
+                
+                <li class="pure-menu-item">
+                    <a href="/categories/methodology" class="pure-menu-link">Methodology</a>
+                </li>
+                
+                <li class="pure-menu-item">
+                    <a href="/categories/progress" class="pure-menu-link">Progress</a>
+                </li>
+                
+				
+                <li class="pure-menu-item">
+                    <a href="/about/" class="pure-menu-link">About</a>
+                </li>
+            </ul>
+        </div>
+        <div class="mobile pure-menu nav-menu">
+            <a href="/" class="pure-menu-heading" id="toggle-home">murmuring in the background</a>
+            <a href="#" id="toggle-btn">&#9776;</a>
+            <ul class="pure-menu-list" id="toggle-content" style="display:none;">
+                
+				
+                
+                <li class="pure-menu-item">
+                    <a href="/categories/curiosity" class="pure-menu-link">Curiosity</a>
+                </li>
+                
+                <li class="pure-menu-item">
+                    <a href="/categories/methodology" class="pure-menu-link">Methodology</a>
+                </li>
+                
+                <li class="pure-menu-item">
+                    <a href="/categories/progress" class="pure-menu-link">Progress</a>
+                </li>
+                
+				
+                <li class="pure-menu-item">
+                    <a href="/about" class="pure-menu-link">About</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="pure-u-1-24 pure-u-md-1-6"></div>
+</div>
+
+<div class="pure-g">
+    <div class="pure-u-1-24 pure-u-md-5-24"></div>
+	<div class="pure-u-11-12 pure-u-md-5-8">
+        <div class="post">
+
+            <div class="post-title">
+                <p class="footnote">
+                    <time class="">2020-04-17</time>
+		            
+                    
+                    |
+                    
+                    
+                    tags:<a href="/tags/r">r</a> <a href="/tags/ggplot2">ggplot2</a> <a href="/tags/software-packages">software packages</a> 
+                    
+
+                    
+                    categories:<a href="/categories/methodology">methodology</a> 
+                    
+
+                    
+                </p>
+                <h1>how to calculate aesthetics in a ggplot2 extension</h1>
+            </div>
+
+            <div class="post-content">
+                <div id="how-to-use-computed-variables" class="section level2">
+<h2>how to use computed variables</h2>
+<p>One of the many subtle features of ggplot2 is the ability to pass variables to aesthetics that are not present in the data but rather are computed internally by a statistical transformation (stat). For users, <a href="https://ggplot2.tidyverse.org/reference/stat.html">the documentation for this feature</a> illustrates the use of <code>stat(&lt;variable&gt;)</code> (previously <code>..&lt;variable&gt;..</code>, since upgraded to <code>after_stat(&lt;variable&gt;)</code>) in an aesthetic specification.</p>
+<p>Some stats do this by default. For example, the count stat sends its computed <code>count</code> to both coordinate aesthetics by default. Because it requires <em>exactly</em> one of them to be specified, only the other receives the count:</p>
+<pre class="r"><code>print(StatCount$default_aes)</code></pre>
+<pre><code>## Aesthetic mapping: 
+## * `x`      -&gt; `after_stat(count)`
+## * `y`      -&gt; `after_stat(count)`
+## * `weight` -&gt; 1</code></pre>
+<pre class="r"><code>print(StatCount$required_aes)</code></pre>
+<pre><code>## [1] &quot;x|y&quot;</code></pre>
+<p>This is how the count stat supports its companion graphical element, the bar geom. This geom needs both the categorical variable from the data and the count variable computed by the stat in order to produce a <em>(frequency) bar plot</em>. The code below, which tallies the cars in the <code>mpg</code> data set by classification, makes some of this implicit control explicit:</p>
+<pre class="r"><code>table(mpg$class)</code></pre>
+<pre><code>## 
+##    2seater    compact    midsize    minivan     pickup subcompact        suv 
+##          5         47         41         11         33         35         62</code></pre>
+<pre class="r"><code>ggplot(mpg) +
+  stat_count(aes(x = class, y = after_stat(count)))</code></pre>
+<p><img src="/post/2020-04-03-calculate-aesthetics_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>More than calling single variables, <code>after_stat()</code> can also perform and return calculations involving these variables. For example, to produce a <em>relative (frequency) bar plot</em> of the classified cars, the <code>y</code> variable needs not the raw counts but what proportion they make up of the total Note the <code>y</code> axis range in this revised plot:</p>
+<pre class="r"><code>ggplot(mpg) +
+  stat_count(aes(x = class, y = after_stat(count / sum(count)))) +
+  scale_y_continuous(labels = scales::percent)</code></pre>
+<p><img src="/post/2020-04-03-calculate-aesthetics_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>More illustrations can be found in the aforelinked documentation, which are reasonably intuitive from a user’s perspective. Though it’s not immediately evident where <code>after_stat()</code> locates these computed variables and what the limits are to its ability to perform calculations on them. The documentation <code>help(after_stat)</code> thoroughly tracks the processing of an aesthetic from start to stat to scale, but again with users in mind.</p>
+</div>
+<div id="how-to-make-computed-variables" class="section level2">
+<h2>how to make computed variables</h2>
+<p>Another exceptional feature of ggplot2 is its extensibility. Users with specialized plotting needs can, with limited exposure to the package internals, write <a href="https://exts.ggplot2.tidyverse.org/gallery/">stats and geoms that produce new types of plots</a>. Because they are extensions, rather than standalone packages, they benefit from the grammatical rigor of ggplot2 and often combine well with existing stats and geoms.</p>
+<p>From a developer’s perspective, especially someoene like myself with limited low-level programming experience, computed variables can appear mysterious.
+Yet, they are perhaps the single easiest feature to include in a ggplot2 extension.</p>
+<p>To illustrate, consider this simplified custom stat from <a href="https://ggplot2.tidyverse.org/articles/extending-ggplot2.html">the vignette on extending ggplot2</a>:</p>
+<pre class="r"><code># a custom ggproto stat to fit a linear model to data
+StatLm &lt;- ggproto(&quot;StatLm&quot;, Stat, 
+  required_aes = c(&quot;x&quot;, &quot;y&quot;),
+  
+  compute_group = function(data, scales, params, n = 100, formula = y ~ x) {
+    rng &lt;- range(data$x, na.rm = TRUE)
+    grid &lt;- data.frame(x = seq(rng[1], rng[2], length = n))
+    
+    mod &lt;- lm(formula, data = data)
+    grid$y &lt;- predict(mod, newdata = grid)
+    
+    grid
+  }
+)
+# a corresponding stat layer
+stat_lm &lt;- function(mapping = NULL, data = NULL, geom = &quot;line&quot;,
+                    position = &quot;identity&quot;, na.rm = FALSE, show.legend = NA, 
+                    inherit.aes = TRUE, n = 50, formula = y ~ x, 
+                    ...) {
+  layer(
+    stat = StatLm, data = data, mapping = mapping, geom = geom, 
+    position = position, show.legend = show.legend, inherit.aes = inherit.aes,
+    params = list(n = n, formula = formula, na.rm = na.rm, ...)
+  )
+}
+# an illustration of the stat
+ggplot(mpg, aes(displ, hwy)) + 
+  geom_point() + 
+  stat_lm()</code></pre>
+<p><img src="/post/2020-04-03-calculate-aesthetics_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>The computation step of this linear model stat returns a data frame <code>grid</code> with two columns: a regular sequence of <code>x</code> values spanning the range of engine displacement volumes in the data set, whose number are determined by the parameter <code>n</code>; and the predicted highway speed <code>y</code> at each, according to the internally-fitted model <code>mod</code>. Notice that the data returned by the stat is differently sized than the data passed to it:</p>
+<pre class="r"><code>dim(mpg)</code></pre>
+<pre><code>## [1] 234  11</code></pre>
+<pre class="r"><code>head(mpg)</code></pre>
+<pre><code>## # A tibble: 6 x 11
+##   manufacturer model displ  year   cyl trans      drv     cty   hwy fl    class 
+##   &lt;chr&gt;        &lt;chr&gt; &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt;      &lt;chr&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt; &lt;chr&gt; 
+## 1 audi         a4      1.8  1999     4 auto(l5)   f        18    29 p     compa…
+## 2 audi         a4      1.8  1999     4 manual(m5) f        21    29 p     compa…
+## 3 audi         a4      2    2008     4 manual(m6) f        20    31 p     compa…
+## 4 audi         a4      2    2008     4 auto(av)   f        21    30 p     compa…
+## 5 audi         a4      2.8  1999     6 auto(l5)   f        16    26 p     compa…
+## 6 audi         a4      2.8  1999     6 manual(m5) f        18    26 p     compa…</code></pre>
+<pre class="r"><code>data &lt;- transform(mpg, x = displ, y = hwy)[, c(&quot;x&quot;, &quot;y&quot;)]
+dim(StatLm$compute_group(data))</code></pre>
+<pre><code>## [1] 100   2</code></pre>
+<pre class="r"><code>head(StatLm$compute_group(data))</code></pre>
+<pre><code>##          x        y
+## 1 1.600000 30.04871
+## 2 1.654545 29.85613
+## 3 1.709091 29.66355
+## 4 1.763636 29.47098
+## 5 1.818182 29.27840
+## 6 1.872727 29.08582</code></pre>
+<p>The predictions computed by the stat are estimates of conditional means (under a set of assumptions outside the scope of this example), and it’s often useful for a plot to encode the uncertainty of those estimates graphically. First, the uncertainty must be computed by the stat, as below by including a standard error calculation at the <code>predict()</code> step:</p>
+<pre class="r"><code># the linear model ggproto stat, with a computed variable for standard error
+StatLm &lt;- ggproto(&quot;StatLm&quot;, Stat, 
+  required_aes = c(&quot;x&quot;, &quot;y&quot;),
+  
+  compute_group = function(data, scales, params, n = 100, formula = y ~ x) {
+    rng &lt;- range(data$x, na.rm = TRUE)
+    grid &lt;- data.frame(x = seq(rng[1], rng[2], length = n))
+    
+    mod &lt;- lm(formula, data = data)
+    pred &lt;- predict(mod, newdata = grid, se.fit = TRUE)
+    grid$y &lt;- pred$fit
+    grid$yse &lt;- pred$se.fit
+    
+    grid
+  }
+)</code></pre>
+<p>In addition to <code>x</code> and <code>y</code>, the data frame computed by the stat now includes a <code>yse</code> column, containing the standard errors of the predicted means contained in <code>y</code>:</p>
+<pre class="r"><code>head(StatLm$compute_group(data))</code></pre>
+<pre><code>##          x        y       yse
+## 1 1.600000 30.04871 0.4420916
+## 2 1.654545 29.85613 0.4333956
+## 3 1.709091 29.66355 0.4247865
+## 4 1.763636 29.47098 0.4162698
+## 5 1.818182 29.27840 0.4078513
+## 6 1.872727 29.08582 0.3995371</code></pre>
+<p>Paired with the ribbon geom, this stat can now produce a 95% confidence band for the mean highway speeds predicted for the full range of engine displacement volumes<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>:</p>
+<pre class="r"><code>ggplot(mpg, aes(displ, hwy)) + 
+  geom_point() + 
+  stat_lm(geom = &quot;ribbon&quot;, alpha = .2,
+          aes(ymin = after_stat(y - 2 * yse), ymax = after_stat(y + 2 * yse))) +
+  stat_lm()</code></pre>
+<p><img src="/post/2020-04-03-calculate-aesthetics_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>As a concluding caveat, i haven’t dug far enough into the ggplot2 source code to know exactly how the expressions fed to <code>after_stat()</code> are evaluated. In principle, if a stat returns the data frame <code>ret</code>, then <code>after_stat(&lt;expression&gt;)</code> is evaluated like <code>with(ret, &lt;expression&gt;)</code>. In particular, objects in the global environment are recognized:</p>
+<pre class="r"><code>z &lt;- 3
+ggplot(mpg, aes(displ, hwy)) + 
+  geom_point() + 
+  stat_lm(geom = &quot;ribbon&quot;, alpha = .2,
+          aes(ymin = after_stat(y - z * yse), ymax = after_stat(y + z * yse))) +
+  stat_lm()</code></pre>
+<p><img src="/post/2020-04-03-calculate-aesthetics_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Finally, to document new computed variables, the natural thing to do is mimic the documentation of those in the main package—for example, <a href="https://github.com/tidyverse/ggplot2/blob/master/R/stat-count.r"><code>help(stat_count)</code></a>. Here is some minimal documentation for the standard error variable:</p>
+<pre class="r"><code>#&#39; @section Computed variables:
+#&#39; \describe{
+#&#39;   \item{yse}{standard error of predicted means}
+#&#39; }</code></pre>
+<p>In a pinch, the computed variables may be gleaned from the source code for the relevant compute method of the stat—if the internals are concise and tidy enough. Since the count stat performs group-wise tallies, the method to inspect is <code>StatCount$compute_group()</code>:</p>
+<pre class="r"><code>print(StatCount$compute_group)</code></pre>
+<pre><code>## &lt;ggproto method&gt;
+##   &lt;Wrapper function&gt;
+##     function (...) 
+## f(..., self = self)
+## 
+##   &lt;Inner function (f)&gt;
+##     function (self, data, scales, width = NULL, flipped_aes = FALSE) 
+## {
+##     data &lt;- flip_data(data, flipped_aes)
+##     x &lt;- data$x
+##     weight &lt;- data$weight %||% rep(1, length(x))
+##     width &lt;- width %||% (resolution(x) * 0.9)
+##     count &lt;- as.numeric(tapply(weight, x, sum, na.rm = TRUE))
+##     count[is.na(count)] &lt;- 0
+##     bars &lt;- new_data_frame(list(count = count, prop = count/sum(abs(count)), 
+##         x = sort(unique(x)), width = width, flipped_aes = flipped_aes), 
+##         n = length(count))
+##     flip_data(bars, flipped_aes)
+## }</code></pre>
+<p>Indeed, <code>count</code> is not the only variable computed by the stat. The code is specialized, but it’s clear that some additional variables—<code>prop</code>, <code>x</code>, and <code>width</code>—are computed as well. The last two are meant for the paired geom; they <em>could</em> be invoked using <code>after_stat()</code>, but this is not their intended role, and they are not documented among the computed stats. The documentation serves dual purposes: enable intended use, and avert unintended use.</p>
+</div>
+<div id="conclusion" class="section level2">
+<h2>conclusion</h2>
+<p>To sum up the topic for ggplot2 extension developers:</p>
+<ul>
+<li>A <em>computed variable</em> is just a column of the data frame returned by <code>Stat*$compute_*()</code>.</li>
+<li>Any expression involving such computed variables can be passed as a <em>calculated aesthetic</em> via <code>aes(&lt;aes&gt; = after_stat(&lt;expr&gt;))</code>.</li>
+<li>Users should be able to learn about computed variables in a specific <strong>Computed variables</strong> section of the documentation for such a stat.</li>
+</ul>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Note that the <code>yse</code> are <em>not</em> standard errors for the estimates; hence, the confidence bands do not represent expected prediction errors. This confusion seems to inflame tempers, if top search results are any indication.<a href="#fnref1" class="footnote-back">↩</a></p></li>
+</ol>
+</div>
+
+            </div>
+        </div>
+	</div>
+    <div class="pure-u-1-24 pure-u-md-1-6"></div>
+</div>
+
+<div class="footer pure-g">
+    <div class="pure-u-1-24 pure-u-md-5-24"></div>
+    <div class="pure-u-11-12 pure-u-md-5-8">
+        <div class="footer-content">
+		  <div class="pure-menu pure-menu-horizontal">
+              <ul>
+			      
+                  <li class="pure-menu-heading" id="foot-name">Cory Brunson:</li>
+                  
+				  
+                  
+          
+                  
+                  <li class="pure-menu-item">
+                      <a href="https://orcid.org/0000-0003-3126-9494" class="pure-menu-link">ORCID</a>
+                  </li>
+                  
+          
+                  
+                  <li class="pure-menu-item">
+                      <a href="https://publons.com/researcher/1676577" class="pure-menu-link">Publons</a>
+                  </li>
+                  
+          
+                  
+                  <li class="pure-menu-item">
+                      <a href="https://scholar.google.com/citations?user=jcv_PIkAAAAJ" class="pure-menu-link">Google Scholar</a>
+                  </li>
+                  
+          
+                  
+                  <li class="pure-menu-item">
+                      <a href="https://github.com/corybrunson" class="pure-menu-link">GitHub</a>
+                  </li>
+                  
+          
+                  
+                  <li class="pure-menu-item">
+                      <a href="https://www.linkedin.com/in/jasoncorybrunson" class="pure-menu-link">LinkedIn</a>
+                  </li>
+                  
+          
+                  
+          
+                  
+                  <li class="pure-menu-item">
+                      <a href="https://twitter.com/cornelioid" class="pure-menu-link">Twitter</a>
+                  </li>
+                  
+          
+                  
+                  <li class="pure-menu-item">
+                      <a href="https://www.goodreads.com/user/show/57466005" class="pure-menu-link">Goodreads</a>
+                  </li>
+                  
+          
+              </ul>
+              <a href="#" class="pure-menu-heading pull-right" id="gototop-btn">↑↑</a>
+          </div>
+		  
+		</div>
+	  </div>
+      <div class="pure-u-1-24 pure-u-md-1-6"></div>
+</div>
+
+
+<script src="/js/jquery.min.js" type="text/javascript"></script>
+<script src="/js/jquery.timeago.js" type="text/javascript"></script>
+<script type="text/javascript">
+  $(function(){
+    $("time.timeago").timeago();
+  })
+  $("#toggle-btn").click(function(){
+    $("#toggle-content").toggle();
+    if($(this).html() === "☰") {
+        $(this).html("X")
+    } else {
+        $(this).html("☰")
+    }
+  });
+  $(window).resize(function(){
+    if(window.innerWidth > 768) {
+      $(".desktop").removeAttr("style");
+    }
+  });
+</script>
+
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+</body>
+</html>
+

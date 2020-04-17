@@ -30,7 +30,7 @@
   <script src="/highlight/highlight.pack.js"></script>
   <script>hljs.initHighlightingOnLoad();</script>
 
-  <meta name="generator" content="Hugo 0.54.0" />
+  <meta name="generator" content="Hugo 0.44" />
   
 </head>
 <body>
@@ -117,10 +117,7 @@
             </div>
 
             <div class="post-content">
-                
-
-
-<div id="background" class="section level2">
+                <div id="background" class="section level2">
 <h2>Background</h2>
 <p>I first encountered alluvial diagrams, so-called, in a widely-shared <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0008694">paper</a> by Martin Rosvall and Carl T. Bergstrom. They were investigating the shifting boundaries between distinct scientific fields (“modules”), as reconstructed from sequential years of journal citation data (“states”), and proposed a specialized flow diagram “to highlight the significant changes, fusions, and fissions that the modules undergo between each pair of successive states”. At the time, i was unfamiliar with Sankey diagrams and only passingly familiar with flow diagrams—mostly by way of my computational biologist colleagues and their literature-derived signal transduction networks—but i could imagine myriad uses for this type of visualization and eventually went searching for an implementation in R.</p>
 <p>This led me to the <a href="https://github.com/mbojan/alluvial">alluvial</a> package, which Michał Bojanowski was actively developing. As i got more comfortable with and excited about the then-ascendant tidyverse, i took it upon myself to put together <a href="https://github.com/corybrunson/ggalluvial">a ggplot2 extension</a>, which has since become considerably widely used. I later learned that previous developers had released similar extensions, specifically “parallel sets plots” in Thomas Lin Pedersen’s <a href="https://ggforce.data-imaginist.com">ggforce</a> and in Heike Hofmann and Marie Vendettouli’s <a href="https://github.com/heike/ggparallel">ggparallel</a>.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>

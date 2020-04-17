@@ -6,10 +6,360 @@
     <description>Recent content on murmuring in the background</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>2019 Oct 25 (Fri), 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>2020 Apr 17 (Fri), 00:00:00 +0000</lastBuildDate>
     
         <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>how to calculate aesthetics in a ggplot2 extension</title>
+      <link>/2020/04/17/calculate-aesthetics/</link>
+      <pubDate>2020 Apr 17 (Fri), 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/04/17/calculate-aesthetics/</guid>
+      <description><div id="how-to-use-computed-variables" class="section level2">
+<h2>how to use computed variables</h2>
+<p>One of the many subtle features of ggplot2 is the ability to pass variables to aesthetics that are not present in the data but rather are computed internally by a statistical transformation (stat). For users, <a href="https://ggplot2.tidyverse.org/reference/stat.html">the documentation for this feature</a> illustrates the use of <code>stat(&lt;variable&gt;)</code> (previously <code>..&lt;variable&gt;..</code>, since upgraded to <code>after_stat(&lt;variable&gt;)</code>) in an aesthetic specification.</p>
+<p>Some stats do this by default. For example, the count stat sends its computed <code>count</code> to both coordinate aesthetics by default. Because it requires <em>exactly</em> one of them to be specified, only the other receives the count:</p>
+<pre class="r"><code>print(StatCount$default_aes)</code></pre>
+<pre><code>## Aesthetic mapping: 
+## * `x`      -&gt; `after_stat(count)`
+## * `y`      -&gt; `after_stat(count)`
+## * `weight` -&gt; 1</code></pre>
+<pre class="r"><code>print(StatCount$required_aes)</code></pre>
+<pre><code>## [1] &quot;x|y&quot;</code></pre>
+<p>This is how the count stat supports its companion graphical element, the bar geom. This geom needs both the categorical variable from the data and the count variable computed by the stat in order to produce a <em>(frequency) bar plot</em>. The code below, which tallies the cars in the <code>mpg</code> data set by classification, makes some of this implicit control explicit:</p>
+<pre class="r"><code>table(mpg$class)</code></pre>
+<pre><code>## 
+##    2seater    compact    midsize    minivan     pickup subcompact        suv 
+##          5         47         41         11         33         35         62</code></pre>
+<pre class="r"><code>ggplot(mpg) +
+  stat_count(aes(x = class, y = after_stat(count)))</code></pre>
+<p><img src="/post/2020-04-03-calculate-aesthetics_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>More than calling single variables, <code>after_stat()</code> can also perform and return calculations involving these variables. For example, to produce a <em>relative (frequency) bar plot</em> of the classified cars, the <code>y</code> variable needs not the raw counts but what proportion they make up of the total Note the <code>y</code> axis range in this revised plot:</p>
+<pre class="r"><code>ggplot(mpg) +
+  stat_count(aes(x = class, y = after_stat(count / sum(count)))) +
+  scale_y_continuous(labels = scales::percent)</code></pre>
+<p><img src="/post/2020-04-03-calculate-aesthetics_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>More illustrations can be found in the aforelinked documentation, which are reasonably intuitive from a user’s perspective. Though it’s not immediately evident where <code>after_stat()</code> locates these computed variables and what the limits are to its ability to perform calculations on them. The documentation <code>help(after_stat)</code> thoroughly tracks the processing of an aesthetic from start to stat to scale, but again with users in mind.</p>
+</div>
+<div id="how-to-make-computed-variables" class="section level2">
+<h2>how to make computed variables</h2>
+<p>Another exceptional feature of ggplot2 is its extensibility. Users with specialized plotting needs can, with limited exposure to the package internals, write <a href="https://exts.ggplot2.tidyverse.org/gallery/">stats and geoms that produce new types of plots</a>. Because they are extensions, rather than standalone packages, they benefit from the grammatical rigor of ggplot2 and often combine well with existing stats and geoms.</p>
+<p>From a developer’s perspective, especially someoene like myself with limited low-level programming experience, computed variables can appear mysterious.
+Yet, they are perhaps the single easiest feature to include in a ggplot2 extension.</p>
+<p>To illustrate, consider this simplified custom stat from <a href="https://ggplot2.tidyverse.org/articles/extending-ggplot2.html">the vignette on extending ggplot2</a>:</p>
+<pre class="r"><code># a custom ggproto stat to fit a linear model to data
+StatLm &lt;- ggproto(&quot;StatLm&quot;, Stat, 
+  required_aes = c(&quot;x&quot;, &quot;y&quot;),
+  
+  compute_group = function(data, scales, params, n = 100, formula = y ~ x) {
+    rng &lt;- range(data$x, na.rm = TRUE)
+    grid &lt;- data.frame(x = seq(rng[1], rng[2], length = n))
+    
+    mod &lt;- lm(formula, data = data)
+    grid$y &lt;- predict(mod, newdata = grid)
+    
+    grid
+  }
+)
+# a corresponding stat layer
+stat_lm &lt;- function(mapping = NULL, data = NULL, geom = &quot;line&quot;,
+                    position = &quot;identity&quot;, na.rm = FALSE, show.legend = NA, 
+                    inherit.aes = TRUE, n = 50, formula = y ~ x, 
+                    ...) {
+  layer(
+    stat = StatLm, data = data, mapping = mapping, geom = geom, 
+    position = position, show.legend = show.legend, inherit.aes = inherit.aes,
+    params = list(n = n, formula = formula, na.rm = na.rm, ...)
+  )
+}
+# an illustration of the stat
+ggplot(mpg, aes(displ, hwy)) + 
+  geom_point() + 
+  stat_lm()</code></pre>
+<p><img src="/post/2020-04-03-calculate-aesthetics_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>The computation step of this linear model stat returns a data frame <code>grid</code> with two columns: a regular sequence of <code>x</code> values spanning the range of engine displacement volumes in the data set, whose number are determined by the parameter <code>n</code>; and the predicted highway speed <code>y</code> at each, according to the internally-fitted model <code>mod</code>. Notice that the data returned by the stat is differently sized than the data passed to it:</p>
+<pre class="r"><code>dim(mpg)</code></pre>
+<pre><code>## [1] 234  11</code></pre>
+<pre class="r"><code>head(mpg)</code></pre>
+<pre><code>## # A tibble: 6 x 11
+##   manufacturer model displ  year   cyl trans      drv     cty   hwy fl    class 
+##   &lt;chr&gt;        &lt;chr&gt; &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt;      &lt;chr&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt; &lt;chr&gt; 
+## 1 audi         a4      1.8  1999     4 auto(l5)   f        18    29 p     compa…
+## 2 audi         a4      1.8  1999     4 manual(m5) f        21    29 p     compa…
+## 3 audi         a4      2    2008     4 manual(m6) f        20    31 p     compa…
+## 4 audi         a4      2    2008     4 auto(av)   f        21    30 p     compa…
+## 5 audi         a4      2.8  1999     6 auto(l5)   f        16    26 p     compa…
+## 6 audi         a4      2.8  1999     6 manual(m5) f        18    26 p     compa…</code></pre>
+<pre class="r"><code>data &lt;- transform(mpg, x = displ, y = hwy)[, c(&quot;x&quot;, &quot;y&quot;)]
+dim(StatLm$compute_group(data))</code></pre>
+<pre><code>## [1] 100   2</code></pre>
+<pre class="r"><code>head(StatLm$compute_group(data))</code></pre>
+<pre><code>##          x        y
+## 1 1.600000 30.04871
+## 2 1.654545 29.85613
+## 3 1.709091 29.66355
+## 4 1.763636 29.47098
+## 5 1.818182 29.27840
+## 6 1.872727 29.08582</code></pre>
+<p>The predictions computed by the stat are estimates of conditional means (under a set of assumptions outside the scope of this example), and it’s often useful for a plot to encode the uncertainty of those estimates graphically. First, the uncertainty must be computed by the stat, as below by including a standard error calculation at the <code>predict()</code> step:</p>
+<pre class="r"><code># the linear model ggproto stat, with a computed variable for standard error
+StatLm &lt;- ggproto(&quot;StatLm&quot;, Stat, 
+  required_aes = c(&quot;x&quot;, &quot;y&quot;),
+  
+  compute_group = function(data, scales, params, n = 100, formula = y ~ x) {
+    rng &lt;- range(data$x, na.rm = TRUE)
+    grid &lt;- data.frame(x = seq(rng[1], rng[2], length = n))
+    
+    mod &lt;- lm(formula, data = data)
+    pred &lt;- predict(mod, newdata = grid, se.fit = TRUE)
+    grid$y &lt;- pred$fit
+    grid$yse &lt;- pred$se.fit
+    
+    grid
+  }
+)</code></pre>
+<p>In addition to <code>x</code> and <code>y</code>, the data frame computed by the stat now includes a <code>yse</code> column, containing the standard errors of the predicted means contained in <code>y</code>:</p>
+<pre class="r"><code>head(StatLm$compute_group(data))</code></pre>
+<pre><code>##          x        y       yse
+## 1 1.600000 30.04871 0.4420916
+## 2 1.654545 29.85613 0.4333956
+## 3 1.709091 29.66355 0.4247865
+## 4 1.763636 29.47098 0.4162698
+## 5 1.818182 29.27840 0.4078513
+## 6 1.872727 29.08582 0.3995371</code></pre>
+<p>Paired with the ribbon geom, this stat can now produce a 95% confidence band for the mean highway speeds predicted for the full range of engine displacement volumes<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>:</p>
+<pre class="r"><code>ggplot(mpg, aes(displ, hwy)) + 
+  geom_point() + 
+  stat_lm(geom = &quot;ribbon&quot;, alpha = .2,
+          aes(ymin = after_stat(y - 2 * yse), ymax = after_stat(y + 2 * yse))) +
+  stat_lm()</code></pre>
+<p><img src="/post/2020-04-03-calculate-aesthetics_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>As a concluding caveat, i haven’t dug far enough into the ggplot2 source code to know exactly how the expressions fed to <code>after_stat()</code> are evaluated. In principle, if a stat returns the data frame <code>ret</code>, then <code>after_stat(&lt;expression&gt;)</code> is evaluated like <code>with(ret, &lt;expression&gt;)</code>. In particular, objects in the global environment are recognized:</p>
+<pre class="r"><code>z &lt;- 3
+ggplot(mpg, aes(displ, hwy)) + 
+  geom_point() + 
+  stat_lm(geom = &quot;ribbon&quot;, alpha = .2,
+          aes(ymin = after_stat(y - z * yse), ymax = after_stat(y + z * yse))) +
+  stat_lm()</code></pre>
+<p><img src="/post/2020-04-03-calculate-aesthetics_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Finally, to document new computed variables, the natural thing to do is mimic the documentation of those in the main package—for example, <a href="https://github.com/tidyverse/ggplot2/blob/master/R/stat-count.r"><code>help(stat_count)</code></a>. Here is some minimal documentation for the standard error variable:</p>
+<pre class="r"><code>#&#39; @section Computed variables:
+#&#39; \describe{
+#&#39;   \item{yse}{standard error of predicted means}
+#&#39; }</code></pre>
+<p>In a pinch, the computed variables may be gleaned from the source code for the relevant compute method of the stat—if the internals are concise and tidy enough. Since the count stat performs group-wise tallies, the method to inspect is <code>StatCount$compute_group()</code>:</p>
+<pre class="r"><code>print(StatCount$compute_group)</code></pre>
+<pre><code>## &lt;ggproto method&gt;
+##   &lt;Wrapper function&gt;
+##     function (...) 
+## f(..., self = self)
+## 
+##   &lt;Inner function (f)&gt;
+##     function (self, data, scales, width = NULL, flipped_aes = FALSE) 
+## {
+##     data &lt;- flip_data(data, flipped_aes)
+##     x &lt;- data$x
+##     weight &lt;- data$weight %||% rep(1, length(x))
+##     width &lt;- width %||% (resolution(x) * 0.9)
+##     count &lt;- as.numeric(tapply(weight, x, sum, na.rm = TRUE))
+##     count[is.na(count)] &lt;- 0
+##     bars &lt;- new_data_frame(list(count = count, prop = count/sum(abs(count)), 
+##         x = sort(unique(x)), width = width, flipped_aes = flipped_aes), 
+##         n = length(count))
+##     flip_data(bars, flipped_aes)
+## }</code></pre>
+<p>Indeed, <code>count</code> is not the only variable computed by the stat. The code is specialized, but it’s clear that some additional variables—<code>prop</code>, <code>x</code>, and <code>width</code>—are computed as well. The last two are meant for the paired geom; they <em>could</em> be invoked using <code>after_stat()</code>, but this is not their intended role, and they are not documented among the computed stats. The documentation serves dual purposes: enable intended use, and avert unintended use.</p>
+</div>
+<div id="conclusion" class="section level2">
+<h2>conclusion</h2>
+<p>To sum up the topic for ggplot2 extension developers:</p>
+<ul>
+<li>A <em>computed variable</em> is just a column of the data frame returned by <code>Stat*$compute_*()</code>.</li>
+<li>Any expression involving such computed variables can be passed as a <em>calculated aesthetic</em> via <code>aes(&lt;aes&gt; = after_stat(&lt;expr&gt;))</code>.</li>
+<li>Users should be able to learn about computed variables in a specific <strong>Computed variables</strong> section of the documentation for such a stat.</li>
+</ul>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Note that the <code>yse</code> are <em>not</em> standard errors for the estimates; hence, the confidence bands do not represent expected prediction errors. This confusion seems to inflame tempers, if top search results are any indication.<a href="#fnref1" class="footnote-back">↩</a></p></li>
+</ol>
+</div>
+</description>
+      <content:encoded><div id="how-to-use-computed-variables" class="section level2">
+<h2>how to use computed variables</h2>
+<p>One of the many subtle features of ggplot2 is the ability to pass variables to aesthetics that are not present in the data but rather are computed internally by a statistical transformation (stat). For users, <a href="https://ggplot2.tidyverse.org/reference/stat.html">the documentation for this feature</a> illustrates the use of <code>stat(&lt;variable&gt;)</code> (previously <code>..&lt;variable&gt;..</code>, since upgraded to <code>after_stat(&lt;variable&gt;)</code>) in an aesthetic specification.</p>
+<p>Some stats do this by default. For example, the count stat sends its computed <code>count</code> to both coordinate aesthetics by default. Because it requires <em>exactly</em> one of them to be specified, only the other receives the count:</p>
+<pre class="r"><code>print(StatCount$default_aes)</code></pre>
+<pre><code>## Aesthetic mapping: 
+## * `x`      -&gt; `after_stat(count)`
+## * `y`      -&gt; `after_stat(count)`
+## * `weight` -&gt; 1</code></pre>
+<pre class="r"><code>print(StatCount$required_aes)</code></pre>
+<pre><code>## [1] &quot;x|y&quot;</code></pre>
+<p>This is how the count stat supports its companion graphical element, the bar geom. This geom needs both the categorical variable from the data and the count variable computed by the stat in order to produce a <em>(frequency) bar plot</em>. The code below, which tallies the cars in the <code>mpg</code> data set by classification, makes some of this implicit control explicit:</p>
+<pre class="r"><code>table(mpg$class)</code></pre>
+<pre><code>## 
+##    2seater    compact    midsize    minivan     pickup subcompact        suv 
+##          5         47         41         11         33         35         62</code></pre>
+<pre class="r"><code>ggplot(mpg) +
+  stat_count(aes(x = class, y = after_stat(count)))</code></pre>
+<p><img src="/post/2020-04-03-calculate-aesthetics_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>More than calling single variables, <code>after_stat()</code> can also perform and return calculations involving these variables. For example, to produce a <em>relative (frequency) bar plot</em> of the classified cars, the <code>y</code> variable needs not the raw counts but what proportion they make up of the total Note the <code>y</code> axis range in this revised plot:</p>
+<pre class="r"><code>ggplot(mpg) +
+  stat_count(aes(x = class, y = after_stat(count / sum(count)))) +
+  scale_y_continuous(labels = scales::percent)</code></pre>
+<p><img src="/post/2020-04-03-calculate-aesthetics_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>More illustrations can be found in the aforelinked documentation, which are reasonably intuitive from a user’s perspective. Though it’s not immediately evident where <code>after_stat()</code> locates these computed variables and what the limits are to its ability to perform calculations on them. The documentation <code>help(after_stat)</code> thoroughly tracks the processing of an aesthetic from start to stat to scale, but again with users in mind.</p>
+</div>
+<div id="how-to-make-computed-variables" class="section level2">
+<h2>how to make computed variables</h2>
+<p>Another exceptional feature of ggplot2 is its extensibility. Users with specialized plotting needs can, with limited exposure to the package internals, write <a href="https://exts.ggplot2.tidyverse.org/gallery/">stats and geoms that produce new types of plots</a>. Because they are extensions, rather than standalone packages, they benefit from the grammatical rigor of ggplot2 and often combine well with existing stats and geoms.</p>
+<p>From a developer’s perspective, especially someoene like myself with limited low-level programming experience, computed variables can appear mysterious.
+Yet, they are perhaps the single easiest feature to include in a ggplot2 extension.</p>
+<p>To illustrate, consider this simplified custom stat from <a href="https://ggplot2.tidyverse.org/articles/extending-ggplot2.html">the vignette on extending ggplot2</a>:</p>
+<pre class="r"><code># a custom ggproto stat to fit a linear model to data
+StatLm &lt;- ggproto(&quot;StatLm&quot;, Stat, 
+  required_aes = c(&quot;x&quot;, &quot;y&quot;),
+  
+  compute_group = function(data, scales, params, n = 100, formula = y ~ x) {
+    rng &lt;- range(data$x, na.rm = TRUE)
+    grid &lt;- data.frame(x = seq(rng[1], rng[2], length = n))
+    
+    mod &lt;- lm(formula, data = data)
+    grid$y &lt;- predict(mod, newdata = grid)
+    
+    grid
+  }
+)
+# a corresponding stat layer
+stat_lm &lt;- function(mapping = NULL, data = NULL, geom = &quot;line&quot;,
+                    position = &quot;identity&quot;, na.rm = FALSE, show.legend = NA, 
+                    inherit.aes = TRUE, n = 50, formula = y ~ x, 
+                    ...) {
+  layer(
+    stat = StatLm, data = data, mapping = mapping, geom = geom, 
+    position = position, show.legend = show.legend, inherit.aes = inherit.aes,
+    params = list(n = n, formula = formula, na.rm = na.rm, ...)
+  )
+}
+# an illustration of the stat
+ggplot(mpg, aes(displ, hwy)) + 
+  geom_point() + 
+  stat_lm()</code></pre>
+<p><img src="/post/2020-04-03-calculate-aesthetics_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>The computation step of this linear model stat returns a data frame <code>grid</code> with two columns: a regular sequence of <code>x</code> values spanning the range of engine displacement volumes in the data set, whose number are determined by the parameter <code>n</code>; and the predicted highway speed <code>y</code> at each, according to the internally-fitted model <code>mod</code>. Notice that the data returned by the stat is differently sized than the data passed to it:</p>
+<pre class="r"><code>dim(mpg)</code></pre>
+<pre><code>## [1] 234  11</code></pre>
+<pre class="r"><code>head(mpg)</code></pre>
+<pre><code>## # A tibble: 6 x 11
+##   manufacturer model displ  year   cyl trans      drv     cty   hwy fl    class 
+##   &lt;chr&gt;        &lt;chr&gt; &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt;      &lt;chr&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt; &lt;chr&gt; 
+## 1 audi         a4      1.8  1999     4 auto(l5)   f        18    29 p     compa…
+## 2 audi         a4      1.8  1999     4 manual(m5) f        21    29 p     compa…
+## 3 audi         a4      2    2008     4 manual(m6) f        20    31 p     compa…
+## 4 audi         a4      2    2008     4 auto(av)   f        21    30 p     compa…
+## 5 audi         a4      2.8  1999     6 auto(l5)   f        16    26 p     compa…
+## 6 audi         a4      2.8  1999     6 manual(m5) f        18    26 p     compa…</code></pre>
+<pre class="r"><code>data &lt;- transform(mpg, x = displ, y = hwy)[, c(&quot;x&quot;, &quot;y&quot;)]
+dim(StatLm$compute_group(data))</code></pre>
+<pre><code>## [1] 100   2</code></pre>
+<pre class="r"><code>head(StatLm$compute_group(data))</code></pre>
+<pre><code>##          x        y
+## 1 1.600000 30.04871
+## 2 1.654545 29.85613
+## 3 1.709091 29.66355
+## 4 1.763636 29.47098
+## 5 1.818182 29.27840
+## 6 1.872727 29.08582</code></pre>
+<p>The predictions computed by the stat are estimates of conditional means (under a set of assumptions outside the scope of this example), and it’s often useful for a plot to encode the uncertainty of those estimates graphically. First, the uncertainty must be computed by the stat, as below by including a standard error calculation at the <code>predict()</code> step:</p>
+<pre class="r"><code># the linear model ggproto stat, with a computed variable for standard error
+StatLm &lt;- ggproto(&quot;StatLm&quot;, Stat, 
+  required_aes = c(&quot;x&quot;, &quot;y&quot;),
+  
+  compute_group = function(data, scales, params, n = 100, formula = y ~ x) {
+    rng &lt;- range(data$x, na.rm = TRUE)
+    grid &lt;- data.frame(x = seq(rng[1], rng[2], length = n))
+    
+    mod &lt;- lm(formula, data = data)
+    pred &lt;- predict(mod, newdata = grid, se.fit = TRUE)
+    grid$y &lt;- pred$fit
+    grid$yse &lt;- pred$se.fit
+    
+    grid
+  }
+)</code></pre>
+<p>In addition to <code>x</code> and <code>y</code>, the data frame computed by the stat now includes a <code>yse</code> column, containing the standard errors of the predicted means contained in <code>y</code>:</p>
+<pre class="r"><code>head(StatLm$compute_group(data))</code></pre>
+<pre><code>##          x        y       yse
+## 1 1.600000 30.04871 0.4420916
+## 2 1.654545 29.85613 0.4333956
+## 3 1.709091 29.66355 0.4247865
+## 4 1.763636 29.47098 0.4162698
+## 5 1.818182 29.27840 0.4078513
+## 6 1.872727 29.08582 0.3995371</code></pre>
+<p>Paired with the ribbon geom, this stat can now produce a 95% confidence band for the mean highway speeds predicted for the full range of engine displacement volumes<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>:</p>
+<pre class="r"><code>ggplot(mpg, aes(displ, hwy)) + 
+  geom_point() + 
+  stat_lm(geom = &quot;ribbon&quot;, alpha = .2,
+          aes(ymin = after_stat(y - 2 * yse), ymax = after_stat(y + 2 * yse))) +
+  stat_lm()</code></pre>
+<p><img src="/post/2020-04-03-calculate-aesthetics_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>As a concluding caveat, i haven’t dug far enough into the ggplot2 source code to know exactly how the expressions fed to <code>after_stat()</code> are evaluated. In principle, if a stat returns the data frame <code>ret</code>, then <code>after_stat(&lt;expression&gt;)</code> is evaluated like <code>with(ret, &lt;expression&gt;)</code>. In particular, objects in the global environment are recognized:</p>
+<pre class="r"><code>z &lt;- 3
+ggplot(mpg, aes(displ, hwy)) + 
+  geom_point() + 
+  stat_lm(geom = &quot;ribbon&quot;, alpha = .2,
+          aes(ymin = after_stat(y - z * yse), ymax = after_stat(y + z * yse))) +
+  stat_lm()</code></pre>
+<p><img src="/post/2020-04-03-calculate-aesthetics_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Finally, to document new computed variables, the natural thing to do is mimic the documentation of those in the main package—for example, <a href="https://github.com/tidyverse/ggplot2/blob/master/R/stat-count.r"><code>help(stat_count)</code></a>. Here is some minimal documentation for the standard error variable:</p>
+<pre class="r"><code>#&#39; @section Computed variables:
+#&#39; \describe{
+#&#39;   \item{yse}{standard error of predicted means}
+#&#39; }</code></pre>
+<p>In a pinch, the computed variables may be gleaned from the source code for the relevant compute method of the stat—if the internals are concise and tidy enough. Since the count stat performs group-wise tallies, the method to inspect is <code>StatCount$compute_group()</code>:</p>
+<pre class="r"><code>print(StatCount$compute_group)</code></pre>
+<pre><code>## &lt;ggproto method&gt;
+##   &lt;Wrapper function&gt;
+##     function (...) 
+## f(..., self = self)
+## 
+##   &lt;Inner function (f)&gt;
+##     function (self, data, scales, width = NULL, flipped_aes = FALSE) 
+## {
+##     data &lt;- flip_data(data, flipped_aes)
+##     x &lt;- data$x
+##     weight &lt;- data$weight %||% rep(1, length(x))
+##     width &lt;- width %||% (resolution(x) * 0.9)
+##     count &lt;- as.numeric(tapply(weight, x, sum, na.rm = TRUE))
+##     count[is.na(count)] &lt;- 0
+##     bars &lt;- new_data_frame(list(count = count, prop = count/sum(abs(count)), 
+##         x = sort(unique(x)), width = width, flipped_aes = flipped_aes), 
+##         n = length(count))
+##     flip_data(bars, flipped_aes)
+## }</code></pre>
+<p>Indeed, <code>count</code> is not the only variable computed by the stat. The code is specialized, but it’s clear that some additional variables—<code>prop</code>, <code>x</code>, and <code>width</code>—are computed as well. The last two are meant for the paired geom; they <em>could</em> be invoked using <code>after_stat()</code>, but this is not their intended role, and they are not documented among the computed stats. The documentation serves dual purposes: enable intended use, and avert unintended use.</p>
+</div>
+<div id="conclusion" class="section level2">
+<h2>conclusion</h2>
+<p>To sum up the topic for ggplot2 extension developers:</p>
+<ul>
+<li>A <em>computed variable</em> is just a column of the data frame returned by <code>Stat*$compute_*()</code>.</li>
+<li>Any expression involving such computed variables can be passed as a <em>calculated aesthetic</em> via <code>aes(&lt;aes&gt; = after_stat(&lt;expr&gt;))</code>.</li>
+<li>Users should be able to learn about computed variables in a specific <strong>Computed variables</strong> section of the documentation for such a stat.</li>
+</ul>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Note that the <code>yse</code> are <em>not</em> standard errors for the estimates; hence, the confidence bands do not represent expected prediction errors. This confusion seems to inflame tempers, if top search results are any indication.<a href="#fnref1" class="footnote-back">↩</a></p></li>
+</ol>
+</div>
+</content:encoded>
+    </item>
     
     <item>
       <title>the dimensions of (abstracted) polyamory literature</title>
@@ -17,10 +367,7 @@
       <pubDate>2019 Oct 25 (Fri), 00:00:00 +0000</pubDate>
       
       <guid>/2019/10/25/goodreads-polyamory/</guid>
-      <description>
-
-
-<p>I’ve gained immensely from reading the handful of non-fiction books on polyamory i’ve made time to, including Dossie Easton and Janet Hardy’s <em>The Ethical Slut</em> and Franklin Veaux and Eve Rickert’s <em>More Than Two</em>. While i’ve identified as poly since i discovered the term in grad school, i exhibit at least my share of emotional immaturity, and in addition to actual experience building healthy relationships i know i’d benefit from funneling a bit more of this literature into my reading queue. So, with a small group of friends (which has reduced for the time being to someone i’m dating plus myself), i recently started a poly/kink book club.</p>
+      <description><p>I’ve gained immensely from reading the handful of non-fiction books on polyamory i’ve made time to, including Dossie Easton and Janet Hardy’s <em>The Ethical Slut</em> and Franklin Veaux and Eve Rickert’s <em>More Than Two</em>. While i’ve identified as poly since i discovered the term in grad school, i exhibit at least my share of emotional immaturity, and in addition to actual experience building healthy relationships i know i’d benefit from funneling a bit more of this literature into my reading queue. So, with a small group of friends (which has reduced for the time being to someone i’m dating plus myself), i recently started a poly/kink book club.</p>
 <p>From the start, i intended to slide fiction, fantasy/scifi, memoir, anthropology, history, and any other genres i could discover onto our shelf, to accrue a well-rounded appreciation for what was available. Though this of course put me to wondering how i could even learn the contours of the poly literature, in order to ensure that i sampled widely from it! Fortunes of timing provided me with three excellent resources:</p>
 <ul>
 <li><a href="https://www.goodreads.com/user/show/57466005">a Goodreads account</a>;</li>
@@ -232,10 +579,7 @@ This is still good news for my ultimate goal of identifying these features. In a
 </ol>
 </div>
 </description>
-      <content:encoded>
-
-
-<p>I’ve gained immensely from reading the handful of non-fiction books on polyamory i’ve made time to, including Dossie Easton and Janet Hardy’s <em>The Ethical Slut</em> and Franklin Veaux and Eve Rickert’s <em>More Than Two</em>. While i’ve identified as poly since i discovered the term in grad school, i exhibit at least my share of emotional immaturity, and in addition to actual experience building healthy relationships i know i’d benefit from funneling a bit more of this literature into my reading queue. So, with a small group of friends (which has reduced for the time being to someone i’m dating plus myself), i recently started a poly/kink book club.</p>
+      <content:encoded><p>I’ve gained immensely from reading the handful of non-fiction books on polyamory i’ve made time to, including Dossie Easton and Janet Hardy’s <em>The Ethical Slut</em> and Franklin Veaux and Eve Rickert’s <em>More Than Two</em>. While i’ve identified as poly since i discovered the term in grad school, i exhibit at least my share of emotional immaturity, and in addition to actual experience building healthy relationships i know i’d benefit from funneling a bit more of this literature into my reading queue. So, with a small group of friends (which has reduced for the time being to someone i’m dating plus myself), i recently started a poly/kink book club.</p>
 <p>From the start, i intended to slide fiction, fantasy/scifi, memoir, anthropology, history, and any other genres i could discover onto our shelf, to accrue a well-rounded appreciation for what was available. Though this of course put me to wondering how i could even learn the contours of the poly literature, in order to ensure that i sampled widely from it! Fortunes of timing provided me with three excellent resources:</p>
 <ul>
 <li><a href="https://www.goodreads.com/user/show/57466005">a Goodreads account</a>;</li>
@@ -455,10 +799,7 @@ This is still good news for my ultimate goal of identifying these features. In a
       <pubDate>2019 Oct 11 (Fri), 00:00:00 +0000</pubDate>
       
       <guid>/2019/10/11/hidden-figures/</guid>
-      <description>
-
-
-<p><em>I’m a bit overwhelmed and a bit sick this month, and i didn’t want to miss two fortnights in a row. I wrote up this reaction to seeing the film <em>Hidden Figures</em> a couple of years ago on Facebook, and several of my friends liked it then, so i’m sharing it here. It’s slightly edited. –Cory</em></p>
+      <description><p><em>I’m a bit overwhelmed and a bit sick this month, and i didn’t want to miss two fortnights in a row. I wrote up this reaction to seeing the film <em>Hidden Figures</em> a couple of years ago on Facebook, and several of my friends liked it then, so i’m sharing it here. It’s slightly edited. –Cory</em></p>
 <p><em>Hidden Figures</em> was probably the best civil rights–focused film i’ve seen in a while—not to disparage <em>Selma</em> or <em>The Butler</em>, but my personal taste is for greater subtlety. The movie is most impressive to me, though, as a mathematician biopic.</p>
 <p>In large part, this is because they did the math right, or as right as i would hope a movie to. Young Goble didn’t, in an early establishing scene, just solve an equation on the chalkboard; she explained, clearly, what she had done and why it was a reasonable approach.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> After asserting her way into a closed-door (read: white men–only) board meeting, she calculated a re-entry trajectory on demand and, without boring into every detail, provided enough insight into the key steps to give her reasonably intelligent audience a sense of how she was doing it. Most entertainingly for me (though i don’t know how historically accurately), she had the profound realization, not just on screen but out loud, that the (at the time) ancient curiosity of Euler’s method could fuse (parabolic) launch/re-entry and (elliptical) orbital trajectories into a complete, cohesive course. I don’t know that i ever would have thought to wonder whether i’d ever see (one step along) the momentous transition of applied mathematics from analytic to numerical dominance enacted as entertainment.</p>
 <p>To my mind, however, its principal achievement was in rejecting the now-entrenched Hollywood stereotype of the ostracized, neuroatypical, and/or disabled mathematical genius.<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> This is not to suggest that ostracized, neuroatypical, and/or disabled mathematicians don’t warrant at least their share of screen time, or that it’s a shame that their biopics came first. What’s problematic about the trend until now is that these traits have been presented as integral to the characters’ mathematical interest or ability, which reinforces the myth that mathematical talent is aberrant (one that happily appears to be fading) and does a disservice to the achievements these people did in the face of exceptional challenges.</p>
@@ -473,10 +814,7 @@ This is still good news for my ultimate goal of identifying these features. In a
 </ol>
 </div>
 </description>
-      <content:encoded>
-
-
-<p><em>I’m a bit overwhelmed and a bit sick this month, and i didn’t want to miss two fortnights in a row. I wrote up this reaction to seeing the film <em>Hidden Figures</em> a couple of years ago on Facebook, and several of my friends liked it then, so i’m sharing it here. It’s slightly edited. –Cory</em></p>
+      <content:encoded><p><em>I’m a bit overwhelmed and a bit sick this month, and i didn’t want to miss two fortnights in a row. I wrote up this reaction to seeing the film <em>Hidden Figures</em> a couple of years ago on Facebook, and several of my friends liked it then, so i’m sharing it here. It’s slightly edited. –Cory</em></p>
 <p><em>Hidden Figures</em> was probably the best civil rights–focused film i’ve seen in a while—not to disparage <em>Selma</em> or <em>The Butler</em>, but my personal taste is for greater subtlety. The movie is most impressive to me, though, as a mathematician biopic.</p>
 <p>In large part, this is because they did the math right, or as right as i would hope a movie to. Young Goble didn’t, in an early establishing scene, just solve an equation on the chalkboard; she explained, clearly, what she had done and why it was a reasonable approach.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> After asserting her way into a closed-door (read: white men–only) board meeting, she calculated a re-entry trajectory on demand and, without boring into every detail, provided enough insight into the key steps to give her reasonably intelligent audience a sense of how she was doing it. Most entertainingly for me (though i don’t know how historically accurately), she had the profound realization, not just on screen but out loud, that the (at the time) ancient curiosity of Euler’s method could fuse (parabolic) launch/re-entry and (elliptical) orbital trajectories into a complete, cohesive course. I don’t know that i ever would have thought to wonder whether i’d ever see (one step along) the momentous transition of applied mathematics from analytic to numerical dominance enacted as entertainment.</p>
 <p>To my mind, however, its principal achievement was in rejecting the now-entrenched Hollywood stereotype of the ostracized, neuroatypical, and/or disabled mathematical genius.<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> This is not to suggest that ostracized, neuroatypical, and/or disabled mathematicians don’t warrant at least their share of screen time, or that it’s a shame that their biopics came first. What’s problematic about the trend until now is that these traits have been presented as integral to the characters’ mathematical interest or ability, which reinforces the myth that mathematical talent is aberrant (one that happily appears to be fading) and does a disservice to the achievements these people did in the face of exceptional challenges.</p>
@@ -499,10 +837,7 @@ This is still good news for my ultimate goal of identifying these features. In a
       <pubDate>2019 Sep 13 (Fri), 00:00:00 +0000</pubDate>
       
       <guid>/2019/09/13/flow-taxonomy/</guid>
-      <description>
-
-
-<div id="background" class="section level2">
+      <description><div id="background" class="section level2">
 <h2>Background</h2>
 <p>I first encountered alluvial diagrams, so-called, in a widely-shared <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0008694">paper</a> by Martin Rosvall and Carl T. Bergstrom. They were investigating the shifting boundaries between distinct scientific fields (“modules”), as reconstructed from sequential years of journal citation data (“states”), and proposed a specialized flow diagram “to highlight the significant changes, fusions, and fissions that the modules undergo between each pair of successive states”. At the time, i was unfamiliar with Sankey diagrams and only passingly familiar with flow diagrams—mostly by way of my computational biologist colleagues and their literature-derived signal transduction networks—but i could imagine myriad uses for this type of visualization and eventually went searching for an implementation in R.</p>
 <p>This led me to the <a href="https://github.com/mbojan/alluvial">alluvial</a> package, which Michał Bojanowski was actively developing. As i got more comfortable with and excited about the then-ascendant tidyverse, i took it upon myself to put together <a href="https://github.com/corybrunson/ggalluvial">a ggplot2 extension</a>, which has since become considerably widely used. I later learned that previous developers had released similar extensions, specifically “parallel sets plots” in Thomas Lin Pedersen’s <a href="https://ggforce.data-imaginist.com">ggforce</a> and in Heike Hofmann and Marie Vendettouli’s <a href="https://github.com/heike/ggparallel">ggparallel</a>.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>
@@ -622,10 +957,7 @@ Finally, something i think alluvial plots do exceptionally better than general p
 </ol>
 </div>
 </description>
-      <content:encoded>
-
-
-<div id="background" class="section level2">
+      <content:encoded><div id="background" class="section level2">
 <h2>Background</h2>
 <p>I first encountered alluvial diagrams, so-called, in a widely-shared <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0008694">paper</a> by Martin Rosvall and Carl T. Bergstrom. They were investigating the shifting boundaries between distinct scientific fields (“modules”), as reconstructed from sequential years of journal citation data (“states”), and proposed a specialized flow diagram “to highlight the significant changes, fusions, and fissions that the modules undergo between each pair of successive states”. At the time, i was unfamiliar with Sankey diagrams and only passingly familiar with flow diagrams—mostly by way of my computational biologist colleagues and their literature-derived signal transduction networks—but i could imagine myriad uses for this type of visualization and eventually went searching for an implementation in R.</p>
 <p>This led me to the <a href="https://github.com/mbojan/alluvial">alluvial</a> package, which Michał Bojanowski was actively developing. As i got more comfortable with and excited about the then-ascendant tidyverse, i took it upon myself to put together <a href="https://github.com/corybrunson/ggalluvial">a ggplot2 extension</a>, which has since become considerably widely used. I later learned that previous developers had released similar extensions, specifically “parallel sets plots” in Thomas Lin Pedersen’s <a href="https://ggforce.data-imaginist.com">ggforce</a> and in Heike Hofmann and Marie Vendettouli’s <a href="https://github.com/heike/ggparallel">ggparallel</a>.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>
@@ -753,10 +1085,7 @@ Finally, something i think alluvial plots do exceptionally better than general p
       <pubDate>2019 Aug 30 (Fri), 00:00:00 +0000</pubDate>
       
       <guid>/2019/08/30/presence-absence/</guid>
-      <description>
-
-
-<p>A project i’ve had in the works for years, and “almost done” <a href="https://www.siam.org/Conferences/CM/Conference/ns18">since last summer</a>, is a sensitivity and robustness analysis of several techniques used in studies of “comorbidity networks” (also “disease graphs”, “disease maps”, etc.) that have appeared over the past 20 years. As i begin the abstract:</p>
+      <description><p>A project i’ve had in the works for years, and “almost done” <a href="https://www.siam.org/Conferences/CM/Conference/ns18">since last summer</a>, is a sensitivity and robustness analysis of several techniques used in studies of “comorbidity networks” (also “disease graphs”, “disease maps”, etc.) that have appeared over the past 20 years. As i begin the abstract:</p>
 <blockquote>
 <p>Comorbidity network analysis (CNA) is an increasingly popular approach in systems medicine, in which mathematical graphs encode epidemiological correlations (links) between diseases (nodes) inferred from their occurrence in an underlying patient population.</p>
 </blockquote>
@@ -786,10 +1115,7 @@ The upshot is that, as in the JDM, the value of the statistic is the maximum-lik
 </ol>
 </div>
 </description>
-      <content:encoded>
-
-
-<p>A project i’ve had in the works for years, and “almost done” <a href="https://www.siam.org/Conferences/CM/Conference/ns18">since last summer</a>, is a sensitivity and robustness analysis of several techniques used in studies of “comorbidity networks” (also “disease graphs”, “disease maps”, etc.) that have appeared over the past 20 years. As i begin the abstract:</p>
+      <content:encoded><p>A project i’ve had in the works for years, and “almost done” <a href="https://www.siam.org/Conferences/CM/Conference/ns18">since last summer</a>, is a sensitivity and robustness analysis of several techniques used in studies of “comorbidity networks” (also “disease graphs”, “disease maps”, etc.) that have appeared over the past 20 years. As i begin the abstract:</p>
 <blockquote>
 <p>Comorbidity network analysis (CNA) is an increasingly popular approach in systems medicine, in which mathematical graphs encode epidemiological correlations (links) between diseases (nodes) inferred from their occurrence in an underlying patient population.</p>
 </blockquote>
@@ -827,10 +1153,7 @@ The upshot is that, as in the JDM, the value of the statistic is the maximum-lik
       <pubDate>2019 Aug 16 (Fri), 00:00:00 +0000</pubDate>
       
       <guid>/2019/08/16/rank-correlations/</guid>
-      <description>
-
-
-<p>A fundamental idea in biplot methodology is the <em>conference of inertia</em>, a phrase i picked up from <a href="https://stats.stackexchange.com/a/141755/68743">an SO answer by ttnphns</a> and quickly <a href="https://github.com/corybrunson/ordr/blob/master/R/ord-conference.r">incorporated into ordr</a>. The basic idea arises from the central properties of a biplot, illustrated here for principal components analysis: A case–variable data matrix <span class="math inline">\(X\in\mathbb{R}^{n\times m}\)</span> of ratio variables<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> is singular-value decomposed as <span class="math inline">\(X=UDV^\top\)</span>, for example the <code>mtcars</code> data set:</p>
+      <description><p>A fundamental idea in biplot methodology is the <em>conference of inertia</em>, a phrase i picked up from <a href="https://stats.stackexchange.com/a/141755/68743">an SO answer by ttnphns</a> and quickly <a href="https://github.com/corybrunson/ordr/blob/master/R/ord-conference.r">incorporated into ordr</a>. The basic idea arises from the central properties of a biplot, illustrated here for principal components analysis: A case–variable data matrix <span class="math inline">\(X\in\mathbb{R}^{n\times m}\)</span> of ratio variables<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> is singular-value decomposed as <span class="math inline">\(X=UDV^\top\)</span>, for example the <code>mtcars</code> data set:</p>
 <pre class="r"><code>x &lt;- scale(mtcars, center = TRUE, scale = TRUE)
 s &lt;- svd(x)
 r &lt;- length(s$d)</code></pre>
@@ -1057,10 +1380,7 @@ c_eigen %&gt;%
 </ol>
 </div>
 </description>
-      <content:encoded>
-
-
-<p>A fundamental idea in biplot methodology is the <em>conference of inertia</em>, a phrase i picked up from <a href="https://stats.stackexchange.com/a/141755/68743">an SO answer by ttnphns</a> and quickly <a href="https://github.com/corybrunson/ordr/blob/master/R/ord-conference.r">incorporated into ordr</a>. The basic idea arises from the central properties of a biplot, illustrated here for principal components analysis: A case–variable data matrix <span class="math inline">\(X\in\mathbb{R}^{n\times m}\)</span> of ratio variables<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> is singular-value decomposed as <span class="math inline">\(X=UDV^\top\)</span>, for example the <code>mtcars</code> data set:</p>
+      <content:encoded><p>A fundamental idea in biplot methodology is the <em>conference of inertia</em>, a phrase i picked up from <a href="https://stats.stackexchange.com/a/141755/68743">an SO answer by ttnphns</a> and quickly <a href="https://github.com/corybrunson/ordr/blob/master/R/ord-conference.r">incorporated into ordr</a>. The basic idea arises from the central properties of a biplot, illustrated here for principal components analysis: A case–variable data matrix <span class="math inline">\(X\in\mathbb{R}^{n\times m}\)</span> of ratio variables<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> is singular-value decomposed as <span class="math inline">\(X=UDV^\top\)</span>, for example the <code>mtcars</code> data set:</p>
 <pre class="r"><code>x &lt;- scale(mtcars, center = TRUE, scale = TRUE)
 s &lt;- svd(x)
 r &lt;- length(s$d)</code></pre>
@@ -1284,510 +1604,6 @@ c_eigen %&gt;%
 <ol>
 <li id="fn1"><p>That is to say, if the variables don’t have meaningful zero values and/or commensurate scales, then they should be centered to zero mean and/or scaled to unit variance.<a href="#fnref1" class="footnote-back">↩</a></p></li>
 <li id="fn2"><p>This leaves us with only 38 universities, so my inferences must be taken with extreme caution!<a href="#fnref2" class="footnote-back">↩</a></p></li>
-</ol>
-</div>
-</content:encoded>
-    </item>
-    
-    <item>
-      <title>I AM THE DISCRIMINANT</title>
-      <link>/2019/08/02/lda/</link>
-      <pubDate>2019 Aug 02 (Fri), 00:00:00 +0000</pubDate>
-      
-      <guid>/2019/08/02/lda/</guid>
-      <description>
-
-
-<p>For over a year (intermittently, not cumulatively) i’ve been developing an R package, <a href="https://github.com/corybrunson/ordr">ordr</a>, for incorporating ordination techniques into a tidyverse workflow. (Credit where it’s due: Emily Paul, a summer intern from Avon High School, helped extend the package functionality and has since used it in other projects and provided critical feedback on its design.) This week, i finally deployed <a href="https://corybrunson.github.io/ordr/">a pkgdown website</a> and tweeted a meek solicitation for feedback.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> Interestingly, the one component that held me back, that i put off time and time again before finally grinding out a solution over the past few weeks, was the component that originally complemented PCA in <a href="https://github.com/vqv/ggbiplot">Vince Vu’s original and inspirational ggbiplot package</a>: Accessor methods for the MASS package implementation of linear discriminant analysis.</p>
-<p>A big part of the reason for this procrastination was that <a href="https://github.com/cran/MASS/blob/master/R/lda.R">the source code of <code>MASS::lda()</code></a> looks nothing like the tidy definition of LDA found in textbooks. (I have on my shelf my mom’s copies of <a href="https://books.google.com/books/about/Multivariate_Analysis.html?id=HHNnBDaNsuUC">Tatsuoka’s <em>Multivariate Analysis</em></a> and of <a href="https://books.google.com/books/about/Psychometric_theory.html?id=WE59AAAAMAAJ">Nunnally’s <em>Psychometric Theory</em></a>, but there are several similar introductions online, for example <a href="https://sebastianraschka.com/Articles/2014_python_lda.html">Raschka’s</a>.) In the standard presentation, LDA boils down to an eigendecomposition of the quotient <span class="math inline">\({C_W}^{-1}C_B\)</span> of the between- by the within-group covariance matrices. (This is equivalent, up to a scale factor, to the eigendecomposition of the same quotient of the corresponding scatter matrices <span class="math inline">\(S_\bullet=nC_\bullet\)</span>.<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>)
-But rather than build up to a single eigendecomposition, <code>MASS::lda()</code> relies on sequential compositions of a scaling matrix with eigenvector and other matrices that are difficult to follow by reading the (minimally documented) code.</p>
-<p>Meanwhile, several discussions of LDA on StackOverflow provide useful insights into the output of <code>MASS::lda()</code>, but the more prolific respondents tend not to use R, and the numerical examples derive from implementations in other languages.
-The MASS book, <em>Modern Applied Statistics with S</em> by Venables and Ripley (<a href="https://tinyurl.com/yyhpyu2d">PDF</a>), details their mathematical formula in section 12.1 but does not discuss their implementation.
-So, while it’s still fresh in my mind, i want to offer what i hope will be an evergreen dissection of <code>MASS::lda()</code>. In a future post i’ll survey different ways an LDA might be summarized in a biplot and how i tweaked Venables and Ripley’s function to make these options available in ordr.</p>
-<div id="tldr" class="section level3">
-<h3>tl;dr</h3>
-<p><code>MASS::lda()</code> gradually and conditionally composes a variable transformation (a matrix that acts on the columns of the data matrix) to simplify the covariance quotient, then uses singular value decomposition to obtain its eigendecomposition. Rather than returning both the variable transformation and the quotient eigendecomposition, it returns their product, a matrix of discriminant coefficients that transforms the data and/or group centroids to their discriminant coordinates (scores). Consequently, the variable loadings cannot be recovered from the output.</p>
-</div>
-<div id="class-methods" class="section level3">
-<h3>class methods</h3>
-<p>For those (like me until recently) unfamiliar with <a href="http://adv-r.had.co.nz/S3.html">the S3 object system</a>, <a href="https://github.com/cran/MASS/blob/master/R/lda.R">the <code>MASS::lda()</code> source code</a> may look strange. Essentially, and henceforth assuming the MASS package has been attached so that <code>MASS::</code> is unnecessary, the generic function <code>lda()</code> performs <em>method dispatch</em> by checking the class(es) of its primary input <code>x</code>, then sending <code>x</code> (and any other inputs) to one of several class-specific methods <code>lda.&lt;class&gt;()</code>, or else to <code>lda.default()</code>. These methods are not exported, so they aren’t visible to the user.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> In the case of <code>lda()</code> every class-specific method transforms its input to a standard form (a data table <code>x</code> and a vector of group assignments <code>grouping</code>, plus any of several other parameters) and passes these to <code>lda.default()</code>. This default method is the workhorse of the implementation, so it’s the only chunk of source code i’ll get into here.</p>
-</div>
-<div id="example-inputs-and-parameter-settings" class="section level3">
-<h3>example inputs and parameter settings</h3>
-<p>The code will be executed in sequence, punctuated by printouts and plots of key objects defined along the way. This requires assigning illustrative values to the function arguments. I’ll take as my example the famous diabetes data originally analyzed by <a href="https://link.springer.com/article/10.1007/BF00423145">Reaven and Miller (1979)</a>, available from <a href="https://github.com/friendly/heplots">the heplots package</a>, which consists of a BMI-type measure and the results of four glucose and insulin tests for 145 patients, along with their diagnostic grouping as non-diabetic (“normal”), subclinically (“chemical”) diabetic, and overtly diabetic.<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a> For our purposes, the only other required parameter is <code>tol</code>, the tolerance at which small values encountered along the matrix algebra are interpreted as zero.</p>
-<pre class="r"><code>x &lt;- heplots::Diabetes[, 1:5]
-grouping &lt;- heplots::Diabetes[, 6]
-tol &lt;- 1e-04</code></pre>
-<pre class="r"><code>set.seed(2)
-s &lt;- sort(sample(nrow(x), 6))
-print(x[s, ])</code></pre>
-<pre><code>##     relwt glufast glutest instest sspg
-## 24   0.97      90     327     192  124
-## 27   1.20      98     365     145  158
-## 82   1.11      93     393     490  259
-## 102  1.13      92     476     433  226
-## 133  0.85     330    1520      13  303
-## 134  0.81     123     557     130  152</code></pre>
-<pre class="r"><code>print(grouping[s])</code></pre>
-<pre><code>## [1] Normal            Normal            Normal            Chemical_Diabetic
-## [5] Overt_Diabetic    Overt_Diabetic   
-## Levels: Normal Chemical_Diabetic Overt_Diabetic</code></pre>
-</div>
-<div id="data-parameters-and-summary-information" class="section level3">
-<h3>data parameters and summary information</h3>
-<p>The first several lines of <code>lda.default()</code> capture summary information about the data table <code>x</code> (and ensure that it is a matrix) and the group assignments <code>grouping</code>: <code>n</code> is the number of cases in <code>x</code>, <code>p</code> is the number of variables, <code>g</code> is <code>grouping</code> coerced to a factor-valued vector, <code>lev</code> is the vector of factor levels (groups), <code>counts</code> is a vector of the number of cases assigned to each group, <code>proportions</code> is a vector of their proportions of <code>n</code>, and <code>ng</code> is the number of groups.</p>
-<p>It will help to keep track of some mathematical notation for these concepts in parallel: Call the data matrix <span class="math inline">\(X\in\mathbb{R}^{n\times p}\)</span>, the column vector of group assignments <span class="math inline">\(g\in[q]^{n}\)</span>, and a diagonal matrix <span class="math inline">\(N\in\mathbb{N}^{q\times q}\)</span> of group counts <span class="math inline">\(n_1,\ldots,n_q\)</span>. Note that <code>lev</code> and <code>ng</code> correspond to <span class="math inline">\([q]\)</span> and <span class="math inline">\(q\)</span>, respectively. Additionally let <span class="math inline">\(G=(\delta_{g_i,k})\in\{0,1\}^{n\times q}\)</span> denote the 0,1-matrix with <span class="math inline">\(i,k\)</span>-th entry <span class="math inline">\(1\)</span> when case <span class="math inline">\(i\)</span> is assigned to group <span class="math inline">\(k\)</span>. (I’ll use the indices <span class="math inline">\(1\leq i\leq n\)</span> for the cases, <span class="math inline">\(1\leq j\leq p\)</span> for the variables, and <span class="math inline">\(1\leq k\leq q\)</span> for the groups.)</p>
-<pre class="r"><code>if(is.null(dim(x))) stop(&quot;&#39;x&#39; is not a matrix&quot;)
-x &lt;- as.matrix(x)
-if(any(!is.finite(x)))
-  stop(&quot;infinite, NA or NaN values in &#39;x&#39;&quot;)
-n &lt;- nrow(x)
-p &lt;- ncol(x)
-if(n != length(grouping))
-  stop(&quot;nrow(x) and length(grouping) are different&quot;)
-g &lt;- as.factor(grouping)
-lev &lt;- lev1 &lt;- levels(g)
-counts &lt;- as.vector(table(g))
-# excised handling of `prior`
-if(any(counts == 0L)) {
-  empty &lt;- lev[counts == 0L]
-  warning(sprintf(ngettext(length(empty),
-                           &quot;group %s is empty&quot;,
-                           &quot;groups %s are empty&quot;),
-                  paste(empty, collapse = &quot; &quot;)), domain = NA)
-  lev1 &lt;- lev[counts &gt; 0L]
-  g &lt;- factor(g, levels = lev1)
-  counts &lt;- as.vector(table(g))
-}
-proportions &lt;- counts/n
-ng &lt;- length(proportions)
-names(counts) &lt;- lev1 # `names(prior)` excised</code></pre>
-<p>The steps are straightforward, with the exception of the handling of prior probabilities (<code>prior</code>), which is beyond our scope and which i’ve excised from the code. (When not provided, <code>prior</code> takes the default value <code>proportions</code>, which are explicitly defined within <code>lda.default()</code> and will be substituted for <code>prior</code> below.) If <code>grouping</code> is a factor that is missing elements of any of its levels, then these elements are removed from the analysis with a warning. I’ll also skip the lines relevant only to cross-validation (<code>CV = TRUE</code>), which include a compatibility check here and a large conditional chunk later on.</p>
-<pre class="r"><code># group counts and proportions of the total:
-print(cbind(counts, proportions))</code></pre>
-<pre><code>##                   counts proportions
-## Normal                76   0.5241379
-## Chemical_Diabetic     36   0.2482759
-## Overt_Diabetic        33   0.2275862</code></pre>
-</div>
-<div id="variable-standardization-and-the-correlation-matrix" class="section level3">
-<h3>variable standardization and the correlation matrix</h3>
-<p>Next, we calculate the group centroids <span class="math inline">\(\overline{X}=N^{-1}G^\top X\in\mathbb{R}^{q\times p}\)</span> and the within-group covariance matrix <span class="math inline">\(C_W=\frac{1}{n}{X_0}^\top{X_0}\)</span>, where <span class="math inline">\({X_0}=X-G\overline{X}\)</span> consists of the differences between the cases (rows of <span class="math inline">\(X\)</span>) and their corresponding group centroids. <code>lda.default()</code> stores <span class="math inline">\(\overline{X}\)</span> as <code>group.means</code> and the square roots of the diagonal entries of <span class="math inline">\(C_W\)</span>—that is, the standard deviations—as <code>f1</code>.
-The conditional statement requires that at least some variances be nonzero, up to the tolerance threshold <code>tol</code>. Finally, <code>scaling</code> is initialized as a diagonal matrix <span class="math inline">\(S_0\)</span> of inverted variable standard deviations <span class="math inline">\(\frac{1}{\sigma_j}\)</span>.</p>
-<pre class="r"><code>## drop attributes to avoid e.g. matrix() methods
-group.means &lt;- tapply(c(x), list(rep(g, p), col(x)), mean)
-f1 &lt;- sqrt(diag(var(x - group.means[g,  ])))
-if(any(f1 &lt; tol)) {
-  const &lt;- format((1L:p)[f1 &lt; tol])
-  stop(sprintf(ngettext(length(const),
-                        &quot;variable %s appears to be constant within groups&quot;,
-                        &quot;variables %s appear to be constant within groups&quot;),
-               paste(const, collapse = &quot; &quot;)),
-       domain = NA)
-}
-# scale columns to unit variance before checking for collinearity
-scaling &lt;- diag(1/f1, , p)</code></pre>
-<p>I’ll refer to <span class="math inline">\({X_0}\)</span> as the “within-group centered data”. The group centroids are returned as the named member <code>means</code> of the ‘lda’-class object returned by <code>lda.default()</code>. The standard deviations of and correlations among (some of) the five variables are evident in their pairwise scatterplots, which here and forward fix the aspect ratio at 1:</p>
-<pre class="r"><code># group centroids
-print(group.means)</code></pre>
-<pre><code>##                           1         2         3        4        5
-## Normal            0.9372368  91.18421  349.9737 172.6447 114.0000
-## Chemical_Diabetic 1.0558333  99.30556  493.9444 288.0000 208.9722
-## Overt_Diabetic    0.9839394 217.66667 1043.7576 106.0000 318.8788</code></pre>
-<pre class="r"><code># within-group centered data
-pairs(x - group.means[g, ], asp = 1, pch = 19, cex = .5)</code></pre>
-<p><img src="/post/2019-08-02-lda_files/figure-html/unnamed-chunk-6-1.png" width="768" /></p>
-<pre class="r"><code># within-group standard deviations
-print(f1)</code></pre>
-<pre><code>##       relwt     glufast     glutest     instest        sspg 
-##   0.1195937  36.8753901 150.7536138 102.2913665  65.8125752</code></pre>
-<pre class="r"><code># inverses of within-group standard deviations
-scaling0 &lt;- scaling
-print(scaling0)</code></pre>
-<pre><code>##          [,1]       [,2]       [,3]        [,4]       [,5]
-## [1,] 8.361643 0.00000000 0.00000000 0.000000000 0.00000000
-## [2,] 0.000000 0.02711836 0.00000000 0.000000000 0.00000000
-## [3,] 0.000000 0.00000000 0.00663334 0.000000000 0.00000000
-## [4,] 0.000000 0.00000000 0.00000000 0.009775996 0.00000000
-## [5,] 0.000000 0.00000000 0.00000000 0.000000000 0.01519466</code></pre>
-<p>The object <code>scaling</code> will be redefined twice as the function proceeds, each time by multiplication on the right, concluding with the member named <code>scaling</code> of the ‘lda’ object. We’ll denote these redefinitions <span class="math inline">\(S_1\)</span> and <span class="math inline">\(S_2\)</span> and store the three definitions as <code>scaling0</code>, <code>scaling1</code>, and <code>scaling2</code> for unambiguous illustrations. These matrices act on the columns of <span class="math inline">\({X_0}\)</span>, which induces a two-sided action on <span class="math inline">\(C_W\)</span>: <span class="math inline">\(\frac{1}{n}({X_0}S)^\top({X_0}S)=S^\top C_WS\)</span>. The effect of <span class="math inline">\(S_0\)</span> is to standardize the variables, so that the covariance matrix of the transformed data <span class="math inline">\({X_0}S_0\)</span> is the within-group correlation matrix <span class="math inline">\(R_W\)</span> of <span class="math inline">\({X_0}\)</span>. The effect is also evident from a comparison of the pairwise scatterplots:</p>
-<pre class="r"><code># within-group correlation matrix
-print(cor(x - group.means[g, ]))</code></pre>
-<pre><code>##               relwt     glufast    glutest    instest      sspg
-## relwt    1.00000000 -0.09623213 -0.1607280  0.1070926 0.3926726
-## glufast -0.09623213  1.00000000  0.9264021 -0.2513436 0.3692349
-## glutest -0.16072796  0.92640213  1.0000000 -0.2494804 0.3633879
-## instest  0.10709258 -0.25134359 -0.2494804  1.0000000 0.2145095
-## sspg     0.39267262  0.36923495  0.3633879  0.2145095 1.0000000</code></pre>
-<pre class="r"><code># within-group covariance matrix after standardization
-print(cov((x - group.means[g, ]) %*% scaling))</code></pre>
-<pre><code>##             [,1]        [,2]       [,3]       [,4]      [,5]
-## [1,]  1.00000000 -0.09623213 -0.1607280  0.1070926 0.3926726
-## [2,] -0.09623213  1.00000000  0.9264021 -0.2513436 0.3692349
-## [3,] -0.16072796  0.92640213  1.0000000 -0.2494804 0.3633879
-## [4,]  0.10709258 -0.25134359 -0.2494804  1.0000000 0.2145095
-## [5,]  0.39267262  0.36923495  0.3633879  0.2145095 1.0000000</code></pre>
-<pre class="r"><code># within-group centered data after standardization
-pairs((x - group.means[g, ]) %*% scaling, asp = 1, pch = 19, cex = .5)</code></pre>
-<p><img src="/post/2019-08-02-lda_files/figure-html/unnamed-chunk-7-1.png" width="768" /></p>
-</div>
-<div id="variable-sphering-and-the-mahalanobis-distance" class="section level3">
-<h3>variable sphering and the Mahalanobis distance</h3>
-<p>The next step in the procedure is the signature transformation of LDA. Whereas <span class="math inline">\(S_0\)</span> removes the scales of the variables, leaving them each with unit variance but preserving their correlations, the role of <span class="math inline">\(S_1\)</span> is to additionally remove these correlations. Viewing the set of cases within each group as a cloud of <span class="math inline">\(n_k\)</span> points in <span class="math inline">\(\mathbb{R}^p\)</span>, <span class="math inline">\(S_0\)</span> stretches or compresses each cloud <em>along its coordinate axes</em>, while <span class="math inline">\(S_1\)</span> will stretch or compress it <em>along its principal components</em>. The resulting aggregate point cloud will have within-group covariance <span class="math inline">\(I_n\)</span> (the identity matrix), indicating unit variance and no correlation among its variables; according to these summary statistics, then, it is rotationally symmetric. Accordingly, the column action of <span class="math inline">\(S_1\)</span> is called a <em>sphering transformation</em>, while the distances among the transformed points are called their <em>Mahalanobis distances</em> after <a href="https://en.wikipedia.org/wiki/Prasanta_Chandra_Mahalanobis">their originator</a>. See <a href="https://stats.stackexchange.com/a/62147/68743">this SO answer by whuber</a> for a helpful illustration of the transformation. Its importance is illustrated in Chapter 11 of <a href="https://www.fbbva.es/microsite/multivariate-statistics/biplots.html">Greenacre’s <em>Biplots in Practice</em></a> (p. 114).</p>
-<p><span class="math inline">\(S_1\)</span> is calculated differently for different choices of <code>method</code> (see the documentation <code>?MASS::lda</code>). For simplicity, the code chunk below follows the <code>"mle"</code> method.
-As hinted in the previous paragraph, the process of obtaining a sphering transformation is closely related to principal components analysis. One can be calculated via eigendecomposition of the standardized within-group covariance matrix or, equivalently, via singular value decomposition of the standardized within-group centered data <span class="math inline">\(\hat{X}=X_0 S_0\)</span>.<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a> <code>lda.default()</code> performs SVD on <span class="math inline">\(\hat{X}\)</span>, scaled by <span class="math inline">\(\frac{1}{\sqrt{n}}\)</span> so that the scatter matrix is <span class="math inline">\(R_W\)</span>:</p>
-<pre class="r"><code>fac &lt;- 1/n # excise conditional case `method == &quot;moment&quot;`
-X &lt;- sqrt(fac) * (x - group.means[g,  ]) %*% scaling
-X.s &lt;- svd(X, nu = 0L)
-rank &lt;- sum(X.s$d &gt; tol)
-if(rank == 0L) stop(&quot;rank = 0: variables are numerically constant&quot;)
-if(rank &lt; p) warning(&quot;variables are collinear&quot;)
-scaling &lt;- scaling %*% X.s$v[, 1L:rank] %*% diag(1/X.s$d[1L:rank],,rank)</code></pre>
-<p>Taking the SVD to be <span class="math inline">\(\frac{1}{\sqrt{n}}\hat{X}=\hat{U}\hat{D}\hat{V}^\top\)</span>, the sphering matrix is <span class="math inline">\(S_1=S_0\hat{V}{\hat{D}}^{-1}\)</span>.
-The alternative calculation is <span class="math inline">\(S_1=S_0\hat{V}{\hat{\Lambda}}^{-1/2}\)</span>, where <span class="math inline">\(\hat{C}=\hat{V}\hat{\Lambda}{\hat{V}}^\top\)</span> is the eigendecomposition of the covariance matrix of <span class="math inline">\(\hat{X}\)</span> so that <span class="math inline">\(\hat{V}\)</span> is the same and <span class="math inline">\(\hat{\Lambda}={\hat{D}}^{1/2}\)</span>. (<span class="math inline">\({\hat{C}}^{-1/2}=\hat{V}{\hat{\Lambda}}^{-1/2}{\hat{V}}^\top\)</span> is called the symmetric square root of <span class="math inline">\(\hat{C}\)</span>.)
-Note that the signs of the columns are arbitrary, as in PCA. The difference in absolute values is due to <code>stats::cov()</code> treating <span class="math inline">\(\hat{X}\)</span> as a sample rather than a population, dividing the scatter matrix <span class="math inline">\(\hat{X}^\top \hat{X}\)</span> by <span class="math inline">\(\frac{1}{n-1}\)</span> rather than by <span class="math inline">\(\frac{1}{n}\)</span>.</p>
-<pre class="r"><code># standardized within-group centered data
-Xhat &lt;- (x - group.means[g,  ]) %*% scaling0
-# eigendecomposition of covariance
-E &lt;- eigen(cov(Xhat))
-# sphering matrix (alternative calculation)
-scaling0 %*% E$vectors %*% diag(1/sqrt(E$values))</code></pre>
-<pre><code>##              [,1]          [,2]          [,3]         [,4]         [,5]
-## [1,] -0.259027622  4.3010514864  5.4856218279 -6.620668927 -2.079154922
-## [2,]  0.011804714 -0.0010406454 -0.0019199260 -0.013949375  0.070663381
-## [3,]  0.002888749 -0.0004202234 -0.0008316344 -0.002406702 -0.017886747
-## [4,] -0.001393182  0.0037523667 -0.0081405500 -0.005925590 -0.000197695
-## [5,]  0.003470018  0.0076467225 -0.0008602899  0.018031665  0.001957544</code></pre>
-<pre class="r"><code># sphering matrix
-scaling1 &lt;- scaling
-print(scaling1)</code></pre>
-<pre><code>##              [,1]         [,2]          [,3]         [,4]          [,5]
-## [1,]  0.259925467  4.315959855 -5.5046361720 -6.643617588  2.0863617201
-## [2,] -0.011845632 -0.001044253  0.0019265809 -0.013997727 -0.0709083156
-## [3,] -0.002898762 -0.000421680  0.0008345171 -0.002415044  0.0179487460
-## [4,]  0.001398012  0.003765373  0.0081687669 -0.005946129  0.0001983803
-## [5,] -0.003482045  0.007673228  0.0008632718  0.018094166 -0.0019643291</code></pre>
-<p>The sphered within-group centered data now have identity within-group covariance matrix, up to a reasonable tolerance. The sphered coordinates are true to their name, as along each pair of variable coordinates the point cloud exhibits no elliptical tendencies.
-While <code>rank</code> is 5 (<span class="math inline">\(=p\)</span>) at this stage, indicating that variation is detected in each of the variables, the final computational step will determine the rank of the LDA itself in terms of the transformed group centroids.</p>
-<pre class="r"><code># within-group covariance matrix after sphering
-print(cov((x - group.means[g, ]) %*% scaling))</code></pre>
-<pre><code>##               [,1]         [,2]          [,3]          [,4]          [,5]
-## [1,]  1.006944e+00 3.762724e-16 -5.781689e-16  5.015188e-16  1.113855e-15
-## [2,]  3.762724e-16 1.006944e+00  1.892763e-15  4.976970e-16  5.560143e-16
-## [3,] -5.781689e-16 1.892763e-15  1.006944e+00 -9.853124e-16 -1.180559e-15
-## [4,]  5.015188e-16 4.976970e-16 -9.853124e-16  1.006944e+00  1.095132e-15
-## [5,]  1.113855e-15 5.560143e-16 -1.180559e-15  1.095132e-15  1.006944e+00</code></pre>
-<pre class="r"><code># within-group centered data after sphering
-pairs((x - group.means[g, ]) %*% scaling, asp = 1, pch = 19, cex = .5)</code></pre>
-<p><img src="/post/2019-08-02-lda_files/figure-html/unnamed-chunk-10-1.png" width="768" /></p>
-<pre class="r"><code># number of variables that contribute to the sphered data
-print(rank)</code></pre>
-<pre><code>## [1] 5</code></pre>
-</div>
-<div id="sphering-transformed-group-centroids-and-discriminant-coefficients" class="section level3">
-<h3>sphering-transformed group centroids and discriminant coefficients</h3>
-<p>The original problem of LDA was to eigendecompose <span class="math inline">\({C_W}^{-1}C_B\)</span>, where <span class="math inline">\(C_B=\frac{1}{q}Y^\top Y\)</span> is the between-groups covariance matrix derived from the centered group centroids <span class="math inline">\(Y=G\overline{X}-\mathbb{1}_{n\times 1}\overline{x}\in\mathbb{R}^{n\times p}\)</span> using the data centroid <span class="math inline">\(\overline{x}=\frac{1}{n}\mathbb{1}_{1\times n}X\in\mathbb{R}^{1\times p}\)</span> (and duplicated according to the group counts).
-<code>lda.default()</code> relies on an equivalent calculation <span class="math inline">\(C_B=\frac{1}{q}\overline{Y}^\top\overline{Y}\)</span>, using <span class="math inline">\(\overline{Y}=N(\overline{X}-\mathbb{1}_{q\times 1}\overline{x})\)</span>, which explicitly weights the centered group centroids by the group counts and produces the same scatter matrix as <span class="math inline">\(Y\)</span>.
-Under the transformed coordinates <span class="math inline">\({X_0}S_1\)</span>, the matrix quotient to be eigendecomposed becomes <span class="math display">\[\textstyle({S_1}^\top C_WS_1)^{-1}({S_1}^\top C_BS_1)=I_p{S_1}^\top C_BS_1=\frac{1}{q}(YS_1)^\top(YS_1)=\frac{1}{q}(\overline{Y}S_1)^\top(\overline{Y}S_1),\]</span>
-the between-groups covariance calculated from the sphering-transformed centered group centroids.<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a>
-This is the first calculation using <span class="math inline">\(C_B\)</span>, which is how <code>lda.default()</code> can wait until here to calculate the data centroid <code>xbar</code>.</p>
-<pre class="r"><code>xbar &lt;- colSums(proportions %*% group.means) # sub `proportions` for `prior`
-fac &lt;- 1/(ng - 1) # excise conditional case `method == &quot;mle&quot;`
-X &lt;- sqrt((n * proportions)*fac) * # sub `proportions` for `prior`
-  scale(group.means, center = xbar, scale = FALSE) %*% scaling
-X.s &lt;- svd(X, nu = 0L)
-rank &lt;- sum(X.s$d &gt; tol * X.s$d[1L])
-if(rank == 0L) stop(&quot;group means are numerically identical&quot;)
-scaling &lt;- scaling %*% X.s$v[, 1L:rank]
-# excise conditional case `is.null(dimnames(x))`
-dimnames(scaling) &lt;- list(colnames(x), paste(&quot;LD&quot;, 1L:rank, sep = &quot;&quot;))
-dimnames(group.means)[[2L]] &lt;- colnames(x)</code></pre>
-<p>The rank now indicates the number of dimensions in the SVD of the sphering-transformed group centroids, which can be no more than <span class="math inline">\(q-1\)</span>.
-The final reassignment of <code>scaling</code> gives <span class="math inline">\(S_2\)</span>, the raw discriminant coefficients that express the discriminant coordinates of the centroids (and of the original data) as linear combinations of the centered variable coordinates. In practice, these discriminant coordinates are returned by the <code>predict()</code> method for ‘lda’ objects, <code>MASS:::predict.lda()</code>, and this is demonstrated to conclude the post:</p>
-<pre class="r"><code># number of dimensions in the sphering-transformed group centroid SVD
-print(rank)</code></pre>
-<pre><code>## [1] 2</code></pre>
-<pre class="r"><code># discriminant coefficients
-scaling2 &lt;- scaling
-print(scaling2)</code></pre>
-<pre><code>##                   LD1          LD2
-## relwt    1.3767523932 -3.823906854
-## glufast -0.0340023755  0.037018266
-## glutest  0.0127085491 -0.007166541
-## instest -0.0001032987 -0.006238295
-## sspg     0.0042877747  0.001145987</code></pre>
-<pre class="r"><code># discriminant coordinates of centered group centroids
-print((group.means - matrix(1, ng, 1) %*% t(xbar)) %*% scaling2)</code></pre>
-<pre><code>##                          LD1        LD2
-## Normal            -1.7683547  0.4043199
-## Chemical_Diabetic  0.3437412 -1.3910995
-## Overt_Diabetic     3.6975842  0.5864022</code></pre>
-<pre class="r"><code># as recovered using `predict.lda()`
-fit &lt;- MASS::lda(group ~ ., heplots::Diabetes)
-print(predict(fit, as.data.frame(fit$means))$x)</code></pre>
-<pre><code>##                          LD1        LD2
-## Normal            -1.7499658  0.4001154
-## Chemical_Diabetic  0.3401666 -1.3766336
-## Overt_Diabetic     3.6591334  0.5803043</code></pre>
-<p>(The slight discrepancy between the manually calculated coordinates and those returned by <code>predict()</code> is left as an exercise for the reader.)</p>
-</div>
-<div class="footnotes">
-<hr />
-<ol>
-<li id="fn1"><p>If you use ordination and ggplot2, not necessarily together (yet), i’d be grateful for your feedback, too!<a href="#fnref1" class="footnote-back">↩</a></p></li>
-<li id="fn2"><p>My exposition here assumes the covariances were calculated from a population rather than a sample perspective, but this introduces discrepancies in a few places.<a href="#fnref2" class="footnote-back">↩</a></p></li>
-<li id="fn3"><p>To see the source code for an object included in but not exported by a package, use three colons instead of two, e.g. <code>MASS:::lda.default</code>.<a href="#fnref3" class="footnote-back">↩</a></p></li>
-<li id="fn4"><p>I’ve been searching for a history of the 1970s change from categorizing diabetes as “clinical” versus “overt” to the present-day categories of “type 1” and “type 2”. Recommended reading is very welcome.<a href="#fnref4" class="footnote-back">↩</a></p></li>
-<li id="fn5"><p>These are equivalent because the matrix factors <span class="math inline">\(U\)</span> and <span class="math inline">\(V\)</span> of an SVD of any matrix <span class="math inline">\(Z\)</span> are the eigenvector matrices of <span class="math inline">\(ZZ^\top\)</span> and of <span class="math inline">\(Z^\top Z\)</span>, respectively.<a href="#fnref5" class="footnote-back">↩</a></p></li>
-<li id="fn6"><p>These are not “sphered” centered group centroids because the sphering transformation is specific to the within-group centered data.<a href="#fnref6" class="footnote-back">↩</a></p></li>
-</ol>
-</div>
-</description>
-      <content:encoded>
-
-
-<p>For over a year (intermittently, not cumulatively) i’ve been developing an R package, <a href="https://github.com/corybrunson/ordr">ordr</a>, for incorporating ordination techniques into a tidyverse workflow. (Credit where it’s due: Emily Paul, a summer intern from Avon High School, helped extend the package functionality and has since used it in other projects and provided critical feedback on its design.) This week, i finally deployed <a href="https://corybrunson.github.io/ordr/">a pkgdown website</a> and tweeted a meek solicitation for feedback.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> Interestingly, the one component that held me back, that i put off time and time again before finally grinding out a solution over the past few weeks, was the component that originally complemented PCA in <a href="https://github.com/vqv/ggbiplot">Vince Vu’s original and inspirational ggbiplot package</a>: Accessor methods for the MASS package implementation of linear discriminant analysis.</p>
-<p>A big part of the reason for this procrastination was that <a href="https://github.com/cran/MASS/blob/master/R/lda.R">the source code of <code>MASS::lda()</code></a> looks nothing like the tidy definition of LDA found in textbooks. (I have on my shelf my mom’s copies of <a href="https://books.google.com/books/about/Multivariate_Analysis.html?id=HHNnBDaNsuUC">Tatsuoka’s <em>Multivariate Analysis</em></a> and of <a href="https://books.google.com/books/about/Psychometric_theory.html?id=WE59AAAAMAAJ">Nunnally’s <em>Psychometric Theory</em></a>, but there are several similar introductions online, for example <a href="https://sebastianraschka.com/Articles/2014_python_lda.html">Raschka’s</a>.) In the standard presentation, LDA boils down to an eigendecomposition of the quotient <span class="math inline">\({C_W}^{-1}C_B\)</span> of the between- by the within-group covariance matrices. (This is equivalent, up to a scale factor, to the eigendecomposition of the same quotient of the corresponding scatter matrices <span class="math inline">\(S_\bullet=nC_\bullet\)</span>.<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>)
-But rather than build up to a single eigendecomposition, <code>MASS::lda()</code> relies on sequential compositions of a scaling matrix with eigenvector and other matrices that are difficult to follow by reading the (minimally documented) code.</p>
-<p>Meanwhile, several discussions of LDA on StackOverflow provide useful insights into the output of <code>MASS::lda()</code>, but the more prolific respondents tend not to use R, and the numerical examples derive from implementations in other languages.
-The MASS book, <em>Modern Applied Statistics with S</em> by Venables and Ripley (<a href="https://tinyurl.com/yyhpyu2d">PDF</a>), details their mathematical formula in section 12.1 but does not discuss their implementation.
-So, while it’s still fresh in my mind, i want to offer what i hope will be an evergreen dissection of <code>MASS::lda()</code>. In a future post i’ll survey different ways an LDA might be summarized in a biplot and how i tweaked Venables and Ripley’s function to make these options available in ordr.</p>
-<div id="tldr" class="section level3">
-<h3>tl;dr</h3>
-<p><code>MASS::lda()</code> gradually and conditionally composes a variable transformation (a matrix that acts on the columns of the data matrix) to simplify the covariance quotient, then uses singular value decomposition to obtain its eigendecomposition. Rather than returning both the variable transformation and the quotient eigendecomposition, it returns their product, a matrix of discriminant coefficients that transforms the data and/or group centroids to their discriminant coordinates (scores). Consequently, the variable loadings cannot be recovered from the output.</p>
-</div>
-<div id="class-methods" class="section level3">
-<h3>class methods</h3>
-<p>For those (like me until recently) unfamiliar with <a href="http://adv-r.had.co.nz/S3.html">the S3 object system</a>, <a href="https://github.com/cran/MASS/blob/master/R/lda.R">the <code>MASS::lda()</code> source code</a> may look strange. Essentially, and henceforth assuming the MASS package has been attached so that <code>MASS::</code> is unnecessary, the generic function <code>lda()</code> performs <em>method dispatch</em> by checking the class(es) of its primary input <code>x</code>, then sending <code>x</code> (and any other inputs) to one of several class-specific methods <code>lda.&lt;class&gt;()</code>, or else to <code>lda.default()</code>. These methods are not exported, so they aren’t visible to the user.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> In the case of <code>lda()</code> every class-specific method transforms its input to a standard form (a data table <code>x</code> and a vector of group assignments <code>grouping</code>, plus any of several other parameters) and passes these to <code>lda.default()</code>. This default method is the workhorse of the implementation, so it’s the only chunk of source code i’ll get into here.</p>
-</div>
-<div id="example-inputs-and-parameter-settings" class="section level3">
-<h3>example inputs and parameter settings</h3>
-<p>The code will be executed in sequence, punctuated by printouts and plots of key objects defined along the way. This requires assigning illustrative values to the function arguments. I’ll take as my example the famous diabetes data originally analyzed by <a href="https://link.springer.com/article/10.1007/BF00423145">Reaven and Miller (1979)</a>, available from <a href="https://github.com/friendly/heplots">the heplots package</a>, which consists of a BMI-type measure and the results of four glucose and insulin tests for 145 patients, along with their diagnostic grouping as non-diabetic (“normal”), subclinically (“chemical”) diabetic, and overtly diabetic.<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a> For our purposes, the only other required parameter is <code>tol</code>, the tolerance at which small values encountered along the matrix algebra are interpreted as zero.</p>
-<pre class="r"><code>x &lt;- heplots::Diabetes[, 1:5]
-grouping &lt;- heplots::Diabetes[, 6]
-tol &lt;- 1e-04</code></pre>
-<pre class="r"><code>set.seed(2)
-s &lt;- sort(sample(nrow(x), 6))
-print(x[s, ])</code></pre>
-<pre><code>##     relwt glufast glutest instest sspg
-## 24   0.97      90     327     192  124
-## 27   1.20      98     365     145  158
-## 82   1.11      93     393     490  259
-## 102  1.13      92     476     433  226
-## 133  0.85     330    1520      13  303
-## 134  0.81     123     557     130  152</code></pre>
-<pre class="r"><code>print(grouping[s])</code></pre>
-<pre><code>## [1] Normal            Normal            Normal            Chemical_Diabetic
-## [5] Overt_Diabetic    Overt_Diabetic   
-## Levels: Normal Chemical_Diabetic Overt_Diabetic</code></pre>
-</div>
-<div id="data-parameters-and-summary-information" class="section level3">
-<h3>data parameters and summary information</h3>
-<p>The first several lines of <code>lda.default()</code> capture summary information about the data table <code>x</code> (and ensure that it is a matrix) and the group assignments <code>grouping</code>: <code>n</code> is the number of cases in <code>x</code>, <code>p</code> is the number of variables, <code>g</code> is <code>grouping</code> coerced to a factor-valued vector, <code>lev</code> is the vector of factor levels (groups), <code>counts</code> is a vector of the number of cases assigned to each group, <code>proportions</code> is a vector of their proportions of <code>n</code>, and <code>ng</code> is the number of groups.</p>
-<p>It will help to keep track of some mathematical notation for these concepts in parallel: Call the data matrix <span class="math inline">\(X\in\mathbb{R}^{n\times p}\)</span>, the column vector of group assignments <span class="math inline">\(g\in[q]^{n}\)</span>, and a diagonal matrix <span class="math inline">\(N\in\mathbb{N}^{q\times q}\)</span> of group counts <span class="math inline">\(n_1,\ldots,n_q\)</span>. Note that <code>lev</code> and <code>ng</code> correspond to <span class="math inline">\([q]\)</span> and <span class="math inline">\(q\)</span>, respectively. Additionally let <span class="math inline">\(G=(\delta_{g_i,k})\in\{0,1\}^{n\times q}\)</span> denote the 0,1-matrix with <span class="math inline">\(i,k\)</span>-th entry <span class="math inline">\(1\)</span> when case <span class="math inline">\(i\)</span> is assigned to group <span class="math inline">\(k\)</span>. (I’ll use the indices <span class="math inline">\(1\leq i\leq n\)</span> for the cases, <span class="math inline">\(1\leq j\leq p\)</span> for the variables, and <span class="math inline">\(1\leq k\leq q\)</span> for the groups.)</p>
-<pre class="r"><code>if(is.null(dim(x))) stop(&quot;&#39;x&#39; is not a matrix&quot;)
-x &lt;- as.matrix(x)
-if(any(!is.finite(x)))
-  stop(&quot;infinite, NA or NaN values in &#39;x&#39;&quot;)
-n &lt;- nrow(x)
-p &lt;- ncol(x)
-if(n != length(grouping))
-  stop(&quot;nrow(x) and length(grouping) are different&quot;)
-g &lt;- as.factor(grouping)
-lev &lt;- lev1 &lt;- levels(g)
-counts &lt;- as.vector(table(g))
-# excised handling of `prior`
-if(any(counts == 0L)) {
-  empty &lt;- lev[counts == 0L]
-  warning(sprintf(ngettext(length(empty),
-                           &quot;group %s is empty&quot;,
-                           &quot;groups %s are empty&quot;),
-                  paste(empty, collapse = &quot; &quot;)), domain = NA)
-  lev1 &lt;- lev[counts &gt; 0L]
-  g &lt;- factor(g, levels = lev1)
-  counts &lt;- as.vector(table(g))
-}
-proportions &lt;- counts/n
-ng &lt;- length(proportions)
-names(counts) &lt;- lev1 # `names(prior)` excised</code></pre>
-<p>The steps are straightforward, with the exception of the handling of prior probabilities (<code>prior</code>), which is beyond our scope and which i’ve excised from the code. (When not provided, <code>prior</code> takes the default value <code>proportions</code>, which are explicitly defined within <code>lda.default()</code> and will be substituted for <code>prior</code> below.) If <code>grouping</code> is a factor that is missing elements of any of its levels, then these elements are removed from the analysis with a warning. I’ll also skip the lines relevant only to cross-validation (<code>CV = TRUE</code>), which include a compatibility check here and a large conditional chunk later on.</p>
-<pre class="r"><code># group counts and proportions of the total:
-print(cbind(counts, proportions))</code></pre>
-<pre><code>##                   counts proportions
-## Normal                76   0.5241379
-## Chemical_Diabetic     36   0.2482759
-## Overt_Diabetic        33   0.2275862</code></pre>
-</div>
-<div id="variable-standardization-and-the-correlation-matrix" class="section level3">
-<h3>variable standardization and the correlation matrix</h3>
-<p>Next, we calculate the group centroids <span class="math inline">\(\overline{X}=N^{-1}G^\top X\in\mathbb{R}^{q\times p}\)</span> and the within-group covariance matrix <span class="math inline">\(C_W=\frac{1}{n}{X_0}^\top{X_0}\)</span>, where <span class="math inline">\({X_0}=X-G\overline{X}\)</span> consists of the differences between the cases (rows of <span class="math inline">\(X\)</span>) and their corresponding group centroids. <code>lda.default()</code> stores <span class="math inline">\(\overline{X}\)</span> as <code>group.means</code> and the square roots of the diagonal entries of <span class="math inline">\(C_W\)</span>—that is, the standard deviations—as <code>f1</code>.
-The conditional statement requires that at least some variances be nonzero, up to the tolerance threshold <code>tol</code>. Finally, <code>scaling</code> is initialized as a diagonal matrix <span class="math inline">\(S_0\)</span> of inverted variable standard deviations <span class="math inline">\(\frac{1}{\sigma_j}\)</span>.</p>
-<pre class="r"><code>## drop attributes to avoid e.g. matrix() methods
-group.means &lt;- tapply(c(x), list(rep(g, p), col(x)), mean)
-f1 &lt;- sqrt(diag(var(x - group.means[g,  ])))
-if(any(f1 &lt; tol)) {
-  const &lt;- format((1L:p)[f1 &lt; tol])
-  stop(sprintf(ngettext(length(const),
-                        &quot;variable %s appears to be constant within groups&quot;,
-                        &quot;variables %s appear to be constant within groups&quot;),
-               paste(const, collapse = &quot; &quot;)),
-       domain = NA)
-}
-# scale columns to unit variance before checking for collinearity
-scaling &lt;- diag(1/f1, , p)</code></pre>
-<p>I’ll refer to <span class="math inline">\({X_0}\)</span> as the “within-group centered data”. The group centroids are returned as the named member <code>means</code> of the ‘lda’-class object returned by <code>lda.default()</code>. The standard deviations of and correlations among (some of) the five variables are evident in their pairwise scatterplots, which here and forward fix the aspect ratio at 1:</p>
-<pre class="r"><code># group centroids
-print(group.means)</code></pre>
-<pre><code>##                           1         2         3        4        5
-## Normal            0.9372368  91.18421  349.9737 172.6447 114.0000
-## Chemical_Diabetic 1.0558333  99.30556  493.9444 288.0000 208.9722
-## Overt_Diabetic    0.9839394 217.66667 1043.7576 106.0000 318.8788</code></pre>
-<pre class="r"><code># within-group centered data
-pairs(x - group.means[g, ], asp = 1, pch = 19, cex = .5)</code></pre>
-<p><img src="/post/2019-08-02-lda_files/figure-html/unnamed-chunk-6-1.png" width="768" /></p>
-<pre class="r"><code># within-group standard deviations
-print(f1)</code></pre>
-<pre><code>##       relwt     glufast     glutest     instest        sspg 
-##   0.1195937  36.8753901 150.7536138 102.2913665  65.8125752</code></pre>
-<pre class="r"><code># inverses of within-group standard deviations
-scaling0 &lt;- scaling
-print(scaling0)</code></pre>
-<pre><code>##          [,1]       [,2]       [,3]        [,4]       [,5]
-## [1,] 8.361643 0.00000000 0.00000000 0.000000000 0.00000000
-## [2,] 0.000000 0.02711836 0.00000000 0.000000000 0.00000000
-## [3,] 0.000000 0.00000000 0.00663334 0.000000000 0.00000000
-## [4,] 0.000000 0.00000000 0.00000000 0.009775996 0.00000000
-## [5,] 0.000000 0.00000000 0.00000000 0.000000000 0.01519466</code></pre>
-<p>The object <code>scaling</code> will be redefined twice as the function proceeds, each time by multiplication on the right, concluding with the member named <code>scaling</code> of the ‘lda’ object. We’ll denote these redefinitions <span class="math inline">\(S_1\)</span> and <span class="math inline">\(S_2\)</span> and store the three definitions as <code>scaling0</code>, <code>scaling1</code>, and <code>scaling2</code> for unambiguous illustrations. These matrices act on the columns of <span class="math inline">\({X_0}\)</span>, which induces a two-sided action on <span class="math inline">\(C_W\)</span>: <span class="math inline">\(\frac{1}{n}({X_0}S)^\top({X_0}S)=S^\top C_WS\)</span>. The effect of <span class="math inline">\(S_0\)</span> is to standardize the variables, so that the covariance matrix of the transformed data <span class="math inline">\({X_0}S_0\)</span> is the within-group correlation matrix <span class="math inline">\(R_W\)</span> of <span class="math inline">\({X_0}\)</span>. The effect is also evident from a comparison of the pairwise scatterplots:</p>
-<pre class="r"><code># within-group correlation matrix
-print(cor(x - group.means[g, ]))</code></pre>
-<pre><code>##               relwt     glufast    glutest    instest      sspg
-## relwt    1.00000000 -0.09623213 -0.1607280  0.1070926 0.3926726
-## glufast -0.09623213  1.00000000  0.9264021 -0.2513436 0.3692349
-## glutest -0.16072796  0.92640213  1.0000000 -0.2494804 0.3633879
-## instest  0.10709258 -0.25134359 -0.2494804  1.0000000 0.2145095
-## sspg     0.39267262  0.36923495  0.3633879  0.2145095 1.0000000</code></pre>
-<pre class="r"><code># within-group covariance matrix after standardization
-print(cov((x - group.means[g, ]) %*% scaling))</code></pre>
-<pre><code>##             [,1]        [,2]       [,3]       [,4]      [,5]
-## [1,]  1.00000000 -0.09623213 -0.1607280  0.1070926 0.3926726
-## [2,] -0.09623213  1.00000000  0.9264021 -0.2513436 0.3692349
-## [3,] -0.16072796  0.92640213  1.0000000 -0.2494804 0.3633879
-## [4,]  0.10709258 -0.25134359 -0.2494804  1.0000000 0.2145095
-## [5,]  0.39267262  0.36923495  0.3633879  0.2145095 1.0000000</code></pre>
-<pre class="r"><code># within-group centered data after standardization
-pairs((x - group.means[g, ]) %*% scaling, asp = 1, pch = 19, cex = .5)</code></pre>
-<p><img src="/post/2019-08-02-lda_files/figure-html/unnamed-chunk-7-1.png" width="768" /></p>
-</div>
-<div id="variable-sphering-and-the-mahalanobis-distance" class="section level3">
-<h3>variable sphering and the Mahalanobis distance</h3>
-<p>The next step in the procedure is the signature transformation of LDA. Whereas <span class="math inline">\(S_0\)</span> removes the scales of the variables, leaving them each with unit variance but preserving their correlations, the role of <span class="math inline">\(S_1\)</span> is to additionally remove these correlations. Viewing the set of cases within each group as a cloud of <span class="math inline">\(n_k\)</span> points in <span class="math inline">\(\mathbb{R}^p\)</span>, <span class="math inline">\(S_0\)</span> stretches or compresses each cloud <em>along its coordinate axes</em>, while <span class="math inline">\(S_1\)</span> will stretch or compress it <em>along its principal components</em>. The resulting aggregate point cloud will have within-group covariance <span class="math inline">\(I_n\)</span> (the identity matrix), indicating unit variance and no correlation among its variables; according to these summary statistics, then, it is rotationally symmetric. Accordingly, the column action of <span class="math inline">\(S_1\)</span> is called a <em>sphering transformation</em>, while the distances among the transformed points are called their <em>Mahalanobis distances</em> after <a href="https://en.wikipedia.org/wiki/Prasanta_Chandra_Mahalanobis">their originator</a>. See <a href="https://stats.stackexchange.com/a/62147/68743">this SO answer by whuber</a> for a helpful illustration of the transformation. Its importance is illustrated in Chapter 11 of <a href="https://www.fbbva.es/microsite/multivariate-statistics/biplots.html">Greenacre’s <em>Biplots in Practice</em></a> (p. 114).</p>
-<p><span class="math inline">\(S_1\)</span> is calculated differently for different choices of <code>method</code> (see the documentation <code>?MASS::lda</code>). For simplicity, the code chunk below follows the <code>"mle"</code> method.
-As hinted in the previous paragraph, the process of obtaining a sphering transformation is closely related to principal components analysis. One can be calculated via eigendecomposition of the standardized within-group covariance matrix or, equivalently, via singular value decomposition of the standardized within-group centered data <span class="math inline">\(\hat{X}=X_0 S_0\)</span>.<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a> <code>lda.default()</code> performs SVD on <span class="math inline">\(\hat{X}\)</span>, scaled by <span class="math inline">\(\frac{1}{\sqrt{n}}\)</span> so that the scatter matrix is <span class="math inline">\(R_W\)</span>:</p>
-<pre class="r"><code>fac &lt;- 1/n # excise conditional case `method == &quot;moment&quot;`
-X &lt;- sqrt(fac) * (x - group.means[g,  ]) %*% scaling
-X.s &lt;- svd(X, nu = 0L)
-rank &lt;- sum(X.s$d &gt; tol)
-if(rank == 0L) stop(&quot;rank = 0: variables are numerically constant&quot;)
-if(rank &lt; p) warning(&quot;variables are collinear&quot;)
-scaling &lt;- scaling %*% X.s$v[, 1L:rank] %*% diag(1/X.s$d[1L:rank],,rank)</code></pre>
-<p>Taking the SVD to be <span class="math inline">\(\frac{1}{\sqrt{n}}\hat{X}=\hat{U}\hat{D}\hat{V}^\top\)</span>, the sphering matrix is <span class="math inline">\(S_1=S_0\hat{V}{\hat{D}}^{-1}\)</span>.
-The alternative calculation is <span class="math inline">\(S_1=S_0\hat{V}{\hat{\Lambda}}^{-1/2}\)</span>, where <span class="math inline">\(\hat{C}=\hat{V}\hat{\Lambda}{\hat{V}}^\top\)</span> is the eigendecomposition of the covariance matrix of <span class="math inline">\(\hat{X}\)</span> so that <span class="math inline">\(\hat{V}\)</span> is the same and <span class="math inline">\(\hat{\Lambda}={\hat{D}}^{1/2}\)</span>. (<span class="math inline">\({\hat{C}}^{-1/2}=\hat{V}{\hat{\Lambda}}^{-1/2}{\hat{V}}^\top\)</span> is called the symmetric square root of <span class="math inline">\(\hat{C}\)</span>.)
-Note that the signs of the columns are arbitrary, as in PCA. The difference in absolute values is due to <code>stats::cov()</code> treating <span class="math inline">\(\hat{X}\)</span> as a sample rather than a population, dividing the scatter matrix <span class="math inline">\(\hat{X}^\top \hat{X}\)</span> by <span class="math inline">\(\frac{1}{n-1}\)</span> rather than by <span class="math inline">\(\frac{1}{n}\)</span>.</p>
-<pre class="r"><code># standardized within-group centered data
-Xhat &lt;- (x - group.means[g,  ]) %*% scaling0
-# eigendecomposition of covariance
-E &lt;- eigen(cov(Xhat))
-# sphering matrix (alternative calculation)
-scaling0 %*% E$vectors %*% diag(1/sqrt(E$values))</code></pre>
-<pre><code>##              [,1]          [,2]          [,3]         [,4]         [,5]
-## [1,] -0.259027622  4.3010514864  5.4856218279 -6.620668927 -2.079154922
-## [2,]  0.011804714 -0.0010406454 -0.0019199260 -0.013949375  0.070663381
-## [3,]  0.002888749 -0.0004202234 -0.0008316344 -0.002406702 -0.017886747
-## [4,] -0.001393182  0.0037523667 -0.0081405500 -0.005925590 -0.000197695
-## [5,]  0.003470018  0.0076467225 -0.0008602899  0.018031665  0.001957544</code></pre>
-<pre class="r"><code># sphering matrix
-scaling1 &lt;- scaling
-print(scaling1)</code></pre>
-<pre><code>##              [,1]         [,2]          [,3]         [,4]          [,5]
-## [1,]  0.259925467  4.315959855 -5.5046361720 -6.643617588  2.0863617201
-## [2,] -0.011845632 -0.001044253  0.0019265809 -0.013997727 -0.0709083156
-## [3,] -0.002898762 -0.000421680  0.0008345171 -0.002415044  0.0179487460
-## [4,]  0.001398012  0.003765373  0.0081687669 -0.005946129  0.0001983803
-## [5,] -0.003482045  0.007673228  0.0008632718  0.018094166 -0.0019643291</code></pre>
-<p>The sphered within-group centered data now have identity within-group covariance matrix, up to a reasonable tolerance. The sphered coordinates are true to their name, as along each pair of variable coordinates the point cloud exhibits no elliptical tendencies.
-While <code>rank</code> is 5 (<span class="math inline">\(=p\)</span>) at this stage, indicating that variation is detected in each of the variables, the final computational step will determine the rank of the LDA itself in terms of the transformed group centroids.</p>
-<pre class="r"><code># within-group covariance matrix after sphering
-print(cov((x - group.means[g, ]) %*% scaling))</code></pre>
-<pre><code>##               [,1]         [,2]          [,3]          [,4]          [,5]
-## [1,]  1.006944e+00 3.762724e-16 -5.781689e-16  5.015188e-16  1.113855e-15
-## [2,]  3.762724e-16 1.006944e+00  1.892763e-15  4.976970e-16  5.560143e-16
-## [3,] -5.781689e-16 1.892763e-15  1.006944e+00 -9.853124e-16 -1.180559e-15
-## [4,]  5.015188e-16 4.976970e-16 -9.853124e-16  1.006944e+00  1.095132e-15
-## [5,]  1.113855e-15 5.560143e-16 -1.180559e-15  1.095132e-15  1.006944e+00</code></pre>
-<pre class="r"><code># within-group centered data after sphering
-pairs((x - group.means[g, ]) %*% scaling, asp = 1, pch = 19, cex = .5)</code></pre>
-<p><img src="/post/2019-08-02-lda_files/figure-html/unnamed-chunk-10-1.png" width="768" /></p>
-<pre class="r"><code># number of variables that contribute to the sphered data
-print(rank)</code></pre>
-<pre><code>## [1] 5</code></pre>
-</div>
-<div id="sphering-transformed-group-centroids-and-discriminant-coefficients" class="section level3">
-<h3>sphering-transformed group centroids and discriminant coefficients</h3>
-<p>The original problem of LDA was to eigendecompose <span class="math inline">\({C_W}^{-1}C_B\)</span>, where <span class="math inline">\(C_B=\frac{1}{q}Y^\top Y\)</span> is the between-groups covariance matrix derived from the centered group centroids <span class="math inline">\(Y=G\overline{X}-\mathbb{1}_{n\times 1}\overline{x}\in\mathbb{R}^{n\times p}\)</span> using the data centroid <span class="math inline">\(\overline{x}=\frac{1}{n}\mathbb{1}_{1\times n}X\in\mathbb{R}^{1\times p}\)</span> (and duplicated according to the group counts).
-<code>lda.default()</code> relies on an equivalent calculation <span class="math inline">\(C_B=\frac{1}{q}\overline{Y}^\top\overline{Y}\)</span>, using <span class="math inline">\(\overline{Y}=N(\overline{X}-\mathbb{1}_{q\times 1}\overline{x})\)</span>, which explicitly weights the centered group centroids by the group counts and produces the same scatter matrix as <span class="math inline">\(Y\)</span>.
-Under the transformed coordinates <span class="math inline">\({X_0}S_1\)</span>, the matrix quotient to be eigendecomposed becomes <span class="math display">\[\textstyle({S_1}^\top C_WS_1)^{-1}({S_1}^\top C_BS_1)=I_p{S_1}^\top C_BS_1=\frac{1}{q}(YS_1)^\top(YS_1)=\frac{1}{q}(\overline{Y}S_1)^\top(\overline{Y}S_1),\]</span>
-the between-groups covariance calculated from the sphering-transformed centered group centroids.<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a>
-This is the first calculation using <span class="math inline">\(C_B\)</span>, which is how <code>lda.default()</code> can wait until here to calculate the data centroid <code>xbar</code>.</p>
-<pre class="r"><code>xbar &lt;- colSums(proportions %*% group.means) # sub `proportions` for `prior`
-fac &lt;- 1/(ng - 1) # excise conditional case `method == &quot;mle&quot;`
-X &lt;- sqrt((n * proportions)*fac) * # sub `proportions` for `prior`
-  scale(group.means, center = xbar, scale = FALSE) %*% scaling
-X.s &lt;- svd(X, nu = 0L)
-rank &lt;- sum(X.s$d &gt; tol * X.s$d[1L])
-if(rank == 0L) stop(&quot;group means are numerically identical&quot;)
-scaling &lt;- scaling %*% X.s$v[, 1L:rank]
-# excise conditional case `is.null(dimnames(x))`
-dimnames(scaling) &lt;- list(colnames(x), paste(&quot;LD&quot;, 1L:rank, sep = &quot;&quot;))
-dimnames(group.means)[[2L]] &lt;- colnames(x)</code></pre>
-<p>The rank now indicates the number of dimensions in the SVD of the sphering-transformed group centroids, which can be no more than <span class="math inline">\(q-1\)</span>.
-The final reassignment of <code>scaling</code> gives <span class="math inline">\(S_2\)</span>, the raw discriminant coefficients that express the discriminant coordinates of the centroids (and of the original data) as linear combinations of the centered variable coordinates. In practice, these discriminant coordinates are returned by the <code>predict()</code> method for ‘lda’ objects, <code>MASS:::predict.lda()</code>, and this is demonstrated to conclude the post:</p>
-<pre class="r"><code># number of dimensions in the sphering-transformed group centroid SVD
-print(rank)</code></pre>
-<pre><code>## [1] 2</code></pre>
-<pre class="r"><code># discriminant coefficients
-scaling2 &lt;- scaling
-print(scaling2)</code></pre>
-<pre><code>##                   LD1          LD2
-## relwt    1.3767523932 -3.823906854
-## glufast -0.0340023755  0.037018266
-## glutest  0.0127085491 -0.007166541
-## instest -0.0001032987 -0.006238295
-## sspg     0.0042877747  0.001145987</code></pre>
-<pre class="r"><code># discriminant coordinates of centered group centroids
-print((group.means - matrix(1, ng, 1) %*% t(xbar)) %*% scaling2)</code></pre>
-<pre><code>##                          LD1        LD2
-## Normal            -1.7683547  0.4043199
-## Chemical_Diabetic  0.3437412 -1.3910995
-## Overt_Diabetic     3.6975842  0.5864022</code></pre>
-<pre class="r"><code># as recovered using `predict.lda()`
-fit &lt;- MASS::lda(group ~ ., heplots::Diabetes)
-print(predict(fit, as.data.frame(fit$means))$x)</code></pre>
-<pre><code>##                          LD1        LD2
-## Normal            -1.7499658  0.4001154
-## Chemical_Diabetic  0.3401666 -1.3766336
-## Overt_Diabetic     3.6591334  0.5803043</code></pre>
-<p>(The slight discrepancy between the manually calculated coordinates and those returned by <code>predict()</code> is left as an exercise for the reader.)</p>
-</div>
-<div class="footnotes">
-<hr />
-<ol>
-<li id="fn1"><p>If you use ordination and ggplot2, not necessarily together (yet), i’d be grateful for your feedback, too!<a href="#fnref1" class="footnote-back">↩</a></p></li>
-<li id="fn2"><p>My exposition here assumes the covariances were calculated from a population rather than a sample perspective, but this introduces discrepancies in a few places.<a href="#fnref2" class="footnote-back">↩</a></p></li>
-<li id="fn3"><p>To see the source code for an object included in but not exported by a package, use three colons instead of two, e.g. <code>MASS:::lda.default</code>.<a href="#fnref3" class="footnote-back">↩</a></p></li>
-<li id="fn4"><p>I’ve been searching for a history of the 1970s change from categorizing diabetes as “clinical” versus “overt” to the present-day categories of “type 1” and “type 2”. Recommended reading is very welcome.<a href="#fnref4" class="footnote-back">↩</a></p></li>
-<li id="fn5"><p>These are equivalent because the matrix factors <span class="math inline">\(U\)</span> and <span class="math inline">\(V\)</span> of an SVD of any matrix <span class="math inline">\(Z\)</span> are the eigenvector matrices of <span class="math inline">\(ZZ^\top\)</span> and of <span class="math inline">\(Z^\top Z\)</span>, respectively.<a href="#fnref5" class="footnote-back">↩</a></p></li>
-<li id="fn6"><p>These are not “sphered” centered group centroids because the sphering transformation is specific to the within-group centered data.<a href="#fnref6" class="footnote-back">↩</a></p></li>
 </ol>
 </div>
 </content:encoded>

@@ -30,7 +30,7 @@
   <script src="/highlight/highlight.pack.js"></script>
   <script>hljs.initHighlightingOnLoad();</script>
 
-  <meta name="generator" content="Hugo 0.54.0" />
+  <meta name="generator" content="Hugo 0.44" />
   
 </head>
 <body>
@@ -117,10 +117,7 @@
             </div>
 
             <div class="post-content">
-                
-
-
-<p>For over a year (intermittently, not cumulatively) i’ve been developing an R package, <a href="https://github.com/corybrunson/ordr">ordr</a>, for incorporating ordination techniques into a tidyverse workflow. (Credit where it’s due: Emily Paul, a summer intern from Avon High School, helped extend the package functionality and has since used it in other projects and provided critical feedback on its design.) This week, i finally deployed <a href="https://corybrunson.github.io/ordr/">a pkgdown website</a> and tweeted a meek solicitation for feedback.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> Interestingly, the one component that held me back, that i put off time and time again before finally grinding out a solution over the past few weeks, was the component that originally complemented PCA in <a href="https://github.com/vqv/ggbiplot">Vince Vu’s original and inspirational ggbiplot package</a>: Accessor methods for the MASS package implementation of linear discriminant analysis.</p>
+                <p>For over a year (intermittently, not cumulatively) i’ve been developing an R package, <a href="https://github.com/corybrunson/ordr">ordr</a>, for incorporating ordination techniques into a tidyverse workflow. (Credit where it’s due: Emily Paul, a summer intern from Avon High School, helped extend the package functionality and has since used it in other projects and provided critical feedback on its design.) This week, i finally deployed <a href="https://corybrunson.github.io/ordr/">a pkgdown website</a> and tweeted a meek solicitation for feedback.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> Interestingly, the one component that held me back, that i put off time and time again before finally grinding out a solution over the past few weeks, was the component that originally complemented PCA in <a href="https://github.com/vqv/ggbiplot">Vince Vu’s original and inspirational ggbiplot package</a>: Accessor methods for the MASS package implementation of linear discriminant analysis.</p>
 <p>A big part of the reason for this procrastination was that <a href="https://github.com/cran/MASS/blob/master/R/lda.R">the source code of <code>MASS::lda()</code></a> looks nothing like the tidy definition of LDA found in textbooks. (I have on my shelf my mom’s copies of <a href="https://books.google.com/books/about/Multivariate_Analysis.html?id=HHNnBDaNsuUC">Tatsuoka’s <em>Multivariate Analysis</em></a> and of <a href="https://books.google.com/books/about/Psychometric_theory.html?id=WE59AAAAMAAJ">Nunnally’s <em>Psychometric Theory</em></a>, but there are several similar introductions online, for example <a href="https://sebastianraschka.com/Articles/2014_python_lda.html">Raschka’s</a>.) In the standard presentation, LDA boils down to an eigendecomposition of the quotient <span class="math inline">\({C_W}^{-1}C_B\)</span> of the between- by the within-group covariance matrices. (This is equivalent, up to a scale factor, to the eigendecomposition of the same quotient of the corresponding scatter matrices <span class="math inline">\(S_\bullet=nC_\bullet\)</span>.<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>)
 But rather than build up to a single eigendecomposition, <code>MASS::lda()</code> relies on sequential compositions of a scaling matrix with eigenvector and other matrices that are difficult to follow by reading the (minimally documented) code.</p>
 <p>Meanwhile, several discussions of LDA on StackOverflow provide useful insights into the output of <code>MASS::lda()</code>, but the more prolific respondents tend not to use R, and the numerical examples derive from implementations in other languages.

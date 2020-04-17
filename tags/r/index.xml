@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>R on murmuring in the background</title>
+    <link>/tags/r/</link>
+    <description>Recent content in R on murmuring in the background</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 17 Apr 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/r/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>how to calculate aesthetics in a ggplot2 extension</title>
+      <link>/2020/04/17/calculate-aesthetics/</link>
+      <pubDate>Fri, 17 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/04/17/calculate-aesthetics/</guid>
+      <description>how to use computed variables One of the many subtle features of ggplot2 is the ability to pass variables to aesthetics that are not present in the data but rather are computed internally by a statistical transformation (stat). For users, the documentation for this feature illustrates the use of stat(&amp;lt;variable&amp;gt;) (previously ..&amp;lt;variable&amp;gt;.., since upgraded to after_stat(&amp;lt;variable&amp;gt;)) in an aesthetic specification.
+Some stats do this by default. For example, the count stat sends its computed count to both coordinate aesthetics by default.</description>
+    </item>
+    
+  </channel>
+</rss>
