@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Mapper on murmuring in the background</title>
+    <link>/tags/mapper/</link>
+    <description>Recent content in Mapper on murmuring in the background</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 01 May 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/mapper/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>the mapper construction in base R</title>
+      <link>/2020/05/01/mapper-construction-base-r/</link>
+      <pubDate>Fri, 01 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/05/01/mapper-construction-base-r/</guid>
+      <description>Several mature, open-source implementations of the mapper construction now exist, including the standalone Python Mapper module and KeplerMapper, part of the scikit family. I’m currently experimenting with Matt Piekenbrock’s R package Mapper, which is not on CRAN but makes—from my beginner’s vantage point—exemplary use of the R6 system.1
+What these implementations have in common is that the underlying construction is mostly hidden from view. Users can specify its constituent parts, but what gets visualized is almost exclusively either</description>
+    </item>
+    
+  </channel>
+</rss>

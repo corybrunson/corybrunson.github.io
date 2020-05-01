@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>/2020/05/01/mapper-construction-base-r/</loc>
+    <lastmod>2020-05-01T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/2020/04/17/calculate-aesthetics/</loc>
     <lastmod>2020-04-17T00:00:00+00:00</lastmod>
   </url>
@@ -142,6 +147,12 @@
   </url>
   
   <url>
+    <loc>/tags/mapper/</loc>
+    <lastmod>2020-05-01T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>/tags/mathematicians/</loc>
     <lastmod>2019-10-11T00:00:00+00:00</lastmod>
     <priority>0</priority>
@@ -149,7 +160,7 @@
   
   <url>
     <loc>/categories/methodology/</loc>
-    <lastmod>2020-04-17T00:00:00+00:00</lastmod>
+    <lastmod>2020-05-01T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -179,7 +190,7 @@
   
   <url>
     <loc>/post/</loc>
-    <lastmod>2020-04-17T00:00:00+00:00</lastmod>
+    <lastmod>2020-05-01T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -202,14 +213,14 @@
   </url>
   
   <url>
-    <loc>/tags/r/</loc>
-    <lastmod>2020-04-17T00:00:00+00:00</lastmod>
+    <loc>/tags/rank/</loc>
+    <lastmod>2019-08-16T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>/tags/rank/</loc>
-    <lastmod>2019-08-16T00:00:00+00:00</lastmod>
+    <loc>/tags/rstats/</loc>
+    <lastmod>2020-05-01T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -238,6 +249,12 @@
   </url>
   
   <url>
+    <loc>/tags/topological-data-analysis/</loc>
+    <lastmod>2020-05-01T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>/tags/visualization/</loc>
     <lastmod>2019-09-13T00:00:00+00:00</lastmod>
     <priority>0</priority>
@@ -251,7 +268,7 @@
   
   <url>
     <loc>/</loc>
-    <lastmod>2020-04-17T00:00:00+00:00</lastmod>
+    <lastmod>2020-05-01T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   

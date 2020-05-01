@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Rstats on murmuring in the background</title>
+    <link>/tags/rstats/</link>
+    <description>Recent content in Rstats on murmuring in the background</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 01 May 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/rstats/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>the mapper construction in base R</title>
+      <link>/2020/05/01/mapper-construction-base-r/</link>
+      <pubDate>Fri, 01 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/05/01/mapper-construction-base-r/</guid>
+      <description>Several mature, open-source implementations of the mapper construction now exist, including the standalone Python Mapper module and KeplerMapper, part of the scikit family. I’m currently experimenting with Matt Piekenbrock’s R package Mapper, which is not on CRAN but makes—from my beginner’s vantage point—exemplary use of the R6 system.1
+What these implementations have in common is that the underlying construction is mostly hidden from view. Users can specify its constituent parts, but what gets visualized is almost exclusively either</description>
+    </item>
+    
+    <item>
+      <title>how to calculate aesthetics in a ggplot2 extension</title>
+      <link>/2020/04/17/calculate-aesthetics/</link>
+      <pubDate>Fri, 17 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/04/17/calculate-aesthetics/</guid>
+      <description>how to use computed variables One of the many subtle features of ggplot2 is the ability to pass variables to aesthetics that are not present in the data but rather are computed internally by a statistical transformation (stat). For users, the documentation for this feature illustrates the use of stat(&amp;lt;variable&amp;gt;) (previously ..&amp;lt;variable&amp;gt;.., since upgraded to after_stat(&amp;lt;variable&amp;gt;)) in an aesthetic specification.
+Some stats do this by default. For example, the count stat sends its computed count to both coordinate aesthetics by default.</description>
+    </item>
+    
+  </channel>
+</rss>

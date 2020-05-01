@@ -6,10 +6,20 @@
     <description>Recent content in Posts on murmuring in the background</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 17 Apr 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 01 May 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>the mapper construction in base R</title>
+      <link>/2020/05/01/mapper-construction-base-r/</link>
+      <pubDate>Fri, 01 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/05/01/mapper-construction-base-r/</guid>
+      <description>Several mature, open-source implementations of the mapper construction now exist, including the standalone Python Mapper module and KeplerMapper, part of the scikit family. I’m currently experimenting with Matt Piekenbrock’s R package Mapper, which is not on CRAN but makes—from my beginner’s vantage point—exemplary use of the R6 system.1
+What these implementations have in common is that the underlying construction is mostly hidden from view. Users can specify its constituent parts, but what gets visualized is almost exclusively either</description>
+    </item>
     
     <item>
       <title>how to calculate aesthetics in a ggplot2 extension</title>
@@ -57,16 +67,6 @@ Hidden Figures was probably the best civil rights–focused film i’ve seen in 
       <guid>/2019/08/30/presence-absence/</guid>
       <description>A project i’ve had in the works for years, and “almost done” since last summer, is a sensitivity and robustness analysis of several techniques used in studies of “comorbidity networks” (also “disease graphs”, “disease maps”, etc.) that have appeared over the past 20 years. As i begin the abstract:
  Comorbidity network analysis (CNA) is an increasingly popular approach in systems medicine, in which mathematical graphs encode epidemiological correlations (links) between diseases (nodes) inferred from their occurrence in an underlying patient population.</description>
-    </item>
-    
-    <item>
-      <title>multidimensional scaling of variables, and rank correlations</title>
-      <link>/2019/08/16/rank-correlations/</link>
-      <pubDate>Fri, 16 Aug 2019 00:00:00 +0000</pubDate>
-      
-      <guid>/2019/08/16/rank-correlations/</guid>
-      <description>A fundamental idea in biplot methodology is the conference of inertia, a phrase i picked up from an SO answer by ttnphns and quickly incorporated into ordr. The basic idea arises from the central properties of a biplot, illustrated here for principal components analysis: A case–variable data matrix \(X\in\mathbb{R}^{n\times m}\) of ratio variables1 is singular-value decomposed as \(X=UDV^\top\), for example the mtcars data set:
-x &amp;lt;- scale(mtcars, center = TRUE, scale = TRUE) s &amp;lt;- svd(x) r &amp;lt;- length(s$d) Under this convention, \(U\in\mathbb{R}^{n\times r}\) and \(V\in\mathbb{R}^{m\times r}\) arise from eigendecompositions of \(XX^\top\) and of \(X^\top X\), respectively, and \(D\in\mathbb{R}^{r\times r}\) is the diagonal matrix of the square roots of their (common) eigenvalues.</description>
     </item>
     
   </channel>
